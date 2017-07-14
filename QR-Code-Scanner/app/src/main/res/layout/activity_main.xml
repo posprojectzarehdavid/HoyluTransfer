@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/activity_main"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.example.zarehhakobian.qr_code_scanner.MainActivity">
+
+    <fragment
+        android:id="@+id/camera_fragment"
+        android:name="com.example.zarehhakobian.qr_code_scanner.CameraFragment"
+        android:layout_width="match_parent"
+        android:layout_height="250dp"
+        tools:layout="@layout/barcode_capture"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true" />
+
+    <fragment
+        android:id="@+id/info_fragment"
+        android:name="com.example.zarehhakobian.qr_code_scanner.InfoFragment"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_alignParentLeft="true"
+        android:layout_centerVertical="true"
+        tools:layout="@layout/barcode_info" />
+</LinearLayout>
