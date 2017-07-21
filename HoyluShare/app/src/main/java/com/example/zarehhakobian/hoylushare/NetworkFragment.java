@@ -16,6 +16,7 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import com.example.zarehhakobian.hoylushare.NetworkClasses.NetworkDevice;
 import com.github.nkzawa.emitter.Emitter;
@@ -104,7 +105,6 @@ public class NetworkFragment extends Fragment {
             @Override
             public void run() {
                 connectToServer(publicIP, defaultGateway);
-                Log.i("hallo", System.currentTimeMillis()+"");
             }
 
         }, 0, 10000);
@@ -112,9 +112,8 @@ public class NetworkFragment extends Fragment {
     }
 
     public void connectToServer(final String pubIP, final String gateway) {
-
         if (socket != null) {
-            socket.close();
+            socket.disconnect();
         }
 
         try {
@@ -146,10 +145,13 @@ public class NetworkFragment extends Fragment {
                                     String defGate = jsonObject.getString("defaultGateway");
                                     NetworkDevice nd = new NetworkDevice(id, name, pubIp, defGate);
                                     networkDevices.add(nd);
+                                    socket.disconnect();
+                                    socket.off();
                                     getActivity().runOnUiThread(new Runnable() {
                                         @Override
                                         public void run() {
                                             aa.notifyDataSetChanged();
+                                            Toast.makeText(getActivity(), "Neu gefüllt",Toast.LENGTH_SHORT).show();
                                         }
                                     });
                                 }
@@ -164,7 +166,6 @@ public class NetworkFragment extends Fragment {
                 }
             });
             socket.connect();
-
 
         } catch (Exception e) {
             e.printStackTrace();

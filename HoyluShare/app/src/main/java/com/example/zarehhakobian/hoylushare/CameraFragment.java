@@ -231,6 +231,7 @@ public class CameraFragment extends Fragment implements BarcodeGraphic.BoundingB
                                             }
                                             mPreview.release();
                                             socket.disconnect();
+                                            socket.off();
                                         } else {
                                             scannedBarcodeValues.add(barcode.displayValue);
                                             Toast.makeText(getActivity(), "Keine Gültige ID", Toast.LENGTH_SHORT).show();

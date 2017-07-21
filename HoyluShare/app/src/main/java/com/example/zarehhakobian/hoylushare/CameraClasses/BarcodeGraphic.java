@@ -11,6 +11,9 @@ import android.graphics.Paint;
 import android.graphics.RectF;
 
 import com.google.android.gms.vision.barcode.Barcode;
+
+import java.util.ArrayList;
+
 /**
  * Graphic instance for rendering barcode position, size, and ID within an associated graphic
  * overlay view.
@@ -22,6 +25,7 @@ public class BarcodeGraphic extends GraphicOverlay.Graphic  {
             Color.CYAN,
             Color.GREEN
     };
+    ArrayList<String>drawnBarcodes;
 
     public interface BoundingBoxDrawListener {
         void onBoundingBoxDrawn(Barcode code);
@@ -41,6 +45,7 @@ public class BarcodeGraphic extends GraphicOverlay.Graphic  {
         if (fragment instanceof BoundingBoxDrawListener) {
             listener = (BoundingBoxDrawListener) fragment;
         }
+        drawnBarcodes = new ArrayList<>();
         mRectPaint = new Paint();
         mRectPaint.setColor(selectedColor);
         mRectPaint.setStyle(Paint.Style.STROKE);
@@ -77,7 +82,7 @@ public class BarcodeGraphic extends GraphicOverlay.Graphic  {
     @Override
     public void draw(Canvas canvas) {
         Barcode barcode = mBarcode;
-        if (barcode == null) {
+        if (barcode == null || drawnBarcodes.contains(barcode.displayValue)) {
             return;
         }
 
@@ -91,6 +96,8 @@ public class BarcodeGraphic extends GraphicOverlay.Graphic  {
 
         // Draws a label at the bottom of the barcode indicate the barcode value that was detected.
         canvas.drawText(barcode.rawValue, rect.left, rect.bottom, mTextPaint);
+
+        drawnBarcodes.add(barcode.displayValue);
 
         if(listener != null){
             listener.onBoundingBoxDrawn(barcode);

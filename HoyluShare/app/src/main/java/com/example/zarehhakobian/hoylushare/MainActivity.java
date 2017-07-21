@@ -3,11 +3,13 @@ package com.example.zarehhakobian.hoylushare;
 import android.Manifest;
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
@@ -19,8 +21,8 @@ import com.github.nkzawa.emitter.Emitter;
 import com.github.nkzawa.socketio.client.Ack;
 import com.github.nkzawa.socketio.client.IO;
 import com.github.nkzawa.socketio.client.Socket;
-
 import com.oschrenk.io.Base64;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -171,46 +173,73 @@ public class MainActivity extends Activity implements DeviceSelectedListener {
 
     @Override
     public void sendImageToServer(final String id) {
-        final byte[] imageInBytes = getImageForServer();
-        Toast.makeText(this, imageInBytes.length+", "+imageInBytes.toString(), Toast.LENGTH_SHORT).show();
-        if (socket != null) {
-            socket.close();
+        new UploadingAsyncTask().execute(id);
+    }
+
+    class UploadingAsyncTask extends AsyncTask<String, Void, String> {
+        ProgressDialog dialog = new ProgressDialog(MainActivity.this);
+        boolean gotServerMessage = false;
+
+        @Override
+        protected void onPreExecute() {
+            dialog.setMessage("Daten werden an den Server geschickt...");
+            dialog.show();
+            super.onPreExecute();
         }
 
-        try {
-            socket = IO.socket("http://192.168.42.85:4200");
-            socket.on(Socket.EVENT_CONNECT, new Emitter.Listener() {
-                @Override
-                public void call(Object... args) {
-                    Log.i("hallo", "connected");
-                    socket.emit("client", "MainClient");
-                    JSONObject jsonObject = new JSONObject();
-                    try {
-                        jsonObject.put("imageBytes", imageInBytes);
-                        jsonObject.put("displayId", id);
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                    }
-                    socket.emit("image", jsonObject, new Ack() {
-                        @Override
-                        public void call(Object... args) {
-                            final String message = (String) args[0];
-                            final Runnable r = new Runnable() {
-                                @Override
-                                public void run() {
-                                    Toast.makeText(getApplication(), message, Toast.LENGTH_SHORT).show();
-                                    socket.disconnect();
-                                }
-                            };
-                            runOnUiThread(r);
-                        }
-                    });
-                }
-            });
-            socket.connect();
+        protected String doInBackground(String... args) {
+            final String[] serverMessage = {""};
+            final String id = args[0];
+            final byte[] imageInBytes = getImageForServer();
 
-        } catch (Exception e) {
-            e.printStackTrace();
+            try {
+                socket = IO.socket("http://192.168.42.85:4200");
+                socket.on(Socket.EVENT_CONNECT, new Emitter.Listener() {
+                    @Override
+                    public void call(Object... args) {
+                        Log.i("hallo", "connected");
+
+                        JSONObject jsonObject = new JSONObject();
+                        try {
+                            jsonObject.put("imageBytes", imageInBytes);
+                            jsonObject.put("displayId", id);
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                        socket.emit("main_client", jsonObject, new Ack() {
+                            @Override
+                            public void call(Object... args) {
+                                serverMessage[0] = (String) args[0];
+                                gotServerMessage = true;
+                                onPostExecute(serverMessage[0]);
+                            }
+                        });
+                    }
+                });
+                socket.connect();
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            return serverMessage[0];
+        }
+
+        protected void onPostExecute(String result){
+            if(gotServerMessage){
+                socket.disconnect();
+                socket.off();
+                dialog.dismiss();
+                AlertDialog.Builder ad = new AlertDialog.Builder(MainActivity.this);
+                    ad.setMessage(result);
+                    ad.setNeutralButton("OK", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                    }
+                });
+                ad.show();
+                gotServerMessage = false;
+            }
         }
     }
 }
