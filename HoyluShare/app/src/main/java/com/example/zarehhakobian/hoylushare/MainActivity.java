@@ -1,44 +1,216 @@
 package com.example.zarehhakobian.hoylushare;
 
+import android.Manifest;
+import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
-import android.graphics.Bitmap;
+import android.content.pm.PackageManager;
+import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
-import android.support.v7.app.AppCompatActivity;
-import android.widget.ImageView;
+import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
+import android.util.Log;
+import android.widget.Toast;
 
+import com.github.nkzawa.emitter.Emitter;
+import com.github.nkzawa.socketio.client.Ack;
+import com.github.nkzawa.socketio.client.IO;
+import com.github.nkzawa.socketio.client.Socket;
+
+import com.oschrenk.io.Base64;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends Activity implements DeviceSelectedListener {
 
-    ImageView iv;
+    String imagePath;
+    private static final String TAG = "Main";
+    private static final int RC_Handle_CAMERA_AND_INTERNET_PERM_AND_READ_PERM = 2;
+    public static boolean permissionsGranted = false;
+    Socket socket;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-        Intent intent = getIntent();
-        String action = intent.getAction();
-        String type = intent.getType();
-        iv = (ImageView) findViewById(R.id.imageView);
-        if (Intent.ACTION_SEND.equals(action) && type != null) {
-            if (type.startsWith("image/")) {
-                handleSendImage(intent);
-            }
+        int rc = ActivityCompat.checkSelfPermission(this, android.Manifest.permission.CAMERA);
+        int i = ActivityCompat.checkSelfPermission(this, Manifest.permission.INTERNET);
+        int readPerm = ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE);
+        if (rc == PackageManager.PERMISSION_GRANTED && i == PackageManager.PERMISSION_GRANTED &&
+                readPerm == PackageManager.PERMISSION_GRANTED) {
+            permissionsGranted = true;
+            setContentView(R.layout.activity_main);
+        } else {
+            requestPermissions();
         }
     }
 
-    private void handleSendImage(Intent intent) {
-        Uri imageUri = (Uri) intent.getParcelableExtra(Intent.EXTRA_STREAM);
-        if (imageUri != null) {
-            try {
-                Bitmap bitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), imageUri);
-                iv.setImageBitmap(bitmap);
-            } catch (IOException e) {
-                e.printStackTrace();
+    private byte[] getImageForServer() {
+        Intent intent = getIntent();
+        String action = intent.getAction();
+        String type = intent.getType();
+        if (Intent.ACTION_SEND.equals(action) && type != null) {
+            if (type.startsWith("image/")) {
+                imagePath = getImagePathFromIntent(intent);
+                File file = new File(imagePath);
+                byte[]imageBytes = imageToByteArray(file);
+                String imageDataString = encodeImage(imageBytes);
+                return decodeImage(imageDataString);
             }
         }
+        return null;
+    }
 
+    public byte[] imageToByteArray(File f){
+        FileInputStream fis = null;
+        byte[] bytesArray = new byte[(int) f.length()];
+        try {
+            fis = new FileInputStream(f);
+            fis.read(bytesArray);
+            fis.close();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return bytesArray;
+    }
+
+    public String encodeImage(byte[] imageByteArray) {
+        return Base64.encodeBytes(imageByteArray);
+    }
+
+    public static byte[] decodeImage(String imageDataString) {
+        return Base64.decode(imageDataString);
+    }
+
+    private String getImagePathFromIntent(Intent intent) {
+        Uri imageUri = intent.getParcelableExtra(Intent.EXTRA_STREAM);
+        String[] filePathColumn = {MediaStore.Images.Media.DATA};
+
+        Cursor cursor = getContentResolver().query(
+                imageUri, filePathColumn, null, null, null);
+        cursor.moveToFirst();
+
+        int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
+        String filePath = cursor.getString(columnIndex);
+        cursor.close();
+        Toast.makeText(this, filePath, Toast.LENGTH_LONG).show();
+        //return BitmapFactory.decodeFile(filePath);
+
+        return filePath;
+    }
+
+    private void requestPermissions() {
+        Log.w(TAG, "Camera and internet permission is not granted. Requesting permission");
+        final String[] permissions = new String[]{android.Manifest.permission.CAMERA,
+                Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.INTERNET};
+
+        if (!ActivityCompat.shouldShowRequestPermissionRationale(this,Manifest.permission.CAMERA)
+                && !ActivityCompat.shouldShowRequestPermissionRationale(this,Manifest.permission.INTERNET)
+                && !ActivityCompat.shouldShowRequestPermissionRationale(this,Manifest.permission.READ_EXTERNAL_STORAGE)) {
+            ActivityCompat.requestPermissions(this, permissions, RC_Handle_CAMERA_AND_INTERNET_PERM_AND_READ_PERM);
+            return;
+        }
+        ActivityCompat.requestPermissions(this, permissions, RC_Handle_CAMERA_AND_INTERNET_PERM_AND_READ_PERM);
+    }
+
+    /**
+     * Callback for the result from requesting permissions. This method
+     * is invoked for every call on {@link #requestPermissions(String[], int)}.
+     * It is possible that the permissions request interaction
+     * with the user is interrupted. In this case you will receive empty permissions
+     * and results arrays which should be treated as a cancellation.
+     *
+     * @param requestCode  The request code passed in {@link #requestPermissions(String[], int)}.
+     * @param permissions  The requested permissions. Never null.
+     * @param grantResults The grant results for the corresponding permissions
+     *                     which is either {@link PackageManager#PERMISSION_GRANTED}
+     *                     or {@link PackageManager#PERMISSION_DENIED}. Never null.
+     * @see #requestPermissions(String[], int)
+     */
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           @NonNull String[] permissions,
+                                           @NonNull int[] grantResults) {
+
+        if (grantResults.length != 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED
+                && grantResults[1] == PackageManager.PERMISSION_GRANTED
+                && grantResults[2] == PackageManager.PERMISSION_GRANTED) {
+            Log.d(TAG, "Camera and internet permission granted");
+            permissionsGranted = true;
+            setContentView(R.layout.activity_main);
+
+            return;
+        }
+        setContentView(R.layout.activity_main);
+
+        Log.e(TAG, "Permission not granted: results len = " + grantResults.length +
+                " Result code = " + (grantResults.length > 0 ? grantResults[0] : "(empty)"));
+
+        DialogInterface.OnClickListener listener = new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                dialog.dismiss();
+            }
+        };
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("QR-Code-Scanner")
+                .setMessage("Keine Erlaubnis für Kamera")
+                .setPositiveButton("OK", listener)
+                .show();
+    }
+
+    @Override
+    public void sendImageToServer(final String id) {
+        final byte[] imageInBytes = getImageForServer();
+        Toast.makeText(this, imageInBytes.length+", "+imageInBytes.toString(), Toast.LENGTH_SHORT).show();
+        if (socket != null) {
+            socket.close();
+        }
+
+        try {
+            socket = IO.socket("http://192.168.42.85:4200");
+            socket.on(Socket.EVENT_CONNECT, new Emitter.Listener() {
+                @Override
+                public void call(Object... args) {
+                    Log.i("hallo", "connected");
+                    socket.emit("client", "MainClient");
+                    JSONObject jsonObject = new JSONObject();
+                    try {
+                        jsonObject.put("imageBytes", imageInBytes);
+                        jsonObject.put("displayId", id);
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                    socket.emit("image", jsonObject, new Ack() {
+                        @Override
+                        public void call(Object... args) {
+                            final String message = (String) args[0];
+                            final Runnable r = new Runnable() {
+                                @Override
+                                public void run() {
+                                    Toast.makeText(getApplication(), message, Toast.LENGTH_SHORT).show();
+                                    socket.disconnect();
+                                }
+                            };
+                            runOnUiThread(r);
+                        }
+                    });
+                }
+            });
+            socket.connect();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }

@@ -15,17 +15,19 @@ import com.google.android.gms.vision.barcode.Barcode;
  */
 
 public class InfoFragment extends Fragment {
-    TextView content;
+    TextView content, message;
 
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.barcode_info,container,false);
         content = (TextView) v.findViewById(R.id.barcode_value);
+        message = (TextView) v.findViewById(R.id.server_message);
         return v;
     }
 
-    public void showQRCodeContent(Barcode code){
+    public void showQRCodeContent(Barcode code, String m){
         content.setText(code.displayValue);
+        message.setText(m);
     }
 }

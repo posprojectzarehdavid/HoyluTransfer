@@ -73,7 +73,7 @@ public class CameraFragment extends Fragment {
                 return b || c;
             }
         });
-        if (MainActivity.cameraPermissionGranted) {
+        if (MainActivity.permissionsGranted) {
             createCameraSource(true, false);
             gestureDetector = new GestureDetector(getActivity(), new CaptureGestureListener());
             scaleGestureDetector = new ScaleGestureDetector(getActivity(), new ScaleListener());
@@ -178,7 +178,7 @@ public class CameraFragment extends Fragment {
             if (listener != null) {
                 listener.bestCodeCaptured(best);
             }
-            Toast.makeText(getActivity(), best.displayValue, Toast.LENGTH_LONG).show();
+            //Toast.makeText(getActivity(), best.displayValue, Toast.LENGTH_LONG).show();
             return true;
         }
         return false;

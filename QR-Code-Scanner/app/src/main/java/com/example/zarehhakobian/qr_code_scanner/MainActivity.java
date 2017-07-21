@@ -2,51 +2,59 @@ package com.example.zarehhakobian.qr_code_scanner;
 
 import android.Manifest;
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.util.Log;
 
+import com.github.nkzawa.emitter.Emitter;
+import com.github.nkzawa.socketio.client.Ack;
+import com.github.nkzawa.socketio.client.IO;
+import com.github.nkzawa.socketio.client.Socket;
 import com.google.android.gms.vision.barcode.Barcode;
 
-public class MainActivity extends Activity implements CameraFragment.BestCodeCapturedListener{
+import java.net.URISyntaxException;
 
+public class MainActivity extends Activity implements CameraFragment.BestCodeCapturedListener {
+
+    private Socket socket;
+    Barcode barcode;
+    public static String serverMessage = "";
+    private static final int SERVERPORT = 8081;
+    private static final String SERVER_IP = "192.168.42.85";
     private static final String TAG = "Main";
-    private static final int RC_HANDLE_CAMERA_PERM = 2;
+    private static final int RC_Handle_CAMERA_AND_INTERNET_PERM = 2;
     InfoFragment infoFragment;
-    public static boolean cameraPermissionGranted = false;
+    public static boolean permissionsGranted = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        // Check for the camera permission before accessing the camera.  If the
-        // permission is not granted yet, request permission.
         int rc = ActivityCompat.checkSelfPermission(this, android.Manifest.permission.CAMERA);
-        if (rc == PackageManager.PERMISSION_GRANTED) {
-            cameraPermissionGranted = true;
+        int i = ActivityCompat.checkSelfPermission(this, Manifest.permission.INTERNET);
+        if (rc == PackageManager.PERMISSION_GRANTED && i == PackageManager.PERMISSION_GRANTED) {
+            permissionsGranted = true;
             setContentView(R.layout.activity_main);
-            infoFragment = (InfoFragment)getFragmentManager().findFragmentById(R.id.info_fragment);
+            infoFragment = (InfoFragment) getFragmentManager().findFragmentById(R.id.info_fragment);
         } else {
-            requestCameraPermission();
+            requestPermissions();
         }
-
     }
 
-    /**
-     * Handles the requesting of the camera permission.  This includes
-     * showing a "Snackbar" message of why the permission is needed then
-     * sending the request.
-     */
-    private void requestCameraPermission() {
-        Log.w(TAG, "Camera permission is not granted. Requesting permission");
-        final String[] permissions = new String[]{android.Manifest.permission.CAMERA};
+    private void requestPermissions() {
+        Log.w(TAG, "Camera and internet permission is not granted. Requesting permission");
+        final String[] permissions = new String[]{android.Manifest.permission.CAMERA, Manifest.permission.INTERNET};
 
         if (!ActivityCompat.shouldShowRequestPermissionRationale(this,
-                Manifest.permission.CAMERA)) {
-            ActivityCompat.requestPermissions(this, permissions, RC_HANDLE_CAMERA_PERM);
+                Manifest.permission.CAMERA) && !ActivityCompat.shouldShowRequestPermissionRationale(this,
+                Manifest.permission.INTERNET)) {
+            ActivityCompat.requestPermissions(this, permissions, RC_Handle_CAMERA_AND_INTERNET_PERM);
             return;
         }
+        ActivityCompat.requestPermissions(this, permissions, RC_Handle_CAMERA_AND_INTERNET_PERM);
     }
 
     /**
@@ -68,26 +76,76 @@ public class MainActivity extends Activity implements CameraFragment.BestCodeCap
                                            @NonNull String[] permissions,
                                            @NonNull int[] grantResults) {
 
-        if (grantResults.length != 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-            Log.d(TAG, "Camera permission granted - initialize the camera source");
-            // we have permission, so create the camerasource
-            cameraPermissionGranted = true;
+        if (grantResults.length != 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED
+                && grantResults[1] == PackageManager.PERMISSION_GRANTED) {
+            Log.d(TAG, "Camera and internet permission granted");
+            permissionsGranted = true;
             //createCameraSource(true, false);
             //startCameraSource();
             setContentView(R.layout.activity_main);
-            infoFragment = (InfoFragment)getFragmentManager().findFragmentById(R.id.info_fragment);
+            infoFragment = (InfoFragment) getFragmentManager().findFragmentById(R.id.info_fragment);
+            //new Thread(new ClientThread()).start();
+            //new MyClientTask(SERVER_IP,SERVERPORT).execute();
             return;
         }
         setContentView(R.layout.activity_main);
-        infoFragment = (InfoFragment)getFragmentManager().findFragmentById(R.id.info_fragment);
+        infoFragment = (InfoFragment) getFragmentManager().findFragmentById(R.id.info_fragment);
 
         Log.e(TAG, "Permission not granted: results len = " + grantResults.length +
                 " Result code = " + (grantResults.length > 0 ? grantResults[0] : "(empty)"));
+
+        DialogInterface.OnClickListener listener = new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                dialog.dismiss();
+            }
+        };
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("QR-Code-Scanner")
+                .setMessage("Keine Erlaubnis für Kamera")
+                .setPositiveButton("OK", listener)
+                .show();
     }
 
     @Override
     public void bestCodeCaptured(Barcode code) {
-        infoFragment.showQRCodeContent(code);
+        barcode = code;
+        if (socket != null) {
+            socket.close();
+        }
+
+        try {
+            //socket = new Socket(SERVER_IP, SERVERPORT);
+            socket = IO.socket("http://192.168.42.85:4200");
+            socket.on(Socket.EVENT_CONNECT, new Emitter.Listener() {
+                @Override
+                public void call(Object... args) {
+                    Log.i("hallo", "connected");
+                    socket.emit("qr-code", barcode.displayValue, new Ack() {
+                        @Override
+                        public void call(Object... args) {
+                            String d = (String) args[0];
+                            Log.i("hallo", d);
+                            serverMessage = d;
+                            /*try {
+                                //JSONObject j = (JSONObject)args[0];
+                                //String d = j.getString("check");
+                                String d = (String)args[0];
+                                Log.i("hallo", d);
+                                Toast.makeText(MainActivity.this, d, Toast.LENGTH_LONG).show();
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            }*/
+                        }
+                    });
+                }
+            });
+            socket.connect();
+            infoFragment.showQRCodeContent(code,serverMessage);
+
+        } catch (URISyntaxException e) {
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -104,7 +162,7 @@ public class MainActivity extends Activity implements CameraFragment.BestCodeCap
      *                    result came from.
      * @param resultCode  The integer result code returned by the child activity
      *                    through its setResult().
-    * @param data        An Intent, which can return result data to the caller
+     * @param data        An Intent, which can return result data to the caller
      *                    (various data can be attached to Intent "extras").
      * @see #startActivityForResult
      * @see #createPendingResult
