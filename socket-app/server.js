@@ -1,3 +1,5 @@
+
+'use strict';
 var express = require('express');
 var app = express();
 var server = require('http').createServer(app);
@@ -63,6 +65,7 @@ io.on('connection', function (socket) {
         console.log(data + ' connected...');
     });
     socket.on('qr-code', function (data, cb) {
+        var checkMessage;
         if (checkGuid(data)) {
             checkMessage = true;
             console.log(data + ' ist gültig');
@@ -79,6 +82,7 @@ io.on('connection', function (socket) {
         console.log('MainClient connected...');
         var image = data.imageBytes;
         var id = data.displayId;
+        var message = '';
         if (image != null) {
             console.log('Daten für Gerät mit ID ' + id + 'erhalten');
             message = 'Daten erhalten';
@@ -91,6 +95,5 @@ io.on('connection', function (socket) {
     socket.on('disconnect', function () {
         console.log('disconnected');
     });
-   
 });
 server.listen(4200);
