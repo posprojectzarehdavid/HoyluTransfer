@@ -210,7 +210,7 @@ public class CameraFragment extends Fragment implements BarcodeGraphic.BoundingB
             }
 
             try {
-                socket = IO.socket("http://192.168.42.85:4200");
+                socket = IO.socket(MainActivity.CONNECTION_STRING);
                 socket.on(Socket.EVENT_CONNECT, new Emitter.Listener() {
                     @Override
                     public void call(Object... args) {

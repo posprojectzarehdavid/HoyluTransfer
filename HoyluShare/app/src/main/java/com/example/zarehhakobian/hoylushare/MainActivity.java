@@ -35,6 +35,7 @@ public class MainActivity extends Activity implements DeviceSelectedListener {
 
     String imagePath;
     private static final String TAG = "Main";
+    public static final String CONNECTION_STRING = "http://40.114.246.211:4200";
     private static final int RC_Handle_CAMERA_AND_INTERNET_PERM_AND_READ_PERM = 2;
     public static boolean permissionsGranted = false;
     Socket socket;
@@ -193,7 +194,7 @@ public class MainActivity extends Activity implements DeviceSelectedListener {
             final byte[] imageInBytes = getImageForServer();
 
             try {
-                socket = IO.socket("http://192.168.42.85:4200");
+                socket = IO.socket(CONNECTION_STRING);
                 socket.on(Socket.EVENT_CONNECT, new Emitter.Listener() {
                     @Override
                     public void call(Object... args) {
