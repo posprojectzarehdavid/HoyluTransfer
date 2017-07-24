@@ -224,20 +224,25 @@ public class MainActivity extends Activity implements DeviceSelectedListener {
             return serverMessage[0];
         }
 
-        protected void onPostExecute(String result){
+        protected void onPostExecute(final String result){
             if(gotServerMessage){
                 socket.disconnect();
                 socket.off();
                 dialog.dismiss();
-                AlertDialog.Builder ad = new AlertDialog.Builder(MainActivity.this);
-                    ad.setMessage(result);
-                    ad.setNeutralButton("OK", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                        dialog.dismiss();
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        AlertDialog.Builder ad = new AlertDialog.Builder(MainActivity.this);
+                        ad.setMessage(result);
+                        ad.setNeutralButton("OK", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                dialog.dismiss();
+                            }
+                        });
+                        ad.show();
                     }
                 });
-                ad.show();
                 gotServerMessage = false;
             }
         }
