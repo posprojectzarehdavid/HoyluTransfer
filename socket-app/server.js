@@ -59,23 +59,22 @@ var sendAddressListToClient = function (data, cb) {
     return cb({ list: d });
 };
 
-console.log('test7');
-console.log('test8');
+
+app.post('/deploy/', function (req, res) {
+        var spawn = require('child_process').spawn,
+        deploy = spawn('sh', [ './deploy.sh' ]);
+
+    deploy.stdout.on('data', function (data) {
+                console.log(''+data);
+        });
+
+    deploy.on('close', function (code) {
+        console.log('Child process exited with code ' + code);
+    });
+    res.json(200, {message: 'Github Hook received!'})
+});
 
 io.on('connection', function (socket) {
-	console.log('hallo');
-	console.log('ljalsdkjf');
-	console.log('hahah');
-	console.log('test4');
-console.log('test5');
-console.log('test6');
-console.log('test9');
-console.log('test10');
-console.log('test11');
-console.log('test12');
-console.log('test13');
-console.log('test14');
-console.log('test15');
     socket.on('client', function (data) {
         console.log(data + ' connected...');
     });
