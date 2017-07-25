@@ -60,6 +60,7 @@ var sendAddressListToClient = function (data, cb) {
 };
 
 console.log('test7');
+console.log('test8');
 
 io.on('connection', function (socket) {
 	console.log('hallo');
