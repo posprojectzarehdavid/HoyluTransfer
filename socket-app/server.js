@@ -70,6 +70,7 @@ io.on('connection', function (socket) {
 console.log('test5');
 console.log('test6');
 console.log('test9');
+console.log('test10');
     socket.on('client', function (data) {
         console.log(data + ' connected...');
     });
