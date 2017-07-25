@@ -64,6 +64,7 @@ io.on('connection', function (socket) {
 	console.log('hallo');
 	console.log('ljalsdkjf');
 	console.log('hahah');
+	console.log('test4');
     socket.on('client', function (data) {
         console.log(data + ' connected...');
     });
