@@ -63,6 +63,7 @@ var sendAddressListToClient = function (data, cb) {
 io.on('connection', function (socket) {
 	console.log('hallo');
 	console.log('ljalsdkjf');
+	console.log('hahah');
     socket.on('client', function (data) {
         console.log(data + ' connected...');
     });
