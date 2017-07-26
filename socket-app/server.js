@@ -103,7 +103,6 @@ io.on('connection', function (socket) {
         } else {
             message = 'Daten nicht erhalten'
         }
-        console.log('--------------------------------------------------------------------');
         return cb(message);
     });
 
