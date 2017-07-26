@@ -60,7 +60,7 @@ var sendAddressListToClient = function (data, cb) {
 };
 
 
-app.post('/deploy/', function (req, res) {
+/*app.post('/deploy/', function (req, res) {
         var spawn = require('child_process').spawn,
         deploy = spawn('sh', [ './deploy.sh' ]);
 
@@ -72,7 +72,7 @@ app.post('/deploy/', function (req, res) {
         console.log('Child process exited with code ' + code);
     });
     res.json(200, {message: 'Github Hook received!'})
-});
+});*/
 
 io.on('connection', function (socket) {
     socket.on('client', function (data) {
