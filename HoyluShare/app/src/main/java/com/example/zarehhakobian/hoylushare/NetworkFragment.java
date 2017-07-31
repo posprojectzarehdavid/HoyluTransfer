@@ -67,7 +67,12 @@ public class NetworkFragment extends Fragment {
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 if(listener != null){
                     NetworkDevice nd = networkDevices.get(position);
-                    listener.sendImageToServer(nd.getId());
+                    MainActivity.end = System.currentTimeMillis();
+                    Map<String, String> time = new HashMap<>();
+                    time.put("Zeit bis Async Aufruf", ""+(MainActivity.end-MainActivity.start));
+                    MetricsManager.trackEvent("NetworkClient", time);
+                    MainActivity.start = System.currentTimeMillis();
+                    listener.sendImageToServer(nd.getId(), "NetworkClient");
                     Map<String, String> properties = new HashMap<>();
                     properties.put("Device", nd.getId());
                     MetricsManager.trackEvent("Device selected", properties);
