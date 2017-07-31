@@ -232,13 +232,12 @@ public class CameraFragment extends Fragment implements BarcodeGraphic.BoundingB
                                             scannedBarcodeValues.add(barcode.displayValue);
                                             Toast.makeText(getActivity(), "Gültige ID", Toast.LENGTH_SHORT).show();
                                             if(listener != null){
-                                                listener.sendImageToServer(barcode.displayValue);
                                                 MainActivity.end = System.currentTimeMillis();
                                                 Map<String, String> time = new HashMap<>();
                                                 time.put("Zeit bis Async Aufruf", ""+(MainActivity.end-MainActivity.start));
                                                 MetricsManager.trackEvent("CameraClient", time);
-                                                MainActivity.start = 0;
-                                                MainActivity.end = 0;
+                                                MainActivity.start = System.currentTimeMillis();
+                                                listener.sendImageToServer(barcode.displayValue, "CameraClient");
                                             }
                                             mPreview.release();
                                             socket.disconnect();

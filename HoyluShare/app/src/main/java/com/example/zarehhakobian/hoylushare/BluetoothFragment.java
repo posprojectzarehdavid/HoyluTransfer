@@ -21,7 +21,6 @@ import android.widget.Toast;
 
 import com.example.zarehhakobian.hoylushare.BluetoothClasses.BluetoothDeviceCustom;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
@@ -57,7 +56,7 @@ public class BluetoothFragment extends Fragment {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 if (listener != null) {
-                    listener.sendImageToServer(filteredDeviceList.get(position).getAddress());             //Was mitgeben?
+                    listener.sendImageToServer(filteredDeviceList.get(position).getAddress(), "BluetoothClient");             //Was mitgeben?
                 }
             }
         });
