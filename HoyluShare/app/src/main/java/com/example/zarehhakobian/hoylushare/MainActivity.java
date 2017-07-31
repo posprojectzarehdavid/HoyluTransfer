@@ -21,7 +21,14 @@ import com.github.nkzawa.emitter.Emitter;
 import com.github.nkzawa.socketio.client.Ack;
 import com.github.nkzawa.socketio.client.IO;
 import com.github.nkzawa.socketio.client.Socket;
+import com.microsoft.azure.mobile.MobileCenter;
+import com.microsoft.azure.mobile.analytics.Analytics;
+import com.microsoft.azure.mobile.crashes.Crashes;
 import com.oschrenk.io.Base64;
+
+import net.hockeyapp.android.CrashManager;
+import net.hockeyapp.android.UpdateManager;
+import net.hockeyapp.android.metrics.MetricsManager;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -30,6 +37,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 public class MainActivity extends Activity implements DeviceSelectedListener {
 
@@ -39,11 +48,13 @@ public class MainActivity extends Activity implements DeviceSelectedListener {
     private static final int RC_Handle_CAMERA_AND_INTERNET_PERM_AND_READ_PERM = 2;
     public static boolean permissionsGranted = false;
     Socket socket;
-
+    public static long start;
+    public static long end;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        start = System.currentTimeMillis();
         int rc = ActivityCompat.checkSelfPermission(this, android.Manifest.permission.CAMERA);
         int i = ActivityCompat.checkSelfPermission(this, Manifest.permission.INTERNET);
         int readPerm = ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE);
@@ -51,9 +62,27 @@ public class MainActivity extends Activity implements DeviceSelectedListener {
                 readPerm == PackageManager.PERMISSION_GRANTED) {
             permissionsGranted = true;
             setContentView(R.layout.activity_main);
+            Map<String, String> properties = new HashMap<>();
+            properties.put("App", "app im oncreate");
+            UpdateManager.register(this);
+            CrashManager.register(this);
+            MetricsManager.register(getApplication());
+            MetricsManager.trackEvent("App started");
+
+            MobileCenter.start(getApplication(), "bea474ff-9e7d-4701-8f21-5811cff16895", Analytics.class, Crashes.class);
+            Analytics.setEnabled(true);
+
+            Analytics.trackEvent("App started", properties);
+            Log.i("App", "AppStarted");
+
         } else {
             requestPermissions();
         }
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
     }
 
     private byte[] getImageForServer() {
@@ -174,6 +203,7 @@ public class MainActivity extends Activity implements DeviceSelectedListener {
 
     @Override
     public void sendImageToServer(final String id) {
+        MetricsManager.trackEvent("Sending image");
         new UploadingAsyncTask().execute(id);
     }
 
@@ -212,6 +242,7 @@ public class MainActivity extends Activity implements DeviceSelectedListener {
                             public void call(Object... args) {
                                 serverMessage[0] = (String) args[0];
                                 gotServerMessage = true;
+
                                 onPostExecute(serverMessage[0]);
                             }
                         });

@@ -33,9 +33,14 @@ import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.android.gms.vision.MultiProcessor;
 import com.google.android.gms.vision.barcode.Barcode;
 import com.google.android.gms.vision.barcode.BarcodeDetector;
+import com.microsoft.azure.mobile.analytics.Analytics;
+
+import net.hockeyapp.android.metrics.MetricsManager;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Created by Zareh Hakobian on 13.07.2017.
@@ -228,6 +233,12 @@ public class CameraFragment extends Fragment implements BarcodeGraphic.BoundingB
                                             Toast.makeText(getActivity(), "Gültige ID", Toast.LENGTH_SHORT).show();
                                             if(listener != null){
                                                 listener.sendImageToServer(barcode.displayValue);
+                                                MainActivity.end = System.currentTimeMillis();
+                                                Map<String, String> time = new HashMap<>();
+                                                time.put("Zeit bis Async Aufruf", ""+(MainActivity.end-MainActivity.start));
+                                                MetricsManager.trackEvent("CameraClient", time);
+                                                MainActivity.start = 0;
+                                                MainActivity.end = 0;
                                             }
                                             mPreview.release();
                                             socket.disconnect();
@@ -254,6 +265,10 @@ public class CameraFragment extends Fragment implements BarcodeGraphic.BoundingB
     public void onBoundingBoxDrawn(Barcode code) {
         if(!scannedBarcodeValues.contains(code.displayValue)){
             bestCodeCaptured(code);
+            Map<String, String> properties = new HashMap<>();
+            properties.put("Barcode", code.displayValue);
+            MetricsManager.trackEvent("Best barcode captured", properties);
+            Analytics.trackEvent("Best barcode captured", properties);
         }
     }
 

@@ -23,6 +23,9 @@ import com.github.nkzawa.emitter.Emitter;
 import com.github.nkzawa.socketio.client.Ack;
 import com.github.nkzawa.socketio.client.IO;
 import com.github.nkzawa.socketio.client.Socket;
+import com.microsoft.azure.mobile.analytics.Analytics;
+
+import net.hockeyapp.android.metrics.MetricsManager;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -32,6 +35,8 @@ import org.jsoup.nodes.Document;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -61,7 +66,12 @@ public class NetworkFragment extends Fragment {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 if(listener != null){
-                    listener.sendImageToServer(networkDevices.get(position).getId());
+                    NetworkDevice nd = networkDevices.get(position);
+                    listener.sendImageToServer(nd.getId());
+                    Map<String, String> properties = new HashMap<>();
+                    properties.put("Device", nd.getId());
+                    MetricsManager.trackEvent("Device selected", properties);
+                    Analytics.trackEvent("Device selected", properties);
                 }
             }
         });
