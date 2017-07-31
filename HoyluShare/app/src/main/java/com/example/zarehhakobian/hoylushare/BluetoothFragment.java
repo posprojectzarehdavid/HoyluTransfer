@@ -208,6 +208,7 @@ public class BluetoothFragment extends Fragment {
     };
 
     private void matchAddresses() {
+        String x ="";
         for (BluetoothDevice d:
              deviceList) {
             for (BluetoothDeviceCustom dc:
@@ -256,6 +257,7 @@ public class BluetoothFragment extends Fragment {
                                     String blAddress = jsonObject.getString("bluetoothAddress");
                                     BluetoothDeviceCustom bdc = new BluetoothDeviceCustom(id, name, blAddress);
                                     serverAquiredDeviceList.add(bdc);
+                                    matchAddresses();
                                     socket.disconnect();
                                     socket.off();
                                     getActivity().runOnUiThread(new Runnable() {
@@ -267,7 +269,7 @@ public class BluetoothFragment extends Fragment {
                                     });
                                 }
                                 for (BluetoothDeviceCustom d : serverAquiredDeviceList) {
-                                    Log.i("ServerBluetoothDevices", d.toString());
+                                    Log.i("ServerBluetoothDevices", d.toString() + " " + d.bluetoothAddress);
                                 }
                             } catch (JSONException e) {
                                 e.printStackTrace();

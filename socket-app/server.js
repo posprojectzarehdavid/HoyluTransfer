@@ -44,7 +44,7 @@ var devices = new Array(new NetworkDevice('555', 'HoyluDisplay5', '83.164.198.34
 var bluetoothdevices = new Array(new BluetoothDevice('666', 'HoyluDisplay6', '00:07:A4:AF:82:BA'),
                  new BluetoothDevice('777', 'HoyluDisplay7', '00:0A:94:01:93:C3'),
                  new BluetoothDevice('888', 'HoyluDisplay8', '08:00:28:F2:3C:3F'),
-                 new BluetoothDevice('999', 'HoyluDisplay9', '00:02:72:47:38:FC'),
+                 new BluetoothDevice('999', 'Zareh Lenovo', 'E4:F8:9C:D0:E8:9F'),
 				 new BluetoothDevice('000', 'Zareh Smartwatch', '5E:F6:EB:97:62:61'));
 
 var devicesChanged = false;
