@@ -79,7 +79,7 @@ var sendAddressListToClient = function (data, cb) {
     return cb({ list: d });
 };
 
-var bluetoothAddressestoClient = function {
+var bluetoothAddressestoClient = function(cb) {
     var d = bluetoothdevices;
     //console.clear;
     
@@ -119,7 +119,7 @@ io.on('connection', function (socket) {
 
     socket.on('addresses', sendAddressListToClient);
 
-	socket.on('bluetoothAddresses', sendAddressListToClient);
+	socket.on('bluetoothAddresses', bluetoothAddressestoClient);
 
     socket.on('main_client', function (data, cb) {
         console.log('MainClient connected...');
