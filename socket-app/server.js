@@ -42,9 +42,9 @@ var devices = new Array(new NetworkDevice('555', 'HoyluDisplay5', '83.164.198.34
                         new NetworkDevice('444', 'HoyluDisplay4', '83.164.198.34', '192.168.169.1'));
 						
 var bluetoothdevices = new Array(new BluetoothDevice('666', 'HoyluDisplay6', '00:07:A4:AF:82:BA'),
-                 new NetworkDevice('777', 'HoyluDisplay7', '00:0A:94:01:93:C3'),
-                 new NetworkDevice('888', 'HoyluDisplay8', '08:00:28:F2:3C:3F'),
-                 new NetworkDevice('999', 'HoyluDisplay9', '00:02:72:47:38:FC'));
+                                 new BluetoothDevice('777', 'HoyluDisplay7', '00:0A:94:01:93:C3'),
+                                 new BluetoothDevice('888', 'HoyluDisplay8', '08:00:28:F2:3C:3F'),
+                                 new BluetoothDevice('999', 'HoyluDisplay9', '00:02:72:47:38:FC'));
 
 var devicesChanged = false;
 
