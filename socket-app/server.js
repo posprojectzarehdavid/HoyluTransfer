@@ -23,11 +23,28 @@ class NetworkDevice {
     }
 }
 
+class BluetoothDevice {
+    constructor(id, name, bluetoothAddress) {
+        this.id = id;
+        this.name = name;
+        this.bluetoothAddress = bluetoothAddress;
+        
+    }
+    toString() {
+        return this.id + ', ' + this.name;
+    }
+}
+
 var devices = new Array(new NetworkDevice('555', 'HoyluDisplay5', '83.164.198.34', '192.168.169.1'),
                         new NetworkDevice('111', 'HoyluDisplay1', '83.164.198.34', '10.0.0.1'),
                         new NetworkDevice('222', 'HoyluDisplay2', '45.14.199.368', '10.0.0.1'),
                         new NetworkDevice('333', 'HoyluDisplay3', '83.164.198.34', '192.168.169.1'),
                         new NetworkDevice('444', 'HoyluDisplay4', '83.164.198.34', '192.168.169.1'));
+						
+var bluetoothdevices = new Array(new BluetoothDevice('666', 'HoyluDisplay6', '00:07:A4:AF:82:BA'),
+                 new NetworkDevice('777', 'HoyluDisplay7', '00:0A:94:01:93:C3'),
+                 new NetworkDevice('888', 'HoyluDisplay8', '08:00:28:F2:3C:3F'),
+                 new NetworkDevice('999', 'HoyluDisplay9', '00:02:72:47:38:FC'));
 
 var devicesChanged = false;
 
