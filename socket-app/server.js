@@ -119,7 +119,7 @@ io.on('connection', function (socket) {
 
     socket.on('addresses', sendAddressListToClient);
 
-	socket.on('bluetoothAddresses', bluetoothAddressestoClient);
+	//socket.on('bluetoothAddresses', bluetoothAddressestoClient);
 
     socket.on('main_client', function (data, cb) {
         console.log('MainClient connected...');

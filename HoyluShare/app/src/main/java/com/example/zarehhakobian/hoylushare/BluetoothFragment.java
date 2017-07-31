@@ -25,7 +25,6 @@ import com.github.nkzawa.emitter.Emitter;
 import com.github.nkzawa.socketio.client.Ack;
 import com.github.nkzawa.socketio.client.IO;
 import com.github.nkzawa.socketio.client.Socket;
-import com.microsoft.azure.mobile.utils.HandlerUtils;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -266,7 +265,7 @@ public class BluetoothFragment extends Fragment {
                                     String blAddress = jsonObject.getString("bluetoothAddress");
                                     BluetoothDeviceCustom bdc = new BluetoothDeviceCustom(id, name, blAddress);
                                     serverAquiredDeviceList.add(bdc);
-                                    HandlerUtils.runOnUiThread(new Runnable() {
+                                    getActivity().runOnUiThread(new Runnable() {
                                         @Override
                                         public void run() {
                                             matchAddresses();
