@@ -8,6 +8,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
+import android.os.StrictMode;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.Log;
@@ -20,12 +21,23 @@ import android.widget.ListView;
 import android.widget.Toast;
 
 import com.example.zarehhakobian.hoylushare.BluetoothClasses.BluetoothDeviceCustom;
+import com.example.zarehhakobian.hoylushare.NetworkClasses.NetworkDevice;
+import com.github.nkzawa.emitter.Emitter;
+import com.github.nkzawa.socketio.client.Ack;
+import com.github.nkzawa.socketio.client.IO;
+import com.github.nkzawa.socketio.client.Socket;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Set;
+import java.util.Timer;
+import java.util.TimerTask;
 
 /**
  * Created by David on 29.07.2017.
@@ -46,6 +58,9 @@ public class BluetoothFragment extends Fragment {
 
     ListView lv;
     DeviceSelectedListener listener;
+
+    private Socket socket;
+
 
 
     @Nullable
@@ -143,6 +158,20 @@ public class BluetoothFragment extends Fragment {
     }
 
     @Override
+    public void onViewCreated(View view, Bundle savedInstanceState) {
+        connectToServer();
+        Timer t = new Timer();
+        t.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                connectToServer();
+            }
+
+        }, 0, 10000);
+        super.onViewCreated(view, savedInstanceState);
+    }
+
+    @Override
     public void onStart() {
         super.onStart();
         InitializeBluetoothDiscovery();
@@ -191,7 +220,7 @@ public class BluetoothFragment extends Fragment {
                 }
             }
         }
-        aa.clear();
+        //aa.clear();
         aa.notifyDataSetChanged();
     }
 
@@ -199,6 +228,60 @@ public class BluetoothFragment extends Fragment {
         getActivity().unregisterReceiver(mReceiver);
 
         super.onDestroy();
+    }
+
+    public void connectToServer() {
+        if (socket != null) {
+            socket.disconnect();
+        }
+
+        try {
+            socket = IO.socket(MainActivity.CONNECTION_STRING);
+            socket.on(Socket.EVENT_CONNECT, new Emitter.Listener() {
+                @Override
+                public void call(Object... args) {
+                    Log.i("hallo", "connected");
+                    socket.emit("client", "BluetoothClient");
+
+                    socket.emit("bluetoothAddresses", new Ack() {
+                        @Override
+                        public void call(Object... args) {
+                            serverAquiredDeviceList.clear();
+                            try {
+                                JSONObject j = (JSONObject) args[0];
+                                JSONArray dev = j.getJSONArray("list");
+                                for (int i = 0; i < dev.length(); i++) {
+                                    JSONObject jsonObject = dev.getJSONObject(i);
+                                    String id = jsonObject.getString("id");
+                                    String name = jsonObject.getString("name");
+                                    String blAddress = jsonObject.getString("bluetoothAddress");
+                                    BluetoothDeviceCustom bdc = new BluetoothDeviceCustom(id, name, blAddress);
+                                    serverAquiredDeviceList.add(bdc);
+                                    socket.disconnect();
+                                    socket.off();
+                                    getActivity().runOnUiThread(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            aa.notifyDataSetChanged();
+                                            Toast.makeText(getActivity(), "Neu gefüllt",Toast.LENGTH_SHORT).show();
+                                        }
+                                    });
+                                }
+                                for (BluetoothDeviceCustom d : serverAquiredDeviceList) {
+                                    Log.i("ServerBluetoothDevices", d.toString());
+                                }
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    });
+                }
+            });
+            socket.connect();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
 }

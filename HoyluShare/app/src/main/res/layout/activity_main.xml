@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
+
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -6,22 +7,44 @@
     android:orientation="vertical"
     tools:context="com.example.zarehhakobian.hoylushare.MainActivity">
 
-    <fragment
-        android:id="@+id/camera_fragment"
-        android:name="com.example.zarehhakobian.hoylushare.CameraFragment"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true"
-        tools:layout="@layout/barcode_capture" />
+<ScrollView
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
 
-    <fragment
-        android:id="@+id/network_fragment"
-        android:name="com.example.zarehhakobian.hoylushare.NetworkFragment"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_alignParentLeft="true"
-        android:layout_centerVertical="true"
-        tools:layout="@layout/network_list" />
+<LinearLayout
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+        <fragment
+            android:id="@+id/camera_fragment"
+            android:name="com.example.zarehhakobian.hoylushare.CameraFragment"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true"
+            tools:layout="@layout/barcode_capture" />
+
+        <fragment
+            android:id="@+id/network_fragment"
+            android:name="com.example.zarehhakobian.hoylushare.NetworkFragment"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_centerVertical="true"
+            tools:layout="@layout/network_list" />
+
+        <fragment
+            android:id="@+id/BluetoothFragment"
+            android:name="com.example.zarehhakobian.hoylushare.BluetoothFragment"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_centerVertical="true"
+            tools:layout="@layout/bluetooth_list" />
+
+</LinearLayout>
+
+</ScrollView>
 </LinearLayout>
