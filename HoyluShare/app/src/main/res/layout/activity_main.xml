@@ -35,14 +35,14 @@
             android:layout_centerVertical="true"
             tools:layout="@layout/network_list" />
 
-        <fragment
+        <!--<fragment
             android:id="@+id/BluetoothFragment"
             android:name="com.example.zarehhakobian.hoylushare.BluetoothFragment"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_alignParentLeft="true"
             android:layout_centerVertical="true"
-            tools:layout="@layout/bluetooth_list" />
+            tools:layout="@layout/bluetooth_list" /> -->
 
 </LinearLayout>
 

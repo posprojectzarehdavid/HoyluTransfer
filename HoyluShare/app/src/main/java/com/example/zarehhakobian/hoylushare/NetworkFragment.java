@@ -72,7 +72,7 @@ public class NetworkFragment extends Fragment {
                     time.put("Zeit bis Async Aufruf", ""+(MainActivity.end-MainActivity.start));
                     MetricsManager.trackEvent("NetworkClient", time);
                     MainActivity.start = System.currentTimeMillis();
-                    listener.sendImageToServer(nd.getId(), "NetworkClient");
+                    listener.sendImageToServer(nd.getId());
                     Map<String, String> properties = new HashMap<>();
                     properties.put("Device", nd.getId());
                     MetricsManager.trackEvent("Device selected", properties);

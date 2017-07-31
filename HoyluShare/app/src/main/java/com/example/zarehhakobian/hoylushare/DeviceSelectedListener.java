@@ -5,5 +5,5 @@ package com.example.zarehhakobian.hoylushare;
  */
 
 public interface DeviceSelectedListener {
-    void sendImageToServer(String id, String client);
+    void sendImageToServer(String id);
 }

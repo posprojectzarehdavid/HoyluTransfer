@@ -237,7 +237,7 @@ public class CameraFragment extends Fragment implements BarcodeGraphic.BoundingB
                                                 time.put("Zeit bis Async Aufruf", ""+(MainActivity.end-MainActivity.start));
                                                 MetricsManager.trackEvent("CameraClient", time);
                                                 MainActivity.start = System.currentTimeMillis();
-                                                listener.sendImageToServer(barcode.displayValue, "CameraClient");
+                                                listener.sendImageToServer(barcode.displayValue);
                                             }
                                             mPreview.release();
                                             socket.disconnect();

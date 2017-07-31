@@ -204,9 +204,9 @@ public class MainActivity extends Activity implements DeviceSelectedListener {
     }
 
     @Override
-    public void sendImageToServer(final String id, final String client) {
+    public void sendImageToServer(final String id) {
         MetricsManager.trackEvent("Sending image");
-        new UploadingAsyncTask().execute(id, client);
+        new UploadingAsyncTask().execute(id);
     }
 
     class UploadingAsyncTask extends AsyncTask<String, Void, String> {
@@ -223,7 +223,7 @@ public class MainActivity extends Activity implements DeviceSelectedListener {
         protected String doInBackground(String... args) {
             final String[] serverMessage = {""};
             final String id = args[0];
-            final String client = args[1];
+            //final String client = args[1];
             final byte[] imageInBytes = getImageForServer();
 
             try {
@@ -243,12 +243,13 @@ public class MainActivity extends Activity implements DeviceSelectedListener {
                         socket.emit("main_client", jsonObject, new Ack() {
                             @Override
                             public void call(Object... args) {
+                                Log.i("mainclient", "hallo");
                                 serverMessage[0] = (String) args[0];
                                 gotServerMessage = true;
                                 end = System.currentTimeMillis();
                                 Map<String, String> time = new HashMap<>();
                                 time.put("Zeit bis Bildempfang", ""+(end-start));
-                                MetricsManager.trackEvent(client, time);
+                                MetricsManager.trackEvent("client", time);
                                 onPostExecute(serverMessage[0]);
                             }
                         });
