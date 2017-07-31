@@ -1,5 +1,6 @@
 package com.example.zarehhakobian.hoylushare;
 
+import android.app.Activity;
 import android.app.Fragment;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
@@ -26,6 +27,7 @@ import com.github.nkzawa.emitter.Emitter;
 import com.github.nkzawa.socketio.client.Ack;
 import com.github.nkzawa.socketio.client.IO;
 import com.github.nkzawa.socketio.client.Socket;
+import com.microsoft.azure.mobile.utils.HandlerUtils;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -47,7 +49,7 @@ public class BluetoothFragment extends Fragment {
     BluetoothAdapter adapter;
 
     ArrayList<BluetoothDevice> deviceList;      //Own detected addresses
-    ArrayList<BluetoothDevice> filteredDeviceList;  //Matching addresses
+    ArrayList<BluetoothDeviceCustom> filteredDeviceList;  //Matching addresses
     ArrayList<BluetoothDeviceCustom> serverAquiredDeviceList; // Bluetoothaddresses from Server
 
     ArrayAdapter aa;
@@ -71,13 +73,13 @@ public class BluetoothFragment extends Fragment {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 if (listener != null) {
-                    listener.sendImageToServer(filteredDeviceList.get(position).getAddress(), "BluetoothClient");             //Was mitgeben?
+                    listener.sendImageToServer(filteredDeviceList.get(position).getId(), "BluetoothClient");             //Was mitgeben?
                 }
             }
         });
         adapter = BluetoothAdapter.getDefaultAdapter();
         deviceList = new ArrayList<BluetoothDevice>();
-        filteredDeviceList = new ArrayList<BluetoothDevice>();
+        filteredDeviceList = new ArrayList<BluetoothDeviceCustom>();
         serverAquiredDeviceList = new ArrayList<BluetoothDeviceCustom>();
 
         aa = new ArrayAdapter(getActivity(), android.R.layout.simple_list_item_1, filteredDeviceList);
@@ -157,6 +159,14 @@ public class BluetoothFragment extends Fragment {
     }
 
     @Override
+    public void onAttach(Activity activity) {
+        super.onAttach(activity);
+        if (activity instanceof DeviceSelectedListener) {
+            listener = (DeviceSelectedListener) activity;
+        }
+    }
+
+    @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
         connectToServer();
         Timer t = new Timer();
@@ -208,19 +218,20 @@ public class BluetoothFragment extends Fragment {
     };
 
     private void matchAddresses() {
-        String x ="";
+        filteredDeviceList.clear();
         for (BluetoothDevice d:
              deviceList) {
             for (BluetoothDeviceCustom dc:
                  serverAquiredDeviceList) {
-                if(d.getAddress() == dc.bluetoothAddress)
+                String dAdd = d.getAddress();
+                String dcAdd = dc.bluetoothAddress;
+                if(d.getAddress().equals(dc.bluetoothAddress))
                 {
-                    filteredDeviceList.add(d);
+                    filteredDeviceList.add(dc);
                     Log.i("MATCHED", "Device " +d.getName()+" matched");
                 }
             }
         }
-        //aa.clear();
         aa.notifyDataSetChanged();
     }
 
@@ -257,14 +268,18 @@ public class BluetoothFragment extends Fragment {
                                     String blAddress = jsonObject.getString("bluetoothAddress");
                                     BluetoothDeviceCustom bdc = new BluetoothDeviceCustom(id, name, blAddress);
                                     serverAquiredDeviceList.add(bdc);
-                                    matchAddresses();
+                                    HandlerUtils.runOnUiThread(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            matchAddresses();
+                                        }
+                                    });
                                     socket.disconnect();
                                     socket.off();
                                     getActivity().runOnUiThread(new Runnable() {
                                         @Override
                                         public void run() {
                                             aa.notifyDataSetChanged();
-                                            Toast.makeText(getActivity(), "Neu gefüllt",Toast.LENGTH_SHORT).show();
                                         }
                                     });
                                 }
