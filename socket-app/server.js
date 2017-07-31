@@ -79,7 +79,7 @@ var sendAddressListToClient = function (data, cb) {
     return cb({ list: d });
 };
 
-var bluetoothAddressestoClient = function(cb) {
+var bluetoothAddressestoClient = function(data, cb) {
     var d = bluetoothdevices;
     //console.clear;
     
