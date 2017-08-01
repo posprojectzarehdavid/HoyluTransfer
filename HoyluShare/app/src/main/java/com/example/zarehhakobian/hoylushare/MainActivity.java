@@ -50,6 +50,7 @@ public class MainActivity extends Activity implements DeviceSelectedListener {
     Socket socket;
     public static long start;
     public static long end;
+    UploadingAsyncTask uat;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -83,8 +84,8 @@ public class MainActivity extends Activity implements DeviceSelectedListener {
     @Override
     protected void onStop() {
         super.onStop();
-        end = 0;
-        start = 0;
+        //end = 0;
+        //start = 0;
     }
 
     private byte[] getImageForServer() {
@@ -206,7 +207,12 @@ public class MainActivity extends Activity implements DeviceSelectedListener {
     @Override
     public void sendImageToServer(final String id) {
         MetricsManager.trackEvent("Sending image");
-        new UploadingAsyncTask().execute(id);
+        if(uat != null){
+            uat.cancel(true);
+        }
+
+        uat = new UploadingAsyncTask();
+        uat.execute(id);
     }
 
     class UploadingAsyncTask extends AsyncTask<String, Void, String> {
@@ -246,10 +252,10 @@ public class MainActivity extends Activity implements DeviceSelectedListener {
                                 Log.i("mainclient", "hallo");
                                 serverMessage[0] = (String) args[0];
                                 gotServerMessage = true;
-                                end = System.currentTimeMillis();
+                                /*end = System.currentTimeMillis();
                                 Map<String, String> time = new HashMap<>();
                                 time.put("Zeit bis Bildempfang", ""+(end-start));
-                                MetricsManager.trackEvent("client", time);
+                                MetricsManager.trackEvent("client", time);*/
                                 onPostExecute(serverMessage[0]);
                             }
                         });
@@ -284,6 +290,7 @@ public class MainActivity extends Activity implements DeviceSelectedListener {
                 });
                 gotServerMessage = false;
             }
+
         }
     }
 }

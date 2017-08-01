@@ -109,8 +109,10 @@ public class CameraFragment extends Fragment implements BarcodeGraphic.BoundingB
     @Override
     public void onStop() {
         super.onStop();
-        socket.disconnect();
-        mPreview.release();
+        if(socket.connected()){
+            socket.disconnect();
+            mPreview.release();
+        }
     }
 
     @Override
@@ -232,11 +234,11 @@ public class CameraFragment extends Fragment implements BarcodeGraphic.BoundingB
                                             scannedBarcodeValues.add(barcode.displayValue);
                                             Toast.makeText(getActivity(), "Gültige ID", Toast.LENGTH_SHORT).show();
                                             if(listener != null){
-                                                MainActivity.end = System.currentTimeMillis();
+                                                /*MainActivity.end = System.currentTimeMillis();
                                                 Map<String, String> time = new HashMap<>();
                                                 time.put("Zeit bis Async Aufruf", ""+(MainActivity.end-MainActivity.start));
                                                 MetricsManager.trackEvent("CameraClient", time);
-                                                MainActivity.start = System.currentTimeMillis();
+                                                MainActivity.start = System.currentTimeMillis();*/
                                                 listener.sendImageToServer(barcode.displayValue);
                                             }
                                             mPreview.release();

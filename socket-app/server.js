@@ -123,7 +123,8 @@ io.on('connection', function (socket) {
 
     socket.on('main_client', function (data, cb) {
         console.log('MainClient connected...');
-        var image = data.imageBytes;
+        var image = null;
+        image = data.imageBytes;
         var id = data.displayId;
         var message = '';
         if (image != null) {

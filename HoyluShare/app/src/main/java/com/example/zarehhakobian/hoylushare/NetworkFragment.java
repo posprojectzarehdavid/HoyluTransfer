@@ -23,9 +23,6 @@ import com.github.nkzawa.emitter.Emitter;
 import com.github.nkzawa.socketio.client.Ack;
 import com.github.nkzawa.socketio.client.IO;
 import com.github.nkzawa.socketio.client.Socket;
-import com.microsoft.azure.mobile.analytics.Analytics;
-
-import net.hockeyapp.android.metrics.MetricsManager;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -35,8 +32,6 @@ import org.jsoup.nodes.Document;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -67,16 +62,16 @@ public class NetworkFragment extends Fragment {
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 if(listener != null){
                     NetworkDevice nd = networkDevices.get(position);
-                    MainActivity.end = System.currentTimeMillis();
+                    /*MainActivity.end = System.currentTimeMillis();
                     Map<String, String> time = new HashMap<>();
                     time.put("Zeit bis Async Aufruf", ""+(MainActivity.end-MainActivity.start));
                     MetricsManager.trackEvent("NetworkClient", time);
-                    MainActivity.start = System.currentTimeMillis();
+                    MainActivity.start = System.currentTimeMillis();*/
                     listener.sendImageToServer(nd.getId());
-                    Map<String, String> properties = new HashMap<>();
+                    /*Map<String, String> properties = new HashMap<>();
                     properties.put("Device", nd.getId());
                     MetricsManager.trackEvent("Device selected", properties);
-                    Analytics.trackEvent("Device selected", properties);
+                    Analytics.trackEvent("Device selected", properties);*/
                 }
             }
         });
