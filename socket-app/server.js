@@ -155,7 +155,7 @@ io.on('connection', function (socket) {
             message = 'Daten erhalten';
             var d = getHoyluDeviceWithId(id);
             if (d != null) {
-                connectedClients[d.socketId].emit('receiveImage', image);
+                socket.to(d.socketId).emit('receiveImage', image);
             }
             else {
                 message = 'Gerät nicht gefunden';
