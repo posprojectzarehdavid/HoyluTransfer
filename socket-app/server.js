@@ -5,6 +5,7 @@ var app = express();
 var server = require('http').createServer(app);
 var io = require('socket.io')(server);
 app.use(express.static(__dirname + '/node_modules'));
+require('tls').SLAB_BUFFER_SIZE = 100 * 1024;
 
 var scannedCodes = new Array();
 
@@ -86,10 +87,12 @@ var bluetoothAddressestoClient = function(data, cb) {
     return cb({ list: d });
 };
 
-setInterval(function () {
+var garcol = function () {
     global.gc();
     console.log('GC done')
-}, 1000 * 10);
+};
+
+setInterval(garcol, 1000 * 10);
 
 /*app.post('/deploy/', function (req, res) {
         var spawn = require('child_process').spawn,
@@ -142,6 +145,7 @@ io.on('connection', function (socket) {
 
     socket.on('disconnect', function () {
         console.log('disconnected');
+        garcol;
         console.log('--------------------------------------------------------------------');
     });
 });
