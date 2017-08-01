@@ -8,6 +8,7 @@ app.use(express.static(__dirname + '/node_modules'));
 require('tls').SLAB_BUFFER_SIZE = 100 * 1024;
 
 var image = null;
+var connectedClients = new Array();
 
 class HoyluDevice {
     constructor(hoyluId, name, btAddress, qrValue, nfcValue, publicIp, defaultGateway) {
@@ -54,11 +55,11 @@ var hoyluDevices = new Array(new HoyluDevice('b7779418-3c76-4fc3-bb95-8148f12c2f
                              new HoyluDevice('99c3cd17-8a5f-45ad-bde8-b2ddeef4aa58', 'HoyluDisplay4', 'E4:F8:9C:D0:E8:9F', 'qr_444', 'nfc_444', '83.164.198.34', '192.168.169.1'),
                              new HoyluDevice('b7779418-3c76-4fc3-bb95-8148f12c2f0b', 'HoyluDisplay5', '5E:F6:EB:97:62:61', 'qr_555', 'nfc_555', '83.164.198.34', '192.168.169.1'));
 
-var networkClients = new Array(new NetworkClient('555', 'HoyluDisplay5', '83.164.198.34', '192.168.169.1'),
+/*var networkClients = new Array(new NetworkClient('555', 'HoyluDisplay5', '83.164.198.34', '192.168.169.1'),
                         new NetworkClient('111', 'HoyluDisplay1', '83.164.198.34', '10.0.0.1'),
                         new NetworkClient('222', 'HoyluDisplay2', '45.14.199.368', '10.0.0.1'),
                         new NetworkClient('333', 'HoyluDisplay3', '83.164.198.34', '192.168.169.1'),
-                        new NetworkClient('444', 'HoyluDisplay4', '83.164.198.34', '192.168.169.1'));
+                        new NetworkClient('444', 'HoyluDisplay4', '83.164.198.34', '192.168.169.1'));*/
 						
 var bluetoothClients  = new Array(new BluetoothClient('666', 'HoyluDisplay6', '00:07:A4:AF:82:BA'),
                  new BluetoothClient('777', 'HoyluDisplay7', '00:0A:94:01:93:C3'),
@@ -109,8 +110,14 @@ setInterval(garcol, 1000 * 5);
 
 io.on('connection', function (socket) {
     socket.on('client', function (data) {
-        console.log(data + ' connected...');
+        console.log(data + ' with SocketId ' + socket.id + ' connected...');
     });
+
+    socket.on('device_properties', function (data, cb) {
+        hoyluDevices.push(new HoyluDevice(data.hoyluId, data.name, data.btAddress, data.qrValue, data.nfcValue, data.publicIp, data.defaultGateway));
+        return cb('Daten erhalten');
+    });
+
     socket.on('qr_code', function (data, cb) {
         var checkMessage;
         if (checkGuid(data)) {
@@ -128,13 +135,14 @@ io.on('connection', function (socket) {
 	//socket.on('bluetoothAddresses', sendBluetoothMatchesToClient);
 
     socket.on('main_client', function (data, cb) {
-        console.log('MainClient connected...');
+        console.log('MainClient with SocketId '+socket.id+' connected...');
         image = data.imageBytes;
         var id = data.displayId;
         var message = '';
         if (image != null) {
             console.log('Daten für Gerät mit ID ' + id + 'erhalten');
             message = 'Daten erhalten';
+            
         } else {
             message = 'Daten nicht erhalten'
         }
@@ -142,8 +150,12 @@ io.on('connection', function (socket) {
     });
 
     socket.on('disconnect', function () {
-        console.log('disconnected');
         image = null;
+        var index = connectedClients.indexOf(socket);
+        if (index != -1) {
+            connectedClients.splice(index, 1);
+            console.info('Client with SocketId ' + socket.id + ' disconnected.');
+        }
         console.log('--------------------------------------------------------------------');
     });
 });

@@ -284,7 +284,7 @@ public class MainActivity extends Activity implements DeviceSelectedListener {
                                 end = System.currentTimeMillis();
                                 Map<String, String> time = new HashMap<>();
                                 time.put("Zeit bis Bildempfang", ""+(end-start));
-                                MetricsManager.trackEvent("client", time);
+                                MetricsManager.trackEvent(client, time);
                                 onPostExecute(serverMessage[0]);
                             }
                         });
