@@ -102,6 +102,11 @@ var bluetoothAddressestoClient = function(data, cb) {
 });*/
 
 io.on('connection', function (socket) {
+    setInterval(function () {
+        global.gc();
+        console.log('GC done')
+    }, 1000 * 10);
+
     socket.on('client', function (data) {
         console.log(data + ' connected...');
     });
