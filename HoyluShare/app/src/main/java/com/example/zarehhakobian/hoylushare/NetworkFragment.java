@@ -96,7 +96,13 @@ public class NetworkFragment extends Fragment {
     @Override
     public void onStop() {
         super.onStop();
+
+    }
+
+    @Override
+    public void onPause() {
         socket.disconnect();
+        socket.off();
     }
 
     @Override
@@ -165,14 +171,17 @@ public class NetworkFragment extends Fragment {
                                     hoyluDevices.add(hd);
                                     socket.disconnect();
                                     socket.off();
-                                }
-                                getActivity().runOnUiThread(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        aa.notifyDataSetChanged();
-                                        Toast.makeText(getActivity(), "Neu gefüllt",Toast.LENGTH_SHORT).show();
+                                    if(getActivity() != null){
+                                        getActivity().runOnUiThread(new Runnable() {
+                                            @Override
+                                            public void run() {
+                                                aa.notifyDataSetChanged();
+                                                Toast.makeText(getActivity(), "Neu gefüllt",Toast.LENGTH_SHORT).show();
+                                            }
+                                        });
                                     }
-                                });
+                                }
+
                                 for (HoyluDevice d : hoyluDevices) {
                                     Log.i("hallo", d.toString());
                                 }

@@ -121,11 +121,11 @@ setInterval(garcol, 1000 * 5);
 io.on('connection', function (socket) {
     socket.on('client', function (data) {
         console.log(data + ' with SocketId ' + socket.id + ' connected...');
+        connectedClients.push(socket);
     });
 
     socket.on('device_properties', function (data, cb) {
         hoyluDevices.push(new HoyluDevice(data.hoyluId, data.name, data.btAddress, data.qrValue, data.nfcValue, data.publicIp, data.defaultGateway, socket.id));
-        connectedClients.push(socket);
         return cb('Daten erhalten');
     });
 
@@ -168,9 +168,13 @@ io.on('connection', function (socket) {
     });
 
     socket.on('disconnect', function () {
-        image = null;
+        for (var d in connectedClients) {
+            console.log(connectedClients[d] + ', ' + connectedClients.indexOf(d));
+        }
         var index = connectedClients.indexOf(socket);
+ 
         if (index != -1) {
+            
             connectedClients.splice(index, 1);
             console.info('Client with SocketId ' + socket.id + ' disconnected.');
         }
