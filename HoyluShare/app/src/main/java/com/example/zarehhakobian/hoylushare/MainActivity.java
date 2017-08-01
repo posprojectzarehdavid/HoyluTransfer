@@ -88,7 +88,7 @@ public class MainActivity extends Activity implements DeviceSelectedListener {
         //start = 0;
     }
 
-    private String getImageForServer() {
+    private byte[] getImageForServer() {
         Intent intent = getIntent();
         String action = intent.getAction();
         String type = intent.getType();
@@ -98,8 +98,7 @@ public class MainActivity extends Activity implements DeviceSelectedListener {
                 File file = new File(imagePath);
                 byte[]imageBytes = imageToByteArray(file);
                 String imageDataString = encodeImage(imageBytes);
-                //return decodeImage(imageDataString);
-                return imageDataString;
+                return decodeImage(imageDataString);
             }
         }
         return null;
@@ -231,8 +230,7 @@ public class MainActivity extends Activity implements DeviceSelectedListener {
             final String[] serverMessage = {""};
             final String id = args[0];
             //final String client = args[1];
-            //final byte[] imageInBytes = getImageForServer();
-            final String imageAsBase64String = getImageForServer();
+            final byte[] imageInBytes = getImageForServer();
 
             try {
                 socket = IO.socket(CONNECTION_STRING);
@@ -243,7 +241,7 @@ public class MainActivity extends Activity implements DeviceSelectedListener {
 
                         JSONObject jsonObject = new JSONObject();
                         try {
-                            jsonObject.put("imageBytes", imageAsBase64String);
+                            jsonObject.put("imageBytes", imageInBytes);
                             jsonObject.put("displayId", id);
                         } catch (JSONException e) {
                             e.printStackTrace();
