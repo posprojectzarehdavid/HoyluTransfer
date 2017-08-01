@@ -86,6 +86,10 @@ var bluetoothAddressestoClient = function(data, cb) {
     return cb({ list: d });
 };
 
+setInterval(function () {
+    global.gc();
+    console.log('GC done')
+}, 1000 * 10);
 
 /*app.post('/deploy/', function (req, res) {
         var spawn = require('child_process').spawn,
@@ -102,11 +106,6 @@ var bluetoothAddressestoClient = function(data, cb) {
 });*/
 
 io.on('connection', function (socket) {
-    setInterval(function () {
-        global.gc();
-        console.log('GC done')
-    }, 1000 * 10);
-
     socket.on('client', function (data) {
         console.log(data + ' connected...');
     });
@@ -133,7 +132,7 @@ io.on('connection', function (socket) {
         var id = data.displayId;
         var message = '';
         if (image != null) {
-            console.log(image+' für Gerät mit ID ' + id + 'erhalten');
+            console.log('Daten für Gerät mit ID ' + id + 'erhalten');
             message = 'Daten erhalten';
         } else {
             message = 'Daten nicht erhalten'
