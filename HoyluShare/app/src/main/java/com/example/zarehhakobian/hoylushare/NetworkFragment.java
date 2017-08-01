@@ -18,7 +18,6 @@ import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.Toast;
 
-import com.example.zarehhakobian.hoylushare.NetworkClasses.NetworkDevice;
 import com.github.nkzawa.emitter.Emitter;
 import com.github.nkzawa.socketio.client.Ack;
 import com.github.nkzawa.socketio.client.IO;
@@ -161,18 +160,19 @@ public class NetworkFragment extends Fragment {
                                     String nfcValue = jsonObject.getString("nfcValue");
                                     String pubIp = jsonObject.getString("publicIp");
                                     String defGate = jsonObject.getString("defaultGateway");
-                                    HoyluDevice hd = new HoyluDevice(id, name,btAddress,qrValue,nfcValue, pubIp, defGate);
+                                    String socketId = jsonObject.getString("socketId");
+                                    HoyluDevice hd = new HoyluDevice(id, name,btAddress,qrValue,nfcValue, pubIp, defGate,socketId);
                                     hoyluDevices.add(hd);
                                     socket.disconnect();
                                     socket.off();
-                                    getActivity().runOnUiThread(new Runnable() {
-                                        @Override
-                                        public void run() {
-                                            aa.notifyDataSetChanged();
-                                            Toast.makeText(getActivity(), "Neu gefüllt",Toast.LENGTH_SHORT).show();
-                                        }
-                                    });
                                 }
+                                getActivity().runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        aa.notifyDataSetChanged();
+                                        Toast.makeText(getActivity(), "Neu gefüllt",Toast.LENGTH_SHORT).show();
+                                    }
+                                });
                                 for (HoyluDevice d : hoyluDevices) {
                                     Log.i("hallo", d.toString());
                                 }

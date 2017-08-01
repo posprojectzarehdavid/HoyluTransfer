@@ -5,10 +5,10 @@ package com.example.zarehhakobian.hoylushare;
  */
 
 public class HoyluDevice {
-    String hoyluId, name, btAddress, qrValue, nfcValue, publicIp, defaultGateway;
+    String hoyluId, name, btAddress, qrValue, nfcValue, publicIp, defaultGateway, socketId;
 
     public HoyluDevice(String hoyluId, String name, String btAddress, String qrValue,
-                       String nfcValue, String publicIp, String defaultGateway) {
+                       String nfcValue, String publicIp, String defaultGateway, String socketId) {
         this.hoyluId = hoyluId;
         this.name = name;
         this.btAddress = btAddress;
@@ -16,6 +16,7 @@ public class HoyluDevice {
         this.nfcValue = nfcValue;
         this.publicIp = publicIp;
         this.defaultGateway = defaultGateway;
+        this.socketId = socketId;
     }
 
     public String getHoyluId() {
