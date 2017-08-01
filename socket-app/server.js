@@ -8,6 +8,7 @@ app.use(express.static(__dirname + '/node_modules'));
 require('tls').SLAB_BUFFER_SIZE = 100 * 1024;
 
 var scannedCodes = new Array();
+var image = null;
 
 var guids = new Array("b7779418-3c76-4fc3-bb95-8148f12c2f0b", "ee2914c7-fe07-402b-865f-6b6b9e8761bd", "7c024398-ea76-4293-9d81-a971860bfa31", "99c3cd17-8a5f-45ad-bde8-b2ddeef4aa58");
 var ips = new Array("192.168.169.100", "10.0.0.2", "192.168.169.10", "192.168.169.20", "172.0.0.3");
@@ -109,6 +110,7 @@ setInterval(garcol, 1000 * 10);
 });*/
 
 io.on('connection', function (socket) {
+    garcol;
     socket.on('client', function (data) {
         console.log(data + ' connected...');
     });
@@ -130,7 +132,7 @@ io.on('connection', function (socket) {
 
     socket.on('main_client', function (data, cb) {
         console.log('MainClient connected...');
-        var image = null;
+        
         image = data.imageBytes;
         var id = data.displayId;
         var message = '';
@@ -146,6 +148,7 @@ io.on('connection', function (socket) {
     socket.on('disconnect', function () {
         console.log('disconnected');
         garcol;
+        image = null;
         console.log('--------------------------------------------------------------------');
     });
 });
