@@ -7,13 +7,24 @@ var io = require('socket.io')(server);
 app.use(express.static(__dirname + '/node_modules'));
 require('tls').SLAB_BUFFER_SIZE = 100 * 1024;
 
-var scannedCodes = new Array();
 var image = null;
 
-var guids = new Array("b7779418-3c76-4fc3-bb95-8148f12c2f0b", "ee2914c7-fe07-402b-865f-6b6b9e8761bd", "7c024398-ea76-4293-9d81-a971860bfa31", "99c3cd17-8a5f-45ad-bde8-b2ddeef4aa58");
-var ips = new Array("192.168.169.100", "10.0.0.2", "192.168.169.10", "192.168.169.20", "172.0.0.3");
+class HoyluDevice {
+    constructor(hoyluId, name, btAddress, qrValue, nfcValue, publicIp, defaultGateway) {
+        this.hoyluId = hoyluId;
+        this.name = name;
+        this.btAddress = btAddress;
+        this.qrValue = qrValue;
+        this.nfcValue = nfcValue;
+        this.publicIp = publicIp;
+        this.defaultGateway = defaultGateway;
+    }
+    toString() {
+        return this.name;
+    }
+}
 
-class NetworkDevice {
+class NetworkClient {
     constructor(id, name, publicIP, defaultGateway) {
         this.id = id;
         this.name = name;
@@ -25,7 +36,7 @@ class NetworkDevice {
     }
 }
 
-class BluetoothDevice {
+class BluetoothClient {
     constructor(id, name, bluetoothAddress) {
         this.id = id;
         this.name = name;
@@ -37,52 +48,53 @@ class BluetoothDevice {
     }
 }
 
-var devices = new Array(new NetworkDevice('555', 'HoyluDisplay5', '83.164.198.34', '192.168.169.1'),
-                        new NetworkDevice('111', 'HoyluDisplay1', '83.164.198.34', '10.0.0.1'),
-                        new NetworkDevice('222', 'HoyluDisplay2', '45.14.199.368', '10.0.0.1'),
-                        new NetworkDevice('333', 'HoyluDisplay3', '83.164.198.34', '192.168.169.1'),
-                        new NetworkDevice('444', 'HoyluDisplay4', '83.164.198.34', '192.168.169.1'));
+var hoyluDevices = new Array(new HoyluDevice('b7779418-3c76-4fc3-bb95-8148f12c2f0b', 'HoyluDisplay1', '00:07:A4:AF:82:BA', 'qr_111', 'nfc_111', '83.164.198.34', '192.168.169.1'),
+                             new HoyluDevice('ee2914c7-fe07-402b-865f-6b6b9e8761bd', 'HoyluDisplay2', '00:0A:94:01:93:C3', 'qr_222', 'nfc_222', '83.164.198.34', '10.0.0.1'),
+                             new HoyluDevice('7c024398-ea76-4293-9d81-a971860bfa31', 'HoyluDisplay3', '08:00:28:F2:3C:3F', 'qr_333', 'nfc_333', '45.14.199.368', '10.0.0.1'),
+                             new HoyluDevice('99c3cd17-8a5f-45ad-bde8-b2ddeef4aa58', 'HoyluDisplay4', 'E4:F8:9C:D0:E8:9F', 'qr_444', 'nfc_444', '83.164.198.34', '192.168.169.1'),
+                             new HoyluDevice('b7779418-3c76-4fc3-bb95-8148f12c2f0b', 'HoyluDisplay5', '5E:F6:EB:97:62:61', 'qr_555', 'nfc_555', '83.164.198.34', '192.168.169.1'));
+
+var networkClients = new Array(new NetworkClient('555', 'HoyluDisplay5', '83.164.198.34', '192.168.169.1'),
+                        new NetworkClient('111', 'HoyluDisplay1', '83.164.198.34', '10.0.0.1'),
+                        new NetworkClient('222', 'HoyluDisplay2', '45.14.199.368', '10.0.0.1'),
+                        new NetworkClient('333', 'HoyluDisplay3', '83.164.198.34', '192.168.169.1'),
+                        new NetworkClient('444', 'HoyluDisplay4', '83.164.198.34', '192.168.169.1'));
 						
-var bluetoothdevices = new Array(new BluetoothDevice('666', 'HoyluDisplay6', '00:07:A4:AF:82:BA'),
-                 new BluetoothDevice('777', 'HoyluDisplay7', '00:0A:94:01:93:C3'),
-                 new BluetoothDevice('888', 'HoyluDisplay8', '08:00:28:F2:3C:3F'),
-                 new BluetoothDevice('999', 'Zareh Lenovo', 'E4:F8:9C:D0:E8:9F'),
-				 new BluetoothDevice('000', 'Zareh Smartwatch', '5E:F6:EB:97:62:61'));
+var bluetoothClients  = new Array(new BluetoothClient('666', 'HoyluDisplay6', '00:07:A4:AF:82:BA'),
+                 new BluetoothClient('777', 'HoyluDisplay7', '00:0A:94:01:93:C3'),
+                 new BluetoothClient('888', 'HoyluDisplay8', '08:00:28:F2:3C:3F'),
+                 new BluetoothClient('999', 'Zareh Lenovo', 'E4:F8:9C:D0:E8:9F'),
+				 new BluetoothClient('000', 'Zareh Smartwatch', '5E:F6:EB:97:62:61'));
 
-var devicesChanged = false;
-
-function getNetworkDevices(publicIP, defaultGateway) {
+function getNetworkClients(publicIP, defaultGateway) {
     var networkDev = new Array();
-    for (var d in devices) {
-        if (devices[d].publicIP === publicIP && devices[d].defaultGateway === defaultGateway) {
-            //console.log(devices[d].toString() + ' entspricht Ihrer public IP und dem Default Gateway');
-            networkDev.push(devices[d]);
+    for (var d in hoyluDevices) {
+        if (hoyluDevices[d].publicIp === publicIP && hoyluDevices[d].defaultGateway === defaultGateway) {
+            networkDev.push(hoyluDevices[d]);
         }
     }
     return networkDev;
 }
 
-
-
-function checkGuid(guid) {
-    for (var g in guids) {
-        if (guid === guids[g]) {
+function checkGuid(qrValue) {
+    for (var d in hoyluDevices) {
+        if (hoyluDevices[d].qrValue === qrValue) {
             return true;
         }
     }
     return false;
 }
 
-var sendAddressListToClient = function (data, cb) {
-    var d = getNetworkDevices(data.pub, data.gateway)
+var sendNetworkMatchesToClient = function (data, cb) {
+    var d = getNetworkClients(data.pub, data.gateway)
     //console.clear;
     console.log('Public IP: ' + data.pub);
     console.log('Default Gateway: ' + data.gateway);
     return cb({ list: d });
 };
 
-var bluetoothAddressestoClient = function(data, cb) {
-    var d = bluetoothdevices;
+var sendBluetoothMatchesToClient = function(data, cb) {
+    var d = bluetoothClients ;
     //console.clear;
     
     return cb({ list: d });
@@ -93,28 +105,13 @@ var garcol = function () {
     console.log('GC done')
 };
 
-setInterval(garcol, 1000 * 10);
-
-/*app.post('/deploy/', function (req, res) {
-        var spawn = require('child_process').spawn,
-        deploy = spawn('sh', [ './deploy.sh' ]);
-
-    deploy.stdout.on('data', function (data) {
-                console.log(''+data);
-        });
-
-    deploy.on('close', function (code) {
-        console.log('Child process exited with code ' + code);
-    });
-    res.json(200, {message: 'Github Hook received!'})
-});*/
+setInterval(garcol, 1000 * 5);
 
 io.on('connection', function (socket) {
-    garcol;
     socket.on('client', function (data) {
         console.log(data + ' connected...');
     });
-    socket.on('qr-code', function (data, cb) {
+    socket.on('qr_code', function (data, cb) {
         var checkMessage;
         if (checkGuid(data)) {
             checkMessage = true;
@@ -126,13 +123,12 @@ io.on('connection', function (socket) {
         return cb(checkMessage);
     });
 
-    socket.on('addresses', sendAddressListToClient);
+    socket.on('addresses', sendNetworkMatchesToClient);
 
-	//socket.on('bluetoothAddresses', bluetoothAddressestoClient);
+	//socket.on('bluetoothAddresses', sendBluetoothMatchesToClient);
 
     socket.on('main_client', function (data, cb) {
         console.log('MainClient connected...');
-        
         image = data.imageBytes;
         var id = data.displayId;
         var message = '';
@@ -147,7 +143,6 @@ io.on('connection', function (socket) {
 
     socket.on('disconnect', function () {
         console.log('disconnected');
-        garcol;
         image = null;
         console.log('--------------------------------------------------------------------');
     });

@@ -23,6 +23,9 @@ import com.github.nkzawa.emitter.Emitter;
 import com.github.nkzawa.socketio.client.Ack;
 import com.github.nkzawa.socketio.client.IO;
 import com.github.nkzawa.socketio.client.Socket;
+import com.microsoft.azure.mobile.analytics.Analytics;
+
+import net.hockeyapp.android.metrics.MetricsManager;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -32,6 +35,8 @@ import org.jsoup.nodes.Document;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -41,7 +46,7 @@ import java.util.TimerTask;
 
 public class NetworkFragment extends Fragment {
     ListView lv;
-    final public ArrayList<NetworkDevice> networkDevices = new ArrayList<>();
+    final public ArrayList<HoyluDevice> hoyluDevices = new ArrayList<>();
     ArrayAdapter aa;
 
     DhcpInfo d;
@@ -61,21 +66,21 @@ public class NetworkFragment extends Fragment {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 if(listener != null){
-                    NetworkDevice nd = networkDevices.get(position);
-                    /*MainActivity.end = System.currentTimeMillis();
+                    HoyluDevice hd = hoyluDevices.get(position);
+                    MainActivity.end = System.currentTimeMillis();
                     Map<String, String> time = new HashMap<>();
                     time.put("Zeit bis Async Aufruf", ""+(MainActivity.end-MainActivity.start));
                     MetricsManager.trackEvent("NetworkClient", time);
-                    MainActivity.start = System.currentTimeMillis();*/
-                    listener.sendImageToServer(nd.getId());
-                    /*Map<String, String> properties = new HashMap<>();
-                    properties.put("Device", nd.getId());
+                    MainActivity.start = System.currentTimeMillis();
+                    listener.sendImageToServer(hd.getHoyluId(), "NetworkClient");
+                    Map<String, String> properties = new HashMap<>();
+                    properties.put("Device", hd.getHoyluId());
                     MetricsManager.trackEvent("Device selected", properties);
-                    Analytics.trackEvent("Device selected", properties);*/
+                    Analytics.trackEvent("Device selected", properties);
                 }
             }
         });
-        aa = new ArrayAdapter(getActivity(), android.R.layout.simple_list_item_1, networkDevices);
+        aa = new ArrayAdapter(getActivity(), android.R.layout.simple_list_item_1, hoyluDevices);
         lv.setAdapter(aa);
 
         return v;
@@ -143,18 +148,21 @@ public class NetworkFragment extends Fragment {
                     socket.emit("addresses", j, new Ack() {
                         @Override
                         public void call(Object... args) {
-                            networkDevices.clear();
+                            hoyluDevices.clear();
                             try {
                                 JSONObject j = (JSONObject) args[0];
                                 JSONArray dev = j.getJSONArray("list");
                                 for (int i = 0; i < dev.length(); i++) {
                                     JSONObject jsonObject = dev.getJSONObject(i);
-                                    String id = jsonObject.getString("id");
+                                    String id = jsonObject.getString("hoyluId");
                                     String name = jsonObject.getString("name");
-                                    String pubIp = jsonObject.getString("publicIP");
+                                    String btAddress = jsonObject.getString("btAddress");
+                                    String qrValue = jsonObject.getString("qrValue");
+                                    String nfcValue = jsonObject.getString("nfcValue");
+                                    String pubIp = jsonObject.getString("publicIp");
                                     String defGate = jsonObject.getString("defaultGateway");
-                                    NetworkDevice nd = new NetworkDevice(id, name, pubIp, defGate);
-                                    networkDevices.add(nd);
+                                    HoyluDevice hd = new HoyluDevice(id, name,btAddress,qrValue,nfcValue, pubIp, defGate);
+                                    hoyluDevices.add(hd);
                                     socket.disconnect();
                                     socket.off();
                                     getActivity().runOnUiThread(new Runnable() {
@@ -165,7 +173,7 @@ public class NetworkFragment extends Fragment {
                                         }
                                     });
                                 }
-                                for (NetworkDevice d : networkDevices) {
+                                for (HoyluDevice d : hoyluDevices) {
                                     Log.i("hallo", d.toString());
                                 }
                             } catch (JSONException e) {

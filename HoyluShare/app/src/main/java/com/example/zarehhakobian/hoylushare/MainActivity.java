@@ -36,7 +36,9 @@ import org.json.JSONObject;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -84,8 +86,8 @@ public class MainActivity extends Activity implements DeviceSelectedListener {
     @Override
     protected void onStop() {
         super.onStop();
-        //end = 0;
-        //start = 0;
+        end = 0;
+        start = 0;
     }
 
     private byte[] getImageForServer() {
@@ -98,10 +100,37 @@ public class MainActivity extends Activity implements DeviceSelectedListener {
                 File file = new File(imagePath);
                 byte[]imageBytes = imageToByteArray(file);
                 String imageDataString = encodeImage(imageBytes);
-                return decodeImage(imageDataString);
+                byte[] imageInBytes = decodeImage(imageDataString);
+                //writeToFile(imageInBytes);
+                return imageInBytes;
             }
         }
         return null;
+    }
+
+    public void writeToFile(byte[]x) {
+        File root = android.os.Environment.getExternalStorageDirectory();
+        File dir = new File (root.getAbsolutePath() + "/Download");
+        dir.mkdirs();
+        File file = new File(dir, "imageInBytes.txt");
+
+        try {
+            FileOutputStream f = new FileOutputStream(file);
+            PrintWriter pw = new PrintWriter(f);
+            for(int i = 0; i<x.length; i++){
+                pw.println(x[i]);
+                pw.flush();
+            }
+
+            pw.flush();
+            pw.close();
+            f.close();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+            Log.i(TAG, "******* File not found. Did you add a WRITE_EXTERNAL_STORAGE permission to the   manifest?");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     public byte[] imageToByteArray(File f){
@@ -205,14 +234,14 @@ public class MainActivity extends Activity implements DeviceSelectedListener {
     }
 
     @Override
-    public void sendImageToServer(final String id) {
+    public void sendImageToServer(final String id, final String client) {
         MetricsManager.trackEvent("Sending image");
         if(uat != null){
             uat.cancel(true);
         }
 
         uat = new UploadingAsyncTask();
-        uat.execute(id);
+        uat.execute(id, client);
     }
 
     class UploadingAsyncTask extends AsyncTask<String, Void, String> {
@@ -229,7 +258,7 @@ public class MainActivity extends Activity implements DeviceSelectedListener {
         protected String doInBackground(String... args) {
             final String[] serverMessage = {""};
             final String id = args[0];
-            //final String client = args[1];
+            final String client = args[1];
             final byte[] imageInBytes = getImageForServer();
 
             try {
@@ -252,10 +281,10 @@ public class MainActivity extends Activity implements DeviceSelectedListener {
                                 Log.i("mainclient", "hallo");
                                 serverMessage[0] = (String) args[0];
                                 gotServerMessage = true;
-                                /*end = System.currentTimeMillis();
+                                end = System.currentTimeMillis();
                                 Map<String, String> time = new HashMap<>();
                                 time.put("Zeit bis Bildempfang", ""+(end-start));
-                                MetricsManager.trackEvent("client", time);*/
+                                MetricsManager.trackEvent("client", time);
                                 onPostExecute(serverMessage[0]);
                             }
                         });

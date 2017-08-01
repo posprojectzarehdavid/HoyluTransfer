@@ -109,7 +109,7 @@ public class CameraFragment extends Fragment implements BarcodeGraphic.BoundingB
     @Override
     public void onStop() {
         super.onStop();
-        if(socket.connected()){
+        if(socket != null && socket.connected()){
             socket.disconnect();
             mPreview.release();
         }
@@ -223,7 +223,7 @@ public class CameraFragment extends Fragment implements BarcodeGraphic.BoundingB
                     public void call(Object... args) {
                         Log.i("hallo", "connected");
                         socket.emit("client", "CameraClient");
-                        socket.emit("qr-code", barcode.displayValue, new Ack() {
+                        socket.emit("qr_code", barcode.displayValue, new Ack() {
                             @Override
                             public void call(Object... args) {
                                 isGueltigeID = (boolean) args[0];
@@ -234,12 +234,12 @@ public class CameraFragment extends Fragment implements BarcodeGraphic.BoundingB
                                             scannedBarcodeValues.add(barcode.displayValue);
                                             Toast.makeText(getActivity(), "Gültige ID", Toast.LENGTH_SHORT).show();
                                             if(listener != null){
-                                                /*MainActivity.end = System.currentTimeMillis();
+                                                MainActivity.end = System.currentTimeMillis();
                                                 Map<String, String> time = new HashMap<>();
                                                 time.put("Zeit bis Async Aufruf", ""+(MainActivity.end-MainActivity.start));
                                                 MetricsManager.trackEvent("CameraClient", time);
-                                                MainActivity.start = System.currentTimeMillis();*/
-                                                listener.sendImageToServer(barcode.displayValue);
+                                                MainActivity.start = System.currentTimeMillis();
+                                                listener.sendImageToServer(barcode.displayValue, "CameraClient");
                                             }
                                             mPreview.release();
                                             socket.disconnect();
