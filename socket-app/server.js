@@ -133,7 +133,7 @@ io.on('connection', function (socket) {
         var id = data.displayId;
         var message = '';
         if (image != null) {
-            console.log('Daten für Gerät mit ID ' + id + 'erhalten');
+            console.log(image+' für Gerät mit ID ' + id + 'erhalten');
             message = 'Daten erhalten';
         } else {
             message = 'Daten nicht erhalten'
