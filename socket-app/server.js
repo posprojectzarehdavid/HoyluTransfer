@@ -124,9 +124,12 @@ io.on('connection', function (socket) {
         console.log(data + ' with SocketId ' + socket.id + ' connected...');
     });
 
-    socket.on('device_properties', function (data, cb) {
-        hoyluDevices.push(new HoyluDevice(data.hoyluId, data.name, data.btAddress, data.qrValue, data.nfcValue, data.publicIp, data.defaultGateway, socket.id));
-        return cb('Daten erhalten');
+    socket.on('device_properties', function (data) {
+        hoyluDevices.push(new HoyluDevice(data.Name, data.HoyluId, data.BluetoothAddress, data.QrValue, data.NfcValue, data.PublicIp, data.DefaultGateway, socket.id));
+        for (var d in hoyluDevices) {
+            console.log(hoyluDevices[d].name + ', ' + hoyluDevices[d].defaultGateway + ', ' + hoyluDevices[d].btAddress);
+        }
+        
     });
 
     socket.on('qr_code', function (data, cb) {
@@ -169,7 +172,7 @@ io.on('connection', function (socket) {
 
     socket.on('disconnect', function () {
         for (var d in connectedClients) {
-            console.log(connectedClients[d] + ', ' + connectedClients.indexOf(d));
+            console.log(connectedClients[d].Name + ', ' + connectedClients.indexOf(d));
         }
         var index = connectedClients.indexOf(socket);
  
@@ -177,6 +180,7 @@ io.on('connection', function (socket) {
             
             connectedClients.splice(index, 1);
             console.info('Client with SocketId ' + socket.id + ' disconnected.');
+
         }
         console.log('--------------------------------------------------------------------');
     });
