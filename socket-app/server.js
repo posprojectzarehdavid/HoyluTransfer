@@ -133,9 +133,7 @@ io.on('connection', function (socket) {
 
     socket.on('device_properties', function (data) {
         var object = JSON.parse(data);
-        console.log(object.Name + ', ' + object.name);
         hoyluDevices.push(new HoyluDevice(object.HoyluId, object.Name, object.BluetoothAddress, object.QrValue, object.NfcValue, object.PublicIp, object.DefaultGateway, socket.id));
-               
     });
 
     socket.on('qr_code', function (data, cb) {
@@ -180,6 +178,13 @@ io.on('connection', function (socket) {
         for (var d in connectedClients) {
             console.log(connectedClients[d].Name + ', ' + connectedClients.indexOf(d));
         }
+
+        for (var d in hoyluDevices) {
+            if (hoyluDevices[d].socketId === socket.socketId) {
+                hoyluDevices.splice(d, 1);
+            }
+        }
+
         var index = connectedClients.indexOf(socket);
  
         if (index != -1) {
