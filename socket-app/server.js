@@ -132,8 +132,9 @@ io.on('connection', function (socket) {
     });
 
     socket.on('device_properties', function (data) {
-        console.log(data.Name + ', ' + data.name);
-        hoyluDevices.push(new HoyluDevice(data.HoyluId, data.Name, data.BluetoothAddress, data.QrValue, data.NfcValue, data.PublicIp, data.DefaultGateway, socket.id));
+        var object = JSON.parse(data);
+        console.log(object.Name + ', ' + object.name);
+        hoyluDevices.push(new HoyluDevice(object.HoyluId, object.Name, object.BluetoothAddress, object.QrValue, object.NfcValue, object.PublicIp, object.DefaultGateway, socket.id));
                
     });
 
