@@ -181,7 +181,7 @@ io.on('connection', function (socket) {
 
         for (var d in hoyluDevices) {
             if (hoyluDevices[d].socketId === socket.socketId) {
-                hoyluDevices.splice(d, 1);
+                hoyluDevices.splice(hoyluDevices.indexOf(d), 1);
             }
         }
 
