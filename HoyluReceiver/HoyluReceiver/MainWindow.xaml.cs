@@ -51,14 +51,15 @@ namespace HoyluReceiver
 
                 s.On("receiveImage", (image) =>
                 {
-                    string s = Convert.ToBase64String(ObjectToByteArray(image));
+                    byte[] a = ObjectToByteArray(image);
+                    string s = Convert.ToBase64String(a);
                     Console.WriteLine(s);
                 });
             });
             s.Connect();
         }
 
-        public static byte[] ObjectToByteArray(Object obj)
+        public static byte[] ObjectToByteArray(object obj)
         {
             BinaryFormatter bf = new BinaryFormatter();
             using (var ms = new MemoryStream())
