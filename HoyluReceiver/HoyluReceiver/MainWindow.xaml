@@ -15,6 +15,8 @@
         <Label x:Name="label1" Content="Name for your Device:" HorizontalAlignment="Left" Margin="14,41,0,0" VerticalAlignment="Top" RenderTransformOrigin="-0.343,0.372" Height="27"/>
         <TextBox x:Name="deviceName" HorizontalAlignment="Left" Height="23" Margin="147,45,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="120"/>
         <Button x:Name="register" Content="Register your Device" HorizontalAlignment="Left" Margin="22,161,0,0" VerticalAlignment="Top" Width="120" Click="register_Click"/>
+        
+        <Image x:Name="image" HorizontalAlignment="Left" Height="135" Margin="306,130,0,0" VerticalAlignment="Top" Width="162" RenderTransformOrigin="0.515,0.494"/>
 
 
     </Grid>
