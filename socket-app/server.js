@@ -50,12 +50,14 @@ class BluetoothClient {
     }
 }
 
-var hoyluDevices = new Array(new HoyluDevice('b7779418-3c76-4fc3-bb95-8148f12c2f0b', 'HoyluDisplay1', '00:07:A4:AF:82:BA', 'qr_111', 'nfc_111', '83.164.198.34', '192.168.169.1', 'I-086nX50zFy1WcnAAAK'),
+var hoyluDevices2 = new Array(new HoyluDevice('b7779418-3c76-4fc3-bb95-8148f12c2f0b', 'HoyluDisplay1', '00:07:A4:AF:82:BA', 'qr_111', 'nfc_111', '83.164.198.34', '192.168.169.1', 'I-086nX50zFy1WcnAAAK'),
                              new HoyluDevice('ee2914c7-fe07-402b-865f-6b6b9e8761bd', 'HoyluDisplay2', '00:0A:94:01:93:C3', 'qr_222', 'nfc_222', '83.164.198.34', '10.0.0.1', 'I-086nX50zFy1WcnBBBK'),
                              new HoyluDevice('7c024398-ea76-4293-9d81-a971860bfa31', 'HoyluDisplay3', '08:00:28:F2:3C:3F', 'qr_333', 'nfc_333', '45.14.199.368', '10.0.0.1', 'I-086nX50zFy1WcnDDDK'),
                              new HoyluDevice('99c3cd17-8a5f-45ad-bde8-b2ddeef4aa58', 'HoyluDisplay4', 'E4:F8:9C:D0:E8:9F', 'qr_444', 'nfc_444', '83.164.198.34', '192.168.169.1', 'I-086nX50zFy1WcnFFFK'),
                              new HoyluDevice('b7779418-3c76-4fc3-bb95-8148f12c2f0b', 'HoyluDisplay5', '5E:F6:EB:97:62:61', 'qr_555', 'nfc_555', '83.164.198.34', '192.168.169.1', 'I-086nX50zFy1WcnEEEK'));
-						
+				
+var hoyluDevices = new Array();
+
 var bluetoothClients  = new Array(new BluetoothClient('666', 'HoyluDisplay6', '00:07:A4:AF:82:BA'),
                  new BluetoothClient('777', 'HoyluDisplay7', '00:0A:94:01:93:C3'),
                  new BluetoothClient('888', 'HoyluDisplay8', '08:00:28:F2:3C:3F'),
@@ -107,7 +109,6 @@ function getHoyluDeviceWithId(id) {
 
 var garcol = function () {
     global.gc();
-    console.log('GC done')
 };
 
 function showHoyluDevices() {
@@ -191,4 +192,4 @@ io.on('connection', function (socket) {
         console.log('--------------------------------------------------------------------');
     });
 });
-server.listen(4200);
+server.listen(4201);
