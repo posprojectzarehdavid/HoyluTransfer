@@ -1,9 +1,11 @@
 ﻿using Newtonsoft.Json;
 using Quobject.SocketIoClientDotNet.Client;
 using System;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.NetworkInformation;
+using System.Runtime.Serialization.Formatters.Binary;
 using System.Windows;
 
 namespace HoyluReceiver
@@ -49,10 +51,21 @@ namespace HoyluReceiver
 
                 s.On("receiveImage", (image) =>
                 {
-                    Console.WriteLine(image);
+                    string s = Convert.ToBase64String(ObjectToByteArray(image));
+                    Console.WriteLine(s);
                 });
             });
             s.Connect();
+        }
+
+        public static byte[] ObjectToByteArray(Object obj)
+        {
+            BinaryFormatter bf = new BinaryFormatter();
+            using (var ms = new MemoryStream())
+            {
+                bf.Serialize(ms, obj);
+                return ms.ToArray();
+            }
         }
 
         public static string GetBTMacAddress()
