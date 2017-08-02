@@ -119,9 +119,9 @@ var garcol = function () {
 setInterval(garcol, 1000 * 5);
 
 io.on('connection', function (socket) {
+    connectedClients.push(socket);
     socket.on('client', function (data) {
         console.log(data + ' with SocketId ' + socket.id + ' connected...');
-        connectedClients.push(socket);
     });
 
     socket.on('device_properties', function (data, cb) {

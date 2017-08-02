@@ -260,6 +260,7 @@ public class MainActivity extends Activity implements DeviceSelectedListener {
             final String id = args[0];
             final String client = args[1];
             final byte[] imageInBytes = getImageForServer();
+             
 
             try {
                 socket = IO.socket(CONNECTION_STRING);

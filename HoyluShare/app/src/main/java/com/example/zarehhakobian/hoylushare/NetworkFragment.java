@@ -94,15 +94,10 @@ public class NetworkFragment extends Fragment {
     }
 
     @Override
-    public void onStop() {
-        super.onStop();
-
-    }
-
-    @Override
-    public void onPause() {
+    public void onDestroy() {
         socket.disconnect();
         socket.off();
+        super.onDestroy();
     }
 
     @Override
@@ -157,34 +152,46 @@ public class NetworkFragment extends Fragment {
                             try {
                                 JSONObject j = (JSONObject) args[0];
                                 JSONArray dev = j.getJSONArray("list");
-                                for (int i = 0; i < dev.length(); i++) {
-                                    JSONObject jsonObject = dev.getJSONObject(i);
-                                    String id = jsonObject.getString("hoyluId");
-                                    String name = jsonObject.getString("name");
-                                    String btAddress = jsonObject.getString("btAddress");
-                                    String qrValue = jsonObject.getString("qrValue");
-                                    String nfcValue = jsonObject.getString("nfcValue");
-                                    String pubIp = jsonObject.getString("publicIp");
-                                    String defGate = jsonObject.getString("defaultGateway");
-                                    String socketId = jsonObject.getString("socketId");
-                                    HoyluDevice hd = new HoyluDevice(id, name,btAddress,qrValue,nfcValue, pubIp, defGate,socketId);
-                                    hoyluDevices.add(hd);
-                                    socket.disconnect();
-                                    socket.off();
+                                if(dev != null){
+                                    for (int i = 0; i < dev.length(); i++) {
+                                        JSONObject jsonObject = dev.getJSONObject(i);
+                                        String id = jsonObject.getString("hoyluId");
+                                        String name = jsonObject.getString("name");
+                                        String btAddress = jsonObject.getString("btAddress");
+                                        String qrValue = jsonObject.getString("qrValue");
+                                        String nfcValue = jsonObject.getString("nfcValue");
+                                        String pubIp = jsonObject.getString("publicIp");
+                                        String defGate = jsonObject.getString("defaultGateway");
+                                        String socketId = jsonObject.getString("socketId");
+                                        HoyluDevice hd = new HoyluDevice(id, name,btAddress,qrValue,nfcValue, pubIp, defGate,socketId);
+                                        hoyluDevices.add(hd);
+                                        socket.disconnect();
+                                        socket.off();
+                                        if(getActivity() != null){
+                                            getActivity().runOnUiThread(new Runnable() {
+                                                @Override
+                                                public void run() {
+                                                    aa.notifyDataSetChanged();
+                                                    Toast.makeText(getActivity(), "Neu gefüllt",Toast.LENGTH_SHORT).show();
+                                                }
+                                            });
+                                        }
+                                    }
+
+                                    for (HoyluDevice d : hoyluDevices) {
+                                        Log.i("hallo", d.toString());
+                                    }
+                                } else{
                                     if(getActivity() != null){
                                         getActivity().runOnUiThread(new Runnable() {
                                             @Override
                                             public void run() {
-                                                aa.notifyDataSetChanged();
-                                                Toast.makeText(getActivity(), "Neu gefüllt",Toast.LENGTH_SHORT).show();
+                                                Toast.makeText(getActivity(), "Keine Geräte im Netzwerk",Toast.LENGTH_SHORT).show();
                                             }
                                         });
                                     }
                                 }
 
-                                for (HoyluDevice d : hoyluDevices) {
-                                    Log.i("hallo", d.toString());
-                                }
                             } catch (JSONException e) {
                                 e.printStackTrace();
                             }
