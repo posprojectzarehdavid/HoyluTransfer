@@ -7,6 +7,15 @@
         mc:Ignorable="d"
         Title="MainWindow" Height="350" Width="525">
     <Grid>
-        
+        <Label x:Name="label" Content="Register Options:" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top"/>
+        <CheckBox x:Name="registerBluetooth" Content="Bluetooth" HorizontalAlignment="Left" Margin="22,70,0,0" VerticalAlignment="Top" RenderTransformOrigin="0.261,0.251"/>
+        <CheckBox x:Name="registerQRCode" Content="QRCode" HorizontalAlignment="Left" Margin="22,90,0,0" VerticalAlignment="Top" RenderTransformOrigin="0.261,0.251"/>
+        <CheckBox x:Name="registerNFC" Content="NFC" HorizontalAlignment="Left" Margin="22,110,0,0" VerticalAlignment="Top" RenderTransformOrigin="0.261,0.251"/>
+        <CheckBox x:Name="registerNetwork" Content="Network(IP Address)" HorizontalAlignment="Left" Margin="22,130,0,0" VerticalAlignment="Top" RenderTransformOrigin="0.261,0.251"/>
+        <Label x:Name="label1" Content="Name for your Device:" HorizontalAlignment="Left" Margin="14,41,0,0" VerticalAlignment="Top" RenderTransformOrigin="-0.343,0.372" Height="27"/>
+        <TextBox x:Name="deviceName" HorizontalAlignment="Left" Height="23" Margin="147,45,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="120"/>
+        <Button x:Name="register" Content="Register your Device" HorizontalAlignment="Left" Margin="22,161,0,0" VerticalAlignment="Top" Width="120" Click="register_Click"/>
+
+
     </Grid>
 </Window>

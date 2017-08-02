@@ -16,11 +16,15 @@ namespace HoyluReceiver
     {
         Socket s;
         string name, hoyluId, bluetoothAddress, qrValue, nfcValue, publicIp, defaultGateway;
+
+        
+
         HoyluDevice hoyluDevice;
 
         public MainWindow()
         {
             InitializeComponent();
+            /*
             bluetoothAddress = GetBTMacAddress();
             hoyluId = Guid.NewGuid().ToString();
             name = Environment.MachineName;
@@ -30,6 +34,7 @@ namespace HoyluReceiver
             defaultGateway = GetDefaultGatewayAddress();
             hoyluDevice = new HoyluDevice(name, hoyluId, bluetoothAddress, qrValue, nfcValue, publicIp, defaultGateway);
             ConnectToServer();
+            */
         }
 
         private void ConnectToServer()
@@ -57,6 +62,22 @@ namespace HoyluReceiver
                 }
             }
             return null;
+        }
+
+        private void register_Click(object sender, RoutedEventArgs e)
+        {
+            hoyluId = Guid.NewGuid().ToString();
+            if (registerBluetooth.IsChecked == true) bluetoothAddress = GetBTMacAddress();
+            if(registerQRCode.IsChecked == true) qrValue = hoyluId;
+            if(registerNFC.IsChecked == true) nfcValue = hoyluId;
+            if(registerNetwork.IsChecked == true)
+            {
+                publicIp = new WebClient().DownloadString(@"http://icanhazip.com").Trim();
+                defaultGateway = GetDefaultGatewayAddress();
+            }
+            name = deviceName.Text;
+            hoyluDevice = new HoyluDevice(name, hoyluId, bluetoothAddress, qrValue, nfcValue, publicIp, defaultGateway);
+            ConnectToServer();
         }
 
         public static string GetDefaultGatewayAddress()
