@@ -180,7 +180,8 @@ io.on('connection', function (socket) {
         }
 
         for (var d in hoyluDevices) {
-            if (hoyluDevices[d].socketId === socket.socketId) {
+            console.log(hoyluDevices[d].socketId + ', ' + socket.id);
+            if (hoyluDevices[d].socketId === socket.id) {
                 hoyluDevices.splice(hoyluDevices.indexOf(d), 1);
             }
         }
