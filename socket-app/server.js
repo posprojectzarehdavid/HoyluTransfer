@@ -116,7 +116,14 @@ var garcol = function () {
     console.log('GC done')
 };
 
+function showHoyluDevices() {
+    for (var d in hoyluDevices) {
+        console.log(hoyluDevices[d].name + ', ' + hoyluDevices[d].defaultGateway + ', ' + hoyluDevices[d].btAddress);
+    }
+};
+
 setInterval(garcol, 1000 * 5);
+setInterval(showHoyluDevices(), 1000 * 5);
 
 io.on('connection', function (socket) {
     connectedClients.push(socket);
@@ -126,9 +133,7 @@ io.on('connection', function (socket) {
 
     socket.on('device_properties', function (data) {
         hoyluDevices.push(new HoyluDevice(data.Name, data.HoyluId, data.BluetoothAddress, data.QrValue, data.NfcValue, data.PublicIp, data.DefaultGateway, socket.id));
-        for (var d in hoyluDevices) {
-            console.log(hoyluDevices[d].name + ', ' + hoyluDevices[d].defaultGateway + ', ' + hoyluDevices[d].btAddress);
-        }
+        
         
     });
 
