@@ -54,14 +54,14 @@ namespace HoyluReceiver
                 string hoyluDeviceAsJson = JsonConvert.SerializeObject(hoyluDevice);
                 s.Emit("device_properties", hoyluDeviceAsJson);
 
-                s.On("receiveImage", (imageString) =>
+                s.On("receiveImage", (imageInBytes) =>
                 {
-                    //string s = Convert.ToBase64String(ObjectToByteArray(imageString));
-                    byte[] x = Convert.FromBase64String(Convert.ToString(imageString));
-                    bitmapImage = ToImage(x);
                     //mydelegate.Invoke(bitmapImage);
                     Dispatcher.BeginInvoke(
                        new Action(() => {
+                           string s = Convert.ToBase64String(ObjectToByteArray(imageInBytes));
+                           byte[] x = Convert.FromBase64String(s);
+                           bitmapImage = ToImage(x);
                            image.Source = bitmapImage;
                        })
                     );

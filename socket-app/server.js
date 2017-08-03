@@ -149,7 +149,7 @@ io.on('connection', function (socket) {
 
     socket.on('main_client', function (data, cb) {
         console.log('MainClient with SocketId '+socket.id+' connected...');
-        image = data.imageString;
+        image = data.imageInBytes;
         var id = data.displayId;
         var message = '';
         if (image != null) {
