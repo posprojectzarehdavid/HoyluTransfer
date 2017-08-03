@@ -7,6 +7,8 @@ using System.Net;
 using System.Net.NetworkInformation;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Windows;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
 
 namespace HoyluReceiver
 {
@@ -18,14 +20,17 @@ namespace HoyluReceiver
     {
         Socket s;
         string name, hoyluId, bluetoothAddress, qrValue, nfcValue, publicIp, defaultGateway;
-
-        
-
         HoyluDevice hoyluDevice;
+        Action<BitmapImage> mydelegate;
+        BitmapImage bitmapImage;
 
         public MainWindow()
         {
             InitializeComponent();
+            mydelegate = new Action<BitmapImage>(delegate (BitmapImage param)
+            {
+                image.Source = param;
+            });
             /*
             bluetoothAddress = GetBTMacAddress();
             hoyluId = Guid.NewGuid().ToString();
@@ -49,11 +54,17 @@ namespace HoyluReceiver
                 string hoyluDeviceAsJson = JsonConvert.SerializeObject(hoyluDevice);
                 s.Emit("device_properties", hoyluDeviceAsJson);
 
-                s.On("receiveImage", (image) =>
+                s.On("receiveImage", (imageString) =>
                 {
-                    byte[] a = ObjectToByteArray(image);
-                    string s = Convert.ToBase64String(a);
-                    Console.WriteLine(s);
+                    //string s = Convert.ToBase64String(ObjectToByteArray(imageString));
+                    byte[] x = Convert.FromBase64String(Convert.ToString(imageString));
+                    bitmapImage = ToImage(x);
+                    //mydelegate.Invoke(bitmapImage);
+                    Dispatcher.BeginInvoke(
+                       new Action(() => {
+                           image.Source = bitmapImage;
+                       })
+                    );
                 });
             });
             s.Connect();
@@ -66,6 +77,29 @@ namespace HoyluReceiver
             {
                 bf.Serialize(ms, obj);
                 return ms.ToArray();
+            }
+        }
+
+        public BitmapImage ToImage(byte[] byteVal)
+        {
+            if (byteVal == null)
+            {
+                return null;
+            }
+
+            try
+            {
+                MemoryStream strmImg = new MemoryStream(byteVal);
+                BitmapImage myBitmapImage = new BitmapImage();
+                myBitmapImage.BeginInit();
+                myBitmapImage.StreamSource = strmImg;
+                myBitmapImage.DecodePixelWidth = 200;
+                myBitmapImage.EndInit();
+                return myBitmapImage;
+            }
+            catch (Exception)
+            {
+                return null;
             }
         }
 
