@@ -105,6 +105,7 @@ public class MainActivity extends Activity implements DeviceSelectedListener {
                 File file = new File(imagePath);
                 byte[]imageBytes = imageToByteArray(file);
                 String imageDataString = encodeImage(imageBytes);
+                Log.i("imageString", imageDataString);
                 //writeToFile(imageInBytes);
                 return imageDataString;
             }

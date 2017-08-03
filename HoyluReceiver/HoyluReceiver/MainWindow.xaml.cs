@@ -24,17 +24,12 @@ namespace HoyluReceiver
         Socket s;
         string name, hoyluId, bluetoothAddress, qrValue, nfcValue, publicIp, defaultGateway;
         HoyluDevice hoyluDevice;
-        Action<BitmapImage> mydelegate;
         BitmapImage bitmapImage;
         string imageString;
 
         public MainWindow()
         {
             InitializeComponent();
-            mydelegate = new Action<BitmapImage>(delegate (BitmapImage param)
-            {
-                image.Source = param;
-            });
             /*
             bluetoothAddress = GetBTMacAddress();
             hoyluId = Guid.NewGuid().ToString();
@@ -60,7 +55,6 @@ namespace HoyluReceiver
 
                 s.On("receiveImage", (data) =>
                 {
-                    //mydelegate.Invoke(bitmapImage);
                     Dispatcher.BeginInvoke(
                        new Action(() =>
                        {
@@ -71,15 +65,24 @@ namespace HoyluReceiver
 
                 s.On("receiveChecksum", (data) =>
                 {
-                    Console.WriteLine(data.ToString());
-                    byte[] encodedPassword = new UTF8Encoding().GetBytes(imageString);
-                    byte[] hash = ((HashAlgorithm)CryptoConfig.CreateFromName("MD5")).ComputeHash(encodedPassword);
+                    //Console.WriteLine(data.ToString());
+                    //Console.WriteLine(imageString);
+                    byte[] encoded = new UTF8Encoding().GetBytes(imageString);
+                    byte[] hash = ((HashAlgorithm)CryptoConfig.CreateFromName("MD5")).ComputeHash(encoded);
                     if (data.ToString().Equals(hash.ToString()))
                     {
                         Console.WriteLine("Daten wrden vollständig übertragen");
-                        byte[] x = Convert.FromBase64String(imageString);
-                        bitmapImage = ToImage(x);
-                        image.Source = bitmapImage;
+                        Dispatcher.BeginInvoke(
+                       new Action(() =>
+                       {
+                           BeginInit();
+                           byte[] x = Convert.FromBase64String(imageString);
+                           bitmapImage = ToImage(x);
+                           image.Source = bitmapImage;
+                           EndInit();
+                       })
+                    );
+
                     }
                 });
             });
