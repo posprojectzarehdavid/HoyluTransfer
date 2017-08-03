@@ -2,10 +2,12 @@
 using Quobject.SocketIoClientDotNet.Client;
 using System;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Net;
 using System.Net.NetworkInformation;
 using System.Runtime.Serialization.Formatters.Binary;
+using System.Text;
 using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
@@ -54,13 +56,16 @@ namespace HoyluReceiver
                 string hoyluDeviceAsJson = JsonConvert.SerializeObject(hoyluDevice);
                 s.Emit("device_properties", hoyluDeviceAsJson);
 
-                s.On("receiveImage", (imageInBytes) =>
+                s.On("receiveImage", (data) =>
                 {
                     //mydelegate.Invoke(bitmapImage);
                     Dispatcher.BeginInvoke(
-                       new Action(() => {
-                           string s = Convert.ToBase64String(ObjectToByteArray(imageInBytes));
-                           byte[] x = Convert.FromBase64String(s);
+                       new Action(() =>
+                       {
+                           //string d = JsonConvert.SerializeObject(data);
+                           //string s = Convert.ToBase64String(ObjectToByteArray(data));
+                           string decompressed = Decompress(data.ToString());
+                           byte[] x = Convert.FromBase64String(decompressed);
                            bitmapImage = ToImage(x);
                            image.Source = bitmapImage;
                        })
@@ -69,6 +74,35 @@ namespace HoyluReceiver
             });
             s.Connect();
         }
+
+        public static void CopyTo(Stream src, Stream dest)
+        {
+            byte[] bytes = new byte[4096];
+
+            int cnt;
+
+            while ((cnt = src.Read(bytes, 0, bytes.Length)) != 0)
+            {
+                dest.Write(bytes, 0, cnt);
+            }
+        }
+
+        public static string Decompress(string compressed)
+        {
+            byte[] bytes = Convert.FromBase64String(compressed);
+            using (var msi = new MemoryStream(bytes))
+            using (var mso = new MemoryStream())
+            {
+                using (var gs = new GZipStream(msi, CompressionMode.Decompress))
+                {
+                    //gs.CopyTo(mso);
+                    CopyTo(gs, mso);
+                }
+
+                return Encoding.UTF8.GetString(mso.ToArray());
+            }
+        }
+
 
         public static byte[] ObjectToByteArray(object obj)
         {
@@ -121,9 +155,9 @@ namespace HoyluReceiver
         {
             hoyluId = Guid.NewGuid().ToString();
             if (registerBluetooth.IsChecked == true) bluetoothAddress = GetBTMacAddress();
-            if(registerQRCode.IsChecked == true) qrValue = hoyluId;
-            if(registerNFC.IsChecked == true) nfcValue = hoyluId;
-            if(registerNetwork.IsChecked == true)
+            if (registerQRCode.IsChecked == true) qrValue = hoyluId;
+            if (registerNFC.IsChecked == true) nfcValue = hoyluId;
+            if (registerNetwork.IsChecked == true)
             {
                 publicIp = new WebClient().DownloadString(@"http://icanhazip.com").Trim();
                 defaultGateway = GetDefaultGatewayAddress();
@@ -145,7 +179,7 @@ namespace HoyluReceiver
                     Console.WriteLine(adapter.Description);
                     foreach (GatewayIPAddressInformation address in addresses)
                     {
-                        if(address.Address.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork)
+                        if (address.Address.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork)
                         {
                             return address.Address.ToString();
                         }

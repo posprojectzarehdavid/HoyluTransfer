@@ -13,6 +13,8 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
+import android.support.test.espresso.core.deps.guava.base.Splitter;
+import android.support.test.espresso.core.deps.guava.collect.Iterables;
 import android.support.v4.app.ActivityCompat;
 import android.util.Log;
 import android.widget.Toast;
@@ -90,7 +92,7 @@ public class MainActivity extends Activity implements DeviceSelectedListener {
         start = 0;
     }
 
-    private byte[] getImageForServer() {
+    private String getImageForServer() {
         Intent intent = getIntent();
         String action = intent.getAction();
         String type = intent.getType();
@@ -100,9 +102,8 @@ public class MainActivity extends Activity implements DeviceSelectedListener {
                 File file = new File(imagePath);
                 byte[]imageBytes = imageToByteArray(file);
                 String imageDataString = encodeImage(imageBytes);
-                byte[] imageInBytes = decodeImage(imageDataString);
                 //writeToFile(imageInBytes);
-                return imageInBytes;
+                return imageDataString;
             }
         }
         return null;
@@ -259,8 +260,13 @@ public class MainActivity extends Activity implements DeviceSelectedListener {
             final String[] serverMessage = {""};
             final String id = args[0];
             final String client = args[1];
-            final byte[] imageInBytes = getImageForServer();
+            final String imageInBytes = getImageForServer();
+            int length = imageInBytes.length();
+            int parts = 0;
 
+            if(2000000<length && length<4000000){
+                parts = length%100000;
+            }
 
             try {
                 socket = IO.socket(CONNECTION_STRING);
@@ -269,26 +275,37 @@ public class MainActivity extends Activity implements DeviceSelectedListener {
                     public void call(Object... args) {
                         Log.i("hallo", "connected");
 
-                        JSONObject jsonObject = new JSONObject();
-                        try {
-                            jsonObject.put("imageInBytes", imageInBytes);
-                            jsonObject.put("displayId", id);
-                        } catch (JSONException e) {
-                            e.printStackTrace();
-                        }
-                        socket.emit("main_client", jsonObject, new Ack() {
-                            @Override
-                            public void call(Object... args) {
-                                Log.i("mainclient", "hallo");
-                                serverMessage[0] = (String) args[0];
-                                gotServerMessage = true;
-                                end = System.currentTimeMillis();
-                                Map<String, String> time = new HashMap<>();
-                                time.put("Zeit bis Bildempfang", ""+(end-start));
-                                MetricsManager.trackEvent(client, time);
-                                onPostExecute(serverMessage[0]);
+                        String[] parts  =
+                                Iterables.toArray(
+                                        Splitter
+                                                .fixedLength(100000)
+                                                .split(imageInBytes),
+                                        String.class
+                                );
+                        for(int i = 0; i<parts.length+1; i++){
+                            JSONObject jsonObject = new JSONObject();
+                            try {
+                                jsonObject.put("imagePart", parts[i]);
+                                jsonObject.put("displayId", id);
+                            } catch (JSONException e) {
+                                e.printStackTrace();
                             }
-                        });
+                            socket.emit("main_client", jsonObject, new Ack() {
+                                @Override
+                                public void call(Object... args) {
+                                    serverMessage[0] = (String) args[0];
+                                    Log.i("mainclient", serverMessage[0]);
+                                    gotServerMessage = true;
+                                    /*end = System.currentTimeMillis();
+                                    Map<String, String> time = new HashMap<>();
+                                    time.put("Zeit bis Bildempfang", ""+(end-start));
+                                    MetricsManager.trackEvent(client, time);*/
+
+                                }
+                            });
+                        }
+                        //onPostExecute(serverMessage[0]);
+
                     }
                 });
                 socket.connect();
@@ -299,11 +316,11 @@ public class MainActivity extends Activity implements DeviceSelectedListener {
             return serverMessage[0];
         }
 
-        protected void onPostExecute(final String result){
+        /*protected void onPostExecute(final String result){
             if(gotServerMessage){
                 socket.disconnect();
                 socket.off();
-                dialog.dismiss();
+                //dialog.dismiss();
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
@@ -321,6 +338,6 @@ public class MainActivity extends Activity implements DeviceSelectedListener {
                 gotServerMessage = false;
             }
 
-        }
+        }*/
     }
 }

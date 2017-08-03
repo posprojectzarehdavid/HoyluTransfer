@@ -55,4 +55,5 @@ dependencies {
     compile "com.microsoft.azure.mobile:mobile-center-crashes:${mobileCenterSdkVersion}"
 
     compile 'net.hockeyapp.android:HockeySDK:4.1.4'
+    compile 'com.android.support.test.espresso:espresso-core:2.2.2'
 }

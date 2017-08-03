@@ -149,7 +149,7 @@ io.on('connection', function (socket) {
 
     socket.on('main_client', function (data, cb) {
         console.log('MainClient with SocketId '+socket.id+' connected...');
-        image = data.imageInBytes;
+        image = data.imagePart;
         var id = data.displayId;
         var message = '';
         if (image != null) {
@@ -157,7 +157,8 @@ io.on('connection', function (socket) {
             message = 'Daten erhalten';
             var d = getHoyluDeviceWithId(id);
             if (d != null) {
-                socket.to(d.socketId).emit('receiveImage', image);
+                //socket.to(d.socketId).emit('receiveImage', image);
+                console.log(id + ', ' + image);
             }
             else {
                 message = 'Gerät nicht gefunden';

@@ -106,7 +106,7 @@ public class NetworkFragment extends Fragment {
         StrictMode.setThreadPolicy(policy);
 
         try {
-            doc = Jsoup.connect("http://www.checkip.org").get();
+            doc = Jsoup.connect("http://icanhazip.com").get();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -114,7 +114,7 @@ public class NetworkFragment extends Fragment {
         d = wifi.getDhcpInfo();
 
         defaultGateway = String.valueOf(Formatter.formatIpAddress(d.gateway));
-        publicIP = doc.getElementById("yourip").select("h1").first().select("span").text();
+        publicIP = doc.body().getAllElements().first().text();
         Timer t = new Timer();
         t.schedule(new TimerTask() {
             @Override
