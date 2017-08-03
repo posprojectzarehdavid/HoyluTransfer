@@ -41,6 +41,9 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -261,12 +264,9 @@ public class MainActivity extends Activity implements DeviceSelectedListener {
             final String id = args[0];
             final String client = args[1];
             final String imageInBytes = getImageForServer();
-            int length = imageInBytes.length();
-            int parts = 0;
 
-            if(2000000<length && length<4000000){
-                parts = length%100000;
-            }
+
+
 
             try {
                 socket = IO.socket(CONNECTION_STRING);
@@ -282,7 +282,7 @@ public class MainActivity extends Activity implements DeviceSelectedListener {
                                                 .split(imageInBytes),
                                         String.class
                                 );
-                        for(int i = 0; i<parts.length+1; i++){
+                        for(int i = 0; i<parts.length; i++){
                             JSONObject jsonObject = new JSONObject();
                             try {
                                 jsonObject.put("imagePart", parts[i]);
@@ -304,8 +304,26 @@ public class MainActivity extends Activity implements DeviceSelectedListener {
                                 }
                             });
                         }
-                        //onPostExecute(serverMessage[0]);
+                        byte[] thedigest = null;
+                        try {
+                            byte[] bytesOfMessage = imageInBytes.getBytes("UTF-8");
+                            MessageDigest md = MessageDigest.getInstance("MD5");
+                            thedigest = md.digest(bytesOfMessage);
+                        } catch (NoSuchAlgorithmException e) {
+                            e.printStackTrace();
+                        } catch (UnsupportedEncodingException e) {
+                            e.printStackTrace();
+                        }
 
+                        JSONObject jsonObject = new JSONObject();
+                        try {
+                            jsonObject.put("check", thedigest);
+                            jsonObject.put("id", id);
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                        socket.emit("checksum", jsonObject);
+                        onPostExecute(serverMessage[0]);
                     }
                 });
                 socket.connect();
@@ -316,11 +334,11 @@ public class MainActivity extends Activity implements DeviceSelectedListener {
             return serverMessage[0];
         }
 
-        /*protected void onPostExecute(final String result){
+        protected void onPostExecute(final String result){
             if(gotServerMessage){
                 socket.disconnect();
                 socket.off();
-                //dialog.dismiss();
+                dialog.dismiss();
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
@@ -338,6 +356,6 @@ public class MainActivity extends Activity implements DeviceSelectedListener {
                 gotServerMessage = false;
             }
 
-        }*/
+        }
     }
 }

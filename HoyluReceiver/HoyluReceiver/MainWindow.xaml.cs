@@ -7,6 +7,7 @@ using System.Linq;
 using System.Net;
 using System.Net.NetworkInformation;
 using System.Runtime.Serialization.Formatters.Binary;
+using System.Security.Cryptography;
 using System.Text;
 using System.Windows;
 using System.Windows.Media;
@@ -25,6 +26,7 @@ namespace HoyluReceiver
         HoyluDevice hoyluDevice;
         Action<BitmapImage> mydelegate;
         BitmapImage bitmapImage;
+        string imageString;
 
         public MainWindow()
         {
@@ -62,47 +64,27 @@ namespace HoyluReceiver
                     Dispatcher.BeginInvoke(
                        new Action(() =>
                        {
-                           //string d = JsonConvert.SerializeObject(data);
-                           //string s = Convert.ToBase64String(ObjectToByteArray(data));
-                           string decompressed = Decompress(data.ToString());
-                           byte[] x = Convert.FromBase64String(decompressed);
-                           bitmapImage = ToImage(x);
-                           image.Source = bitmapImage;
+                           imageString += data.ToString();
                        })
                     );
+                });
+
+                s.On("receiveChecksum", (data) =>
+                {
+                    Console.WriteLine(data.ToString());
+                    byte[] encodedPassword = new UTF8Encoding().GetBytes(imageString);
+                    byte[] hash = ((HashAlgorithm)CryptoConfig.CreateFromName("MD5")).ComputeHash(encodedPassword);
+                    if (data.ToString().Equals(hash.ToString()))
+                    {
+                        Console.WriteLine("Daten wrden vollständig übertragen");
+                        byte[] x = Convert.FromBase64String(imageString);
+                        bitmapImage = ToImage(x);
+                        image.Source = bitmapImage;
+                    }
                 });
             });
             s.Connect();
         }
-
-        public static void CopyTo(Stream src, Stream dest)
-        {
-            byte[] bytes = new byte[4096];
-
-            int cnt;
-
-            while ((cnt = src.Read(bytes, 0, bytes.Length)) != 0)
-            {
-                dest.Write(bytes, 0, cnt);
-            }
-        }
-
-        public static string Decompress(string compressed)
-        {
-            byte[] bytes = Convert.FromBase64String(compressed);
-            using (var msi = new MemoryStream(bytes))
-            using (var mso = new MemoryStream())
-            {
-                using (var gs = new GZipStream(msi, CompressionMode.Decompress))
-                {
-                    //gs.CopyTo(mso);
-                    CopyTo(gs, mso);
-                }
-
-                return Encoding.UTF8.GetString(mso.ToArray());
-            }
-        }
-
 
         public static byte[] ObjectToByteArray(object obj)
         {
