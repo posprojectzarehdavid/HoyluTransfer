@@ -160,14 +160,7 @@ io.on('connection', function (socket) {
             }
             else {
                 message = 'Gerät nicht gefunden';
-            }
-            if (last) {
-                console.log('Daten für Gerät mit ID ' + id + 'erhalten');
-                message = 'Daten erhalten';
-                //socket.emit('sendChecksum');
-                socket.to(d.socketId).emit('receiveChecksum', data.check);
-            }
-            
+            }            
         } else {
             message = 'Daten nicht erhalten'
         }
@@ -176,10 +169,10 @@ io.on('connection', function (socket) {
         return cb(message);
     });
 
-    socket.on('checksum', function (data) {
-        var d = getHoyluDeviceWithId(data.id);
+    socket.on('finished', function (data) {
+        var d = getHoyluDeviceWithId(data.toString);
         if (d != null) {
-            //socket.to(d.socketId).emit('receiveChecksum', data.check);
+            socket.to(d.socketId).emit('finished');
         }
         
     });

@@ -308,7 +308,7 @@ public class MainActivity extends Activity implements DeviceSelectedListener {
                                 }
                             });
                             if(i == parts.length-1){
-                                onPostExecute(serverMessage[0]);
+                                onPostExecute(serverMessage[0], id);
                             }
                         }
 
@@ -349,8 +349,9 @@ public class MainActivity extends Activity implements DeviceSelectedListener {
             return serverMessage[0];
         }
 
-        protected void onPostExecute(final String result){
+        protected void onPostExecute(final String result, String id){
             if(gotServerMessage){
+                socket.emit("finished", id);
                 socket.disconnect();
                 socket.off();
                 dialog.dismiss();

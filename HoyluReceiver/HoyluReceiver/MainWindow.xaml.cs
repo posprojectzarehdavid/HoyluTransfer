@@ -72,7 +72,7 @@ namespace HoyluReceiver
                     );
                 });
 
-                s.On("receiveChecksum", (data) =>
+                s.On("receiveChecksum", () =>
                 {
                     //Console.WriteLine(data.ToString());
                     //Console.WriteLine(imageString);
