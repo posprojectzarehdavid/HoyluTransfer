@@ -58,33 +58,43 @@ namespace HoyluReceiver
                     Dispatcher.BeginInvoke(
                        new Action(() =>
                        {
-                           imageString += data.ToString();
+                           ImagePart ip = (ImagePart) JsonConvert.DeserializeObject(data.ToString());
+
+                           imageString += ip.Part;
+                           if(ip.Last == true)
+                           {
+                               BeginInit();
+                               byte[] x = Convert.FromBase64String(imageString);
+                               bitmapImage = ToImage(x);
+                               image.Source = bitmapImage;
+                               EndInit();
+                           }
                        })
                     );
                 });
 
-                s.On("receiveChecksum", (data) =>
-                {
-                    //Console.WriteLine(data.ToString());
-                    //Console.WriteLine(imageString);
-                    //byte[] encoded = new UTF8Encoding().GetBytes(imageString);
-                    //byte[] hash = ((HashAlgorithm)CryptoConfig.CreateFromName("MD5")).ComputeHash(encoded);
-                    //if (data.ToString().Equals(hash.ToString()))
-                    //{
-                        Console.WriteLine("Daten wrden vollständig übertragen");
-                        Dispatcher.BeginInvoke(
-                       new Action(() =>
-                       {
-                           BeginInit();
-                           byte[] x = Convert.FromBase64String(imageString);
-                           bitmapImage = ToImage(x);
-                           image.Source = bitmapImage;
-                           EndInit();
-                       })
-                    );
+                //s.On("receiveChecksum", (data) =>
+                //{
+                //    //Console.WriteLine(data.ToString());
+                //    //Console.WriteLine(imageString);
+                //    //byte[] encoded = new UTF8Encoding().GetBytes(imageString);
+                //    //byte[] hash = ((HashAlgorithm)CryptoConfig.CreateFromName("MD5")).ComputeHash(encoded);
+                //    //if (data.ToString().Equals(hash.ToString()))
+                //    //{
+                //        Console.WriteLine("Daten wrden vollständig übertragen");
+                //        Dispatcher.BeginInvoke(
+                //       new Action(() =>
+                //       {
+                //           BeginInit();
+                //           byte[] x = Convert.FromBase64String(imageString);
+                //           bitmapImage = ToImage(x);
+                //           image.Source = bitmapImage;
+                //           EndInit();
+                //       })
+                //    );
 
-                    //}
-                });
+                //    //}
+                //});
             });
             s.Connect();
         }

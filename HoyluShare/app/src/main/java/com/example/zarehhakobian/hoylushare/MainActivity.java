@@ -307,8 +307,11 @@ public class MainActivity extends Activity implements DeviceSelectedListener {
 
                                 }
                             });
+                            if(i == parts.length-1){
+                                onPostExecute(serverMessage[0]);
+                            }
                         }
-                        onPostExecute(serverMessage[0]);
+
 
                         /*socket.on("sendChecksum", new Emitter.Listener() {
                             @Override
