@@ -172,9 +172,10 @@ io.on('connection', function (socket) {
     socket.on('finished', function (data) {
         var d = getHoyluDeviceWithId(data.toString);
         if (d != null) {
-            socket.to(d.socketId).emit('finished');
+            console.log('finished');
+            socket.to(d.socketId).emit('finish');
         }
-        
+
     });
 
     socket.on('disconnect', function () {
