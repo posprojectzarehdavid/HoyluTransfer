@@ -10,10 +10,10 @@ namespace HoyluReceiver
     {
         public ImagePart(string part, bool last)
         {
-            Part = part;
-            Last = last;
+            i = part;
+            l = last;
         }        
-        public string Part { get; set; }
-        public bool Last { get; set; } 
+        public string i { get; set; }
+        public bool l { get; set; } 
     }
 }

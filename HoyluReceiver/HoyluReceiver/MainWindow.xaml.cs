@@ -9,6 +9,7 @@ using System.Net.NetworkInformation;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Security.Cryptography;
 using System.Text;
+using System.Threading;
 using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
@@ -55,19 +56,18 @@ namespace HoyluReceiver
 
                 s.On("receiveImage", (data) =>
                 {
+                  
                     Dispatcher.BeginInvoke(
                        new Action(() =>
                        {
-                           ImagePart ip = (ImagePart) JsonConvert.DeserializeObject(data.ToString());
+                           ImagePart ip = JsonConvert.DeserializeObject<ImagePart>(data.ToString());
 
-                           imageString += ip.Part;
-                           if(ip.Last == true)
+                           imageString += ip.i;
+                           if (ip.l == true)
                            {
-                               BeginInit();
                                byte[] x = Convert.FromBase64String(imageString);
                                bitmapImage = ToImage(x);
                                image.Source = bitmapImage;
-                               EndInit();
                            }
                        })
                     );
@@ -126,8 +126,9 @@ namespace HoyluReceiver
                 myBitmapImage.EndInit();
                 return myBitmapImage;
             }
-            catch (Exception)
+            catch (Exception e)
             {
+                Console.WriteLine(e.Message);
                 return null;
             }
         }
