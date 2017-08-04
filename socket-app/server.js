@@ -156,21 +156,22 @@ io.on('connection', function (socket) {
         if (image != null) {
             var d = getHoyluDeviceWithId(id);
             if (d != null) {
-                socket.to(d.socketId).emit('receiveImage', { i: image, l: last });
+                socket.to(d.socketId).emit('receiveImage', image);
             }
             else {
                 message = 'Gerät nicht gefunden';
+            }
+            if (last) {
+                console.log('Daten für Gerät mit ID ' + id + 'erhalten');
+                message = 'Daten erhalten';
+                //socket.emit('sendChecksum');
+                socket.to(d.socketId).emit('receiveChecksum', data.check);
             }
             
         } else {
             message = 'Daten nicht erhalten'
         }
-        if (last) {
-            console.log('Daten für Gerät mit ID ' + id + 'erhalten');
-            message = 'Daten erhalten';
-            //socket.emit('sendChecksum');
-            //socket.to(d.socketId).emit('receiveChecksum', data.check);
-        }
+        
         image = null;
         return cb(message);
     });

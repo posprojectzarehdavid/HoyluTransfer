@@ -56,45 +56,44 @@ namespace HoyluReceiver
 
                 s.On("receiveImage", (data) =>
                 {
-                  
                     Dispatcher.BeginInvoke(
                        new Action(() =>
                        {
-                           ImagePart ip = JsonConvert.DeserializeObject<ImagePart>(data.ToString());
+                           //ImagePart ip = JsonConvert.DeserializeObject<ImagePart>(data.ToString());
 
-                           imageString += ip.i;
-                           if (ip.l == true)
-                           {
-                               byte[] x = Convert.FromBase64String(imageString);
-                               bitmapImage = ToImage(x);
-                               image.Source = bitmapImage;
-                           }
+                           imageString += data.ToString();
+                           //if (ip.l == true)
+                           //{
+                           //    byte[] x = Convert.FromBase64String(imageString);
+                           //    bitmapImage = ToImage(x);
+                           //    image.Source = bitmapImage;
+                           //}
                        })
                     );
                 });
 
-                //s.On("receiveChecksum", (data) =>
-                //{
-                //    //Console.WriteLine(data.ToString());
-                //    //Console.WriteLine(imageString);
-                //    //byte[] encoded = new UTF8Encoding().GetBytes(imageString);
-                //    //byte[] hash = ((HashAlgorithm)CryptoConfig.CreateFromName("MD5")).ComputeHash(encoded);
-                //    //if (data.ToString().Equals(hash.ToString()))
-                //    //{
-                //        Console.WriteLine("Daten wrden vollständig übertragen");
-                //        Dispatcher.BeginInvoke(
-                //       new Action(() =>
-                //       {
-                //           BeginInit();
-                //           byte[] x = Convert.FromBase64String(imageString);
-                //           bitmapImage = ToImage(x);
-                //           image.Source = bitmapImage;
-                //           EndInit();
-                //       })
-                //    );
+                s.On("receiveChecksum", (data) =>
+                {
+                    //Console.WriteLine(data.ToString());
+                    //Console.WriteLine(imageString);
+                    //byte[] encoded = new UTF8Encoding().GetBytes(imageString);
+                    //byte[] hash = ((HashAlgorithm)CryptoConfig.CreateFromName("MD5")).ComputeHash(encoded);
+                    //if (data.ToString().Equals(hash.ToString()))
+                    //{
+                    Console.WriteLine("Daten wrden vollständig übertragen");
+                    Dispatcher.BeginInvoke(
+                   new Action(() =>
+                   {
+                       BeginInit();
+                       byte[] x = Convert.FromBase64String(imageString);
+                       bitmapImage = ToImage(x);
+                       image.Source = bitmapImage;
+                       EndInit();
+                   })
+                );
 
-                //    //}
-                //});
+                    //}
+                });
             });
             s.Connect();
         }
