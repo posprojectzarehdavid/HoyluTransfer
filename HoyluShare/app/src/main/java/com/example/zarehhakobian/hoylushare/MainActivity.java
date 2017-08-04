@@ -266,9 +266,6 @@ public class MainActivity extends Activity implements DeviceSelectedListener {
             final String client = args[1];
             final String imageInBytes = getImageForServer();
 
-
-
-
             try {
                 socket = IO.socket(CONNECTION_STRING);
                 socket.on(Socket.EVENT_CONNECT, new Emitter.Listener() {
@@ -286,11 +283,20 @@ public class MainActivity extends Activity implements DeviceSelectedListener {
                         for(int i = 0; i<parts.length; i++){
                             JSONObject jsonObject = new JSONObject();
                             try {
-                                jsonObject.put("imagePart", parts[i]);
-                                jsonObject.put("displayId", id);
+                                if(i == parts.length-1){
+                                    jsonObject.put("imagePart", parts[i]);
+                                    jsonObject.put("displayId", id);
+                                    jsonObject.put("last", true);
+                                } else{
+                                    jsonObject.put("imagePart", parts[i]);
+                                    jsonObject.put("displayId", id);
+                                    jsonObject.put("last", false);
+                                }
+
                             } catch (JSONException e) {
                                 e.printStackTrace();
                             }
+
                             socket.emit("main_client", jsonObject, new Ack() {
                                 @Override
                                 public void call(Object... args) {
@@ -305,26 +311,33 @@ public class MainActivity extends Activity implements DeviceSelectedListener {
                                 }
                             });
                         }
-                        byte[] thedigest = null;
-                        try {
-                            byte[] bytesOfMessage = imageInBytes.getBytes("UTF-8");
-                            MessageDigest md = MessageDigest.getInstance("MD5");
-                            thedigest = md.digest(bytesOfMessage);
-                        } catch (NoSuchAlgorithmException e) {
-                            e.printStackTrace();
-                        } catch (UnsupportedEncodingException e) {
-                            e.printStackTrace();
-                        }
 
-                        JSONObject jsonObject = new JSONObject();
-                        try {
-                            jsonObject.put("check", thedigest);
-                            jsonObject.put("id", id);
-                        } catch (JSONException e) {
-                            e.printStackTrace();
-                        }
-                        socket.emit("checksum", jsonObject);
-                        onPostExecute(serverMessage[0]);
+                        socket.on("sendChecksum", new Emitter.Listener() {
+                            @Override
+                            public void call(Object... args) {
+                                Log.i("checksum", "hallo");
+                                byte[] thedigest = null;
+                                try {
+                                    byte[] bytesOfMessage = imageInBytes.getBytes("UTF-8");
+                                    MessageDigest md = MessageDigest.getInstance("MD5");
+                                    thedigest = md.digest(bytesOfMessage);
+                                } catch (NoSuchAlgorithmException e) {
+                                    e.printStackTrace();
+                                } catch (UnsupportedEncodingException e) {
+                                    e.printStackTrace();
+                                }
+
+                                JSONObject checksumJson = new JSONObject();
+                                try {
+                                    checksumJson.put("check", thedigest);
+                                    checksumJson.put("id", id);
+                                } catch (JSONException e) {
+                                    e.printStackTrace();
+                                }
+                                socket.emit("checksum", checksumJson);
+                                onPostExecute(serverMessage[0]);
+                            }
+                        });
                     }
                 });
                 socket.connect();
