@@ -41,9 +41,6 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.io.UnsupportedEncodingException;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -311,8 +308,9 @@ public class MainActivity extends Activity implements DeviceSelectedListener {
                                 }
                             });
                         }
+                        onPostExecute(serverMessage[0]);
 
-                        socket.on("sendChecksum", new Emitter.Listener() {
+                        /*socket.on("sendChecksum", new Emitter.Listener() {
                             @Override
                             public void call(Object... args) {
                                 Log.i("checksum", "hallo");
@@ -335,9 +333,9 @@ public class MainActivity extends Activity implements DeviceSelectedListener {
                                     e.printStackTrace();
                                 }
                                 socket.emit("checksum", checksumJson);
-                                onPostExecute(serverMessage[0]);
+
                             }
-                        });
+                        });*/
                     }
                 });
                 socket.connect();

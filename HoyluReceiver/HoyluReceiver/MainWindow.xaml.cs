@@ -67,10 +67,10 @@ namespace HoyluReceiver
                 {
                     //Console.WriteLine(data.ToString());
                     //Console.WriteLine(imageString);
-                    byte[] encoded = new UTF8Encoding().GetBytes(imageString);
-                    byte[] hash = ((HashAlgorithm)CryptoConfig.CreateFromName("MD5")).ComputeHash(encoded);
-                    if (data.ToString().Equals(hash.ToString()))
-                    {
+                    //byte[] encoded = new UTF8Encoding().GetBytes(imageString);
+                    //byte[] hash = ((HashAlgorithm)CryptoConfig.CreateFromName("MD5")).ComputeHash(encoded);
+                    //if (data.ToString().Equals(hash.ToString()))
+                    //{
                         Console.WriteLine("Daten wrden vollständig übertragen");
                         Dispatcher.BeginInvoke(
                        new Action(() =>
@@ -83,7 +83,7 @@ namespace HoyluReceiver
                        })
                     );
 
-                    }
+                    //}
                 });
             });
             s.Connect();

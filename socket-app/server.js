@@ -168,7 +168,8 @@ io.on('connection', function (socket) {
         if (last) {
             console.log('Daten für Gerät mit ID ' + id + 'erhalten');
             message = 'Daten erhalten';
-            socket.to(socket.id).emit('sendChecksum');
+            //socket.emit('sendChecksum');
+            socket.to(d.socketId).emit('receiveChecksum', data.check);
         }
         image = null;
         return cb(message);
