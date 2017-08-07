@@ -24,20 +24,21 @@ app.post('/file_upload', upload.any(), function (req, res) {
     console.log(req.files);
     var tmp_path = req.files[0].path;
     var src = fs.createReadStream(tmp_path);
+    var response = null;
     fs.readFile(tmp_path, function (err, data) {
         if (err) {
             console.log(err);
             response = {
                 message: 'Sorry, file couldn\'t be uploaded.',
-                filename: req.file.originalname
+                filename: req.files[0].originalname
             }
         } else {
             response = {
                 message: 'File uploaded successfully',
-                filename: req.file.originalname
+                filename: req.files[0].originalname
             };
         }
-        res.end( JSON.stringify( response ) );
+        return res( JSON.stringify( response ) );
     });
     //src.on('end', function () { res.send({ path: tmp_path }); });
     //src.on('error', function(err) { res.send({error: "upload failed"}); });
