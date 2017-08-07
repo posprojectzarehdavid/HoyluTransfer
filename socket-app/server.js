@@ -20,7 +20,7 @@ var server = require('http').createServer(app);
 var io = require('socket.io')(server);
 app.use(express.static(__dirname + '/node_modules'));
 
-app.post('/file_upload', upload.single('file'), function (req, res) {
+app.post('/file_upload', upload.any(), function (req, res) {
     var file = __dirname + "/" + req.file.originalname;
     fs.readFile(req.file.path, function (err, data) {
         if (err) {
@@ -38,9 +38,6 @@ app.post('/file_upload', upload.single('file'), function (req, res) {
         res.end(JSON.stringify(response));
     });
 });
-
-})
-
 
 var image = null;
 var connectedClients = new Array();
