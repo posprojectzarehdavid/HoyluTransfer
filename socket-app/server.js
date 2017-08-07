@@ -23,21 +23,21 @@ app.use(express.static(__dirname + '/node_modules'));
 app.post('/file_upload', upload.single('file'), function (req, res) {
     var file = __dirname + "/" + req.file.originalname;
     fs.readFile(req.file.path, function (err, data) {
-            if (err) {
-                console.error(err);
-                response = {
-                    message: 'Sorry, file couldn\'t be uploaded.',
-                    filename: req.file.originalname
-                };
-            } else {
-                response = {
-                    message: 'File uploaded successfully',
-                    filename: req.file.originalname
-                };
-            }
-            res.end(JSON.stringify(response));
-        });
+        if (err) {
+            console.error(err);
+            response = {
+                message: 'Sorry, file couldn\'t be uploaded.',
+                filename: req.file.originalname
+            };
+        } else {
+            response = {
+                message: 'File uploaded successfully',
+                filename: req.file.originalname
+            };
+        }
+        res.end(JSON.stringify(response));
     });
+});
 
 })
 
@@ -180,7 +180,7 @@ io.on('connection', function (socket) {
 
     socket.on('addresses', sendNetworkMatchesToClient);
 
-	//socket.on('bluetoothAddresses', sendBluetoothMatchesToClient);
+    //socket.on('bluetoothAddresses', sendBluetoothMatchesToClient);
 
     socket.on('imagepartsForServer', function (data) {
         image = data.imagePart;
