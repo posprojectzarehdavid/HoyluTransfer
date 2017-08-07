@@ -23,6 +23,8 @@ import com.github.nkzawa.emitter.Emitter;
 import com.github.nkzawa.socketio.client.Ack;
 import com.github.nkzawa.socketio.client.IO;
 import com.github.nkzawa.socketio.client.Socket;
+import com.koushikdutta.async.future.FutureCallback;
+import com.koushikdutta.ion.Ion;
 import com.microsoft.azure.mobile.MobileCenter;
 import com.microsoft.azure.mobile.analytics.Analytics;
 import com.microsoft.azure.mobile.crashes.Crashes;
@@ -32,12 +34,6 @@ import net.hockeyapp.android.CrashManager;
 import net.hockeyapp.android.UpdateManager;
 import net.hockeyapp.android.metrics.MetricsManager;
 
-import org.apache.http.HttpResponse;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpPut;
-import org.apache.http.entity.mime.MultipartEntity;
-import org.apache.http.entity.mime.content.FileBody;
-import org.apache.http.impl.client.DefaultHttpClient;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -106,7 +102,7 @@ public class MainActivity extends Activity implements DeviceSelectedListener {
         super.onBackPressed();
         socket.disconnect();
         socket.off();
-        if(dialog != null || dialog.isShowing()){
+        if(dialog != null){
             dialog.dismiss();
         }
     }
@@ -282,19 +278,19 @@ public class MainActivity extends Activity implements DeviceSelectedListener {
             socket.emit("imagepartsForServer", jsonObject);
         }*/
 
-        File f = getImageForServer();
-        HttpClient httpClient = new DefaultHttpClient();
-        HttpPut httpPut = new HttpPut("http://40.114.246.211:4200/file_upload");
-        MultipartEntity entity = new MultipartEntity();
-        entity.addPart("image", new FileBody(f));
-        httpPut.setEntity(entity);
-        try {
-            HttpResponse response = httpClient.execute(httpPut);
-            Toast.makeText(this,response.getStatusLine()+"",Toast.LENGTH_SHORT).show();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
+        Ion.with(getApplicationContext())
+                .load("POST", "http://40.114.246.211:4200/file_upload")
+                .setMultipartParameter("name", "source")
+                .setMultipartFile("image", "image/jpeg", getImageForServer())
+                .asString()
+                .setCallback(new FutureCallback<String>() {
+                    @Override
+                    public void onCompleted(Exception e, String result) {
+                        dialog.dismiss();
+                        Log.i("futcall", result);
+                        Toast.makeText(getApplication(), "completed", Toast.LENGTH_SHORT).show();
+                    }
+                });
     }
 
     public void connectToServer() {

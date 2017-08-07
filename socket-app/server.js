@@ -9,9 +9,9 @@ var storage = multer.diskStorage({
     destination: function (req, file, cb) {
         cb(null, '/home/ts/shared')
     },
-    /*filename: function (req, file, cb) {
+    filename: function (req, file, cb) {
         cb(null, uuidv4());
-    }*/
+    }
 });
 
 var upload = multer({ storage: storage });
@@ -23,26 +23,22 @@ app.use(express.static(__dirname + '/node_modules'));
 app.post('/file_upload', upload.any(), function (req, res) {
     console.log(req.files);
     var tmp_path = req.files[0].path;
-    var src = fs.createReadStream(tmp_path);
     var response = null;
     fs.readFile(tmp_path, function (err, data) {
         if (err) {
             console.log(err);
             response = {
-                message: 'Sorry, file couldn\'t be uploaded.',
-                filename: req.files[0].originalname
+                uploaded: false,
+                path: null
             }
         } else {
             response = {
-                message: 'File uploaded successfully',
-                filename: req.files[0].originalname
+                uploaded: true,
+                path: req.files[0].path
             };
-        }
-        console.log(JSON.stringify(response));
-    
+        }    
     });
-    src.on('end', function () { res.end(JSON.stringify(response)) });
-    src.on('error', function(err) { res.end(JSON.stringify(response)) });
+    res.send(JSON.stringify(response));
 });
 
 var image = null;
