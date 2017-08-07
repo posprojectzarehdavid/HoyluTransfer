@@ -38,7 +38,8 @@ app.post('/file_upload', upload.any(), function (req, res) {
                 filename: req.files[0].originalname
             };
         }
-        return res( JSON.stringify( response ) );
+        res.send(response);
+        return res(response);
     });
     //src.on('end', function () { res.send({ path: tmp_path }); });
     //src.on('error', function(err) { res.send({error: "upload failed"}); });
