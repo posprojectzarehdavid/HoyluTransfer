@@ -87,6 +87,7 @@ namespace HoyluReceiver
                        byte[] x = Convert.FromBase64String(imageString);
                        bitmapImage = ToImage(x);
                        image.Source = bitmapImage;
+                       imageString = "";
                    })
                 );
 

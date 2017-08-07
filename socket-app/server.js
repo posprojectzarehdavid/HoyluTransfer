@@ -1,11 +1,46 @@
 
 'use strict';
 var express = require('express');
+var uuidv4 = require('uuid/v4');
+var multer = require('multer');
+var fs = require("fs");
+
+var storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        cb(null, '/ts/shared')
+    },
+    filename: function (req, file, cb) {
+        cb(null, uuidv4());
+    }
+});
+
+var upload = multer({ storage: storage });
 var app = express();
 var server = require('http').createServer(app);
 var io = require('socket.io')(server);
 app.use(express.static(__dirname + '/node_modules'));
-require('tls').SLAB_BUFFER_SIZE = 100 * 1024;
+
+app.post('/file_upload', upload.single('file'), function (req, res) {
+    var file = __dirname + "/" + req.file.originalname;
+    fs.readFile(req.file.path, function (err, data) {
+            if (err) {
+                console.error(err);
+                response = {
+                    message: 'Sorry, file couldn\'t be uploaded.',
+                    filename: req.file.originalname
+                };
+            } else {
+                response = {
+                    message: 'File uploaded successfully',
+                    filename: req.file.originalname
+                };
+            }
+            res.end(JSON.stringify(response));
+        });
+    });
+
+})
+
 
 var image = null;
 var connectedClients = new Array();
@@ -156,14 +191,15 @@ io.on('connection', function (socket) {
             if (d != null) {
                 console.log('image wird an ' + d.socketId+' verschickt');
                 socket.to(d.socketId).emit('receiveImage', image);
+                global.gc();
                 if (last) {
                     console.log('letzten teil erhalten');
-                    socket.emit('allPartsReceived')
+                    socket.to(socket.socketId).emit('allPartsReceived');
                     socket.to(d.socketId).emit('showImage');
                 }
             }            
         }
-        
+        last = false;        
         image = null;
     });
 

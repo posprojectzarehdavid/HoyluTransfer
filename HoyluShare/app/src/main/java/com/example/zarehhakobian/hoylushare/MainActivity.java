@@ -32,6 +32,12 @@ import net.hockeyapp.android.CrashManager;
 import net.hockeyapp.android.UpdateManager;
 import net.hockeyapp.android.metrics.MetricsManager;
 
+import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpPut;
+import org.apache.http.entity.mime.MultipartEntity;
+import org.apache.http.entity.mime.content.FileBody;
+import org.apache.http.impl.client.DefaultHttpClient;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -100,12 +106,12 @@ public class MainActivity extends Activity implements DeviceSelectedListener {
         super.onBackPressed();
         socket.disconnect();
         socket.off();
-        if(dialog.isShowing()){
+        if(dialog != null || dialog.isShowing()){
             dialog.dismiss();
         }
     }
 
-    private String getImageForServer() {
+    private File getImageForServer() {
         Intent intent = getIntent();
         String action = intent.getAction();
         String type = intent.getType();
@@ -117,7 +123,7 @@ public class MainActivity extends Activity implements DeviceSelectedListener {
                 String imageDataString = encodeImage(imageBytes);
                 Log.i("imageString", imageDataString);
                 //writeToFile(imageInBytes);
-                return imageDataString;
+                return file;
             }
         }
         return null;
@@ -246,14 +252,11 @@ public class MainActivity extends Activity implements DeviceSelectedListener {
 
     @Override
     public void sendImageToServer(final String id, final String client) {
-        if (!socket.connected()) {
-            return;
-        }
         MetricsManager.trackEvent("Sending image");
         dialog = new ProgressDialog(MainActivity.this);
         dialog.setMessage("Daten werden an den Server geschickt...");
         dialog.show();
-        final String imageInBytes = getImageForServer();
+        /*final String imageInBytes = getImageForServer();
         String[] parts = Iterables.toArray(
                 Splitter
                         .fixedLength(100000)
@@ -277,13 +280,21 @@ public class MainActivity extends Activity implements DeviceSelectedListener {
             }
 
             socket.emit("imagepartsForServer", jsonObject);
-        }
-        /*if(uat != null){
-            uat.cancel(true);
+        }*/
+
+        File f = getImageForServer();
+        HttpClient httpClient = new DefaultHttpClient();
+        HttpPut httpPut = new HttpPut("http://40.114.246.211:4200/file_upload");
+        MultipartEntity entity = new MultipartEntity();
+        entity.addPart("image", new FileBody(f));
+        httpPut.setEntity(entity);
+        try {
+            HttpResponse response = httpClient.execute(httpPut);
+            Toast.makeText(this,response.getStatusLine()+"",Toast.LENGTH_SHORT).show();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
 
-        uat = new UploadingAsyncTask();
-        uat.execute(id, client);*/
     }
 
     public void connectToServer() {
@@ -296,7 +307,7 @@ public class MainActivity extends Activity implements DeviceSelectedListener {
                     socket.emit("client", "MainClient");
                 }
             });
-            socket.on("allPartsReceived", new Emitter.Listener() {
+            /*socket.on("allPartsReceived", new Emitter.Listener() {
                 @Override
                 public void call(Object... args) {
                     dialog.dismiss();
@@ -315,7 +326,7 @@ public class MainActivity extends Activity implements DeviceSelectedListener {
                         }
                     });
                 }
-            });
+            });*/
             socket.connect();
 
         } catch (Exception e) {
@@ -338,7 +349,7 @@ public class MainActivity extends Activity implements DeviceSelectedListener {
             final String[] serverMessage = {""};
             final String id = args[0];
             final String client = args[1];
-            final String imageInBytes = getImageForServer();
+            final String imageInBytes = "";// getImageForServer();
 
             try {
                 socket = IO.socket(CONNECTION_STRING);
