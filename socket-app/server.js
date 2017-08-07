@@ -38,11 +38,10 @@ app.post('/file_upload', upload.any(), function (req, res) {
                 filename: req.files[0].originalname
             };
         }
-        res.send(response);
-        return res(response);
+    
     });
-    //src.on('end', function () { res.send({ path: tmp_path }); });
-    //src.on('error', function(err) { res.send({error: "upload failed"}); });
+    src.on('end', function () { res.send({ path: tmp_path }); });
+    src.on('error', function(err) { res.send({error: "upload failed"}); });
 });
 
 var image = null;
