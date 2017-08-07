@@ -7,11 +7,11 @@ var fs = require("fs");
 
 var storage = multer.diskStorage({ 
     destination: function (req, file, cb) {
-        cb(null, '/shared')
+        cb(null, '/home/ts/shared')
     },
-    filename: function (req, file, cb) {
+    /*filename: function (req, file, cb) {
         cb(null, uuidv4());
-    }
+    }*/
 });
 
 var upload = multer({ storage: storage });
