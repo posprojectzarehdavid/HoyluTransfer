@@ -38,7 +38,7 @@ app.post('/file_upload', upload.any(), function (req, res) {
             };
         }    
     });
-    res.send(JSON.stringify(response));
+    res.end(JSON.stringify(response));
 });
 
 var image = null;
