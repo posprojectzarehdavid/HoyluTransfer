@@ -55,6 +55,7 @@ public class MainActivity extends Activity implements DeviceSelectedListener {
     public static long start;
     public static long end;
     UploadingAsyncTask uat;
+    ProgressDialog dialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -80,6 +81,8 @@ public class MainActivity extends Activity implements DeviceSelectedListener {
             Analytics.trackEvent("App started", properties);
             Log.i("App", "AppStarted");
 
+            connectToServer();
+
         } else {
             requestPermissions();
         }
@@ -92,6 +95,16 @@ public class MainActivity extends Activity implements DeviceSelectedListener {
         start = 0;
     }
 
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        socket.disconnect();
+        socket.off();
+        if(dialog.isShowing()){
+            dialog.dismiss();
+        }
+    }
+
     private String getImageForServer() {
         Intent intent = getIntent();
         String action = intent.getAction();
@@ -100,7 +113,7 @@ public class MainActivity extends Activity implements DeviceSelectedListener {
             if (type.startsWith("image/")) {
                 imagePath = getImagePathFromIntent(intent);
                 File file = new File(imagePath);
-                byte[]imageBytes = imageToByteArray(file);
+                byte[] imageBytes = imageToByteArray(file);
                 String imageDataString = encodeImage(imageBytes);
                 Log.i("imageString", imageDataString);
                 //writeToFile(imageInBytes);
@@ -110,16 +123,16 @@ public class MainActivity extends Activity implements DeviceSelectedListener {
         return null;
     }
 
-    public void writeToFile(byte[]x) {
+    public void writeToFile(byte[] x) {
         File root = android.os.Environment.getExternalStorageDirectory();
-        File dir = new File (root.getAbsolutePath() + "/Download");
+        File dir = new File(root.getAbsolutePath() + "/Download");
         dir.mkdirs();
         File file = new File(dir, "imageInBytes.txt");
 
         try {
             FileOutputStream f = new FileOutputStream(file);
             PrintWriter pw = new PrintWriter(f);
-            for(int i = 0; i<x.length; i++){
+            for (int i = 0; i < x.length; i++) {
                 pw.println(x[i]);
                 pw.flush();
             }
@@ -135,7 +148,7 @@ public class MainActivity extends Activity implements DeviceSelectedListener {
         }
     }
 
-    public byte[] imageToByteArray(File f){
+    public byte[] imageToByteArray(File f) {
         FileInputStream fis = null;
         byte[] bytesArray = new byte[(int) f.length()];
         try {
@@ -152,10 +165,6 @@ public class MainActivity extends Activity implements DeviceSelectedListener {
 
     public String encodeImage(byte[] imageByteArray) {
         return Base64.encodeBytes(imageByteArray);
-    }
-
-    public static byte[] decodeImage(String imageDataString) {
-        return Base64.decode(imageDataString);
     }
 
     private String getImagePathFromIntent(Intent intent) {
@@ -180,9 +189,9 @@ public class MainActivity extends Activity implements DeviceSelectedListener {
         final String[] permissions = new String[]{android.Manifest.permission.CAMERA,
                 Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.INTERNET};
 
-        if (!ActivityCompat.shouldShowRequestPermissionRationale(this,Manifest.permission.CAMERA)
-                && !ActivityCompat.shouldShowRequestPermissionRationale(this,Manifest.permission.INTERNET)
-                && !ActivityCompat.shouldShowRequestPermissionRationale(this,Manifest.permission.READ_EXTERNAL_STORAGE)) {
+        if (!ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.CAMERA)
+                && !ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.INTERNET)
+                && !ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.READ_EXTERNAL_STORAGE)) {
             ActivityCompat.requestPermissions(this, permissions, RC_Handle_CAMERA_AND_INTERNET_PERM_AND_READ_PERM);
             return;
         }
@@ -237,13 +246,81 @@ public class MainActivity extends Activity implements DeviceSelectedListener {
 
     @Override
     public void sendImageToServer(final String id, final String client) {
+        if (!socket.connected()) {
+            return;
+        }
         MetricsManager.trackEvent("Sending image");
-        if(uat != null){
+        dialog = new ProgressDialog(MainActivity.this);
+        dialog.setMessage("Daten werden an den Server geschickt...");
+        dialog.show();
+        final String imageInBytes = getImageForServer();
+        String[] parts = Iterables.toArray(
+                Splitter
+                        .fixedLength(100000)
+                        .split(imageInBytes),
+                String.class
+        );
+        for (int i = 0; i < parts.length; i++) {
+            final JSONObject jsonObject = new JSONObject();
+            try {
+                if (i == parts.length - 1) {
+                    jsonObject.put("imagePart", parts[i]);
+                    jsonObject.put("displayId", id);
+                    jsonObject.put("last", true);
+                } else {
+                    jsonObject.put("imagePart", parts[i]);
+                    jsonObject.put("displayId", id);
+                    jsonObject.put("last", false);
+                }
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+
+            socket.emit("imagepartsForServer", jsonObject);
+        }
+        /*if(uat != null){
             uat.cancel(true);
         }
 
         uat = new UploadingAsyncTask();
-        uat.execute(id, client);
+        uat.execute(id, client);*/
+    }
+
+    public void connectToServer() {
+        try {
+            socket = IO.socket(CONNECTION_STRING);
+            socket.on(Socket.EVENT_CONNECT, new Emitter.Listener() {
+                @Override
+                public void call(Object... args) {
+                    Log.i("hallo", "connected");
+                    socket.emit("client", "MainClient");
+                }
+            });
+            socket.on("allPartsReceived", new Emitter.Listener() {
+                @Override
+                public void call(Object... args) {
+                    dialog.dismiss();
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            AlertDialog.Builder ad = new AlertDialog.Builder(MainActivity.this);
+                            ad.setMessage("Alle Teile wurden verschicket!");
+                            ad.setNeutralButton("OK", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    dialog.dismiss();
+                                }
+                            });
+                            ad.show();
+                        }
+                    });
+                }
+            });
+            socket.connect();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     class UploadingAsyncTask extends AsyncTask<String, Void, String> {
@@ -270,21 +347,21 @@ public class MainActivity extends Activity implements DeviceSelectedListener {
                     public void call(Object... args) {
                         Log.i("hallo", "connected");
 
-                        String[] parts  =
+                        String[] parts =
                                 Iterables.toArray(
                                         Splitter
                                                 .fixedLength(100000)
                                                 .split(imageInBytes),
                                         String.class
                                 );
-                        for(int i = 0; i<parts.length; i++){
+                        for (int i = 0; i < parts.length; i++) {
                             JSONObject jsonObject = new JSONObject();
                             try {
-                                if(i == parts.length-1){
+                                if (i == parts.length - 1) {
                                     jsonObject.put("imagePart", parts[i]);
                                     jsonObject.put("displayId", id);
                                     jsonObject.put("last", true);
-                                } else{
+                                } else {
                                     jsonObject.put("imagePart", parts[i]);
                                     jsonObject.put("displayId", id);
                                     jsonObject.put("last", false);
@@ -307,7 +384,7 @@ public class MainActivity extends Activity implements DeviceSelectedListener {
 
                                 }
                             });
-                            if(i == parts.length-1){
+                            if (i == parts.length - 1) {
                                 onPostExecute(serverMessage[0], id);
                             }
                         }
@@ -349,8 +426,8 @@ public class MainActivity extends Activity implements DeviceSelectedListener {
             return serverMessage[0];
         }
 
-        protected void onPostExecute(final String result, String id){
-            if(gotServerMessage){
+        protected void onPostExecute(final String result, String id) {
+            if (gotServerMessage) {
                 socket.emit("finished", id);
                 socket.disconnect();
                 socket.off();

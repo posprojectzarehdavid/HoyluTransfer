@@ -72,7 +72,7 @@ namespace HoyluReceiver
                     );
                 });
 
-                s.On("finish", () =>
+                s.On("showImage", () =>
                 {
                     //Console.WriteLine(data.ToString());
                     //Console.WriteLine(imageString);
@@ -80,15 +80,13 @@ namespace HoyluReceiver
                     //byte[] hash = ((HashAlgorithm)CryptoConfig.CreateFromName("MD5")).ComputeHash(encoded);
                     //if (data.ToString().Equals(hash.ToString()))
                     //{
-                    Console.WriteLine("Daten wrden vollständig übertragen");
+                    Console.WriteLine("Daten wurden vollständig übertragen");
                     Dispatcher.BeginInvoke(
                    new Action(() =>
                    {
-                       BeginInit();
                        byte[] x = Convert.FromBase64String(imageString);
                        bitmapImage = ToImage(x);
                        image.Source = bitmapImage;
-                       EndInit();
                    })
                 );
 

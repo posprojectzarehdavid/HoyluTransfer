@@ -147,35 +147,24 @@ io.on('connection', function (socket) {
 
 	//socket.on('bluetoothAddresses', sendBluetoothMatchesToClient);
 
-    socket.on('main_client', function (data, cb) {
-        console.log('MainClient with SocketId '+socket.id+' connected...');
+    socket.on('imagepartsForServer', function (data) {
         image = data.imagePart;
         var id = data.displayId;
         var last = data.last;
-        var message = '';
         if (image != null) {
             var d = getHoyluDeviceWithId(id);
             if (d != null) {
+                console.log('image wird an ' + d.socketId+' verschickt');
                 socket.to(d.socketId).emit('receiveImage', image);
-            }
-            else {
-                message = 'Gerät nicht gefunden';
+                if (last) {
+                    console.log('letzten teil erhalten');
+                    socket.emit('allPartsReceived')
+                    socket.to(d.socketId).emit('showImage');
+                }
             }            
-        } else {
-            message = 'Daten nicht erhalten'
         }
         
         image = null;
-        return cb(message);
-    });
-
-    socket.on('finished', function (data) {
-        var d = getHoyluDeviceWithId(data.toString);
-        if (d != null) {
-            console.log('finished');
-            socket.to(d.socketId).emit('finish');
-        }
-
     });
 
     socket.on('disconnect', function () {
