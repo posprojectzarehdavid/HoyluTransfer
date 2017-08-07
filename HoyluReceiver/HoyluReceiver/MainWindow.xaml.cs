@@ -56,20 +56,26 @@ namespace HoyluReceiver
 
                 s.On("receiveImage", (data) =>
                 {
-                    Dispatcher.BeginInvoke(
-                       new Action(() =>
-                       {
-                           //ImagePart ip = JsonConvert.DeserializeObject<ImagePart>(data.ToString());
+                    string filePathOnServer = data.ToString();  //"home/shared/cd4f5d64-a764-402c-a464-7df88bac091a";
+                    string url = @"http://40.114.246.211/" + filePathOnServer;
+                    byte[] lnByte;
 
-                           imageString += data.ToString();
-                           //if (ip.l == true)
-                           //{
-                           //    byte[] x = Convert.FromBase64String(imageString);
-                           //    bitmapImage = ToImage(x);
-                           //    image.Source = bitmapImage;
-                           //}
-                       })
-                    );
+                    HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
+                    String lsResponse = string.Empty;
+
+                    using (HttpWebResponse response = (HttpWebResponse)request.GetResponse())
+                    {
+                        using (BinaryReader reader = new BinaryReader(response.GetResponseStream()))
+                        {
+                            lnByte = reader.ReadBytes(1 * 1024 * 1024 * 10);
+                            using (FileStream stream = new FileStream("34891.jpg", FileMode.Create))
+                            {
+                                stream.Write(lnByte, 0, lnByte.Length);
+                            }
+                        }
+                    }
+                    bitmapImage = ToImage(lnByte);
+                    image.Source = bitmapImage;
                 });
 
                 s.On("showImage", () =>
@@ -85,9 +91,7 @@ namespace HoyluReceiver
                    new Action(() =>
                    {
                        byte[] x = Convert.FromBase64String(imageString);
-                       bitmapImage = ToImage(x);
-                       image.Source = bitmapImage;
-                       imageString = "";
+                      
                    })
                 );
 
