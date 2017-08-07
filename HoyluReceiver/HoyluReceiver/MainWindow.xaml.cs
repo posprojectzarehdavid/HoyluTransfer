@@ -56,7 +56,7 @@ namespace HoyluReceiver
 
                 s.On("receiveImage", (data) =>
                 {
-                    string filePathOnServer = data.ToString();  //"home/shared/cd4f5d64-a764-402c-a464-7df88bac091a";
+                    string filePathOnServer = data.ToString();  //"/home/ts/shared/cd4f5d64-a764-402c-a464-7df88bac091a";
                     string url = @"http://40.114.246.211/" + filePathOnServer;
                     byte[] lnByte;
 
@@ -68,7 +68,8 @@ namespace HoyluReceiver
                         using (BinaryReader reader = new BinaryReader(response.GetResponseStream()))
                         {
                             lnByte = reader.ReadBytes(1 * 1024 * 1024 * 10);
-                            using (FileStream stream = new FileStream("34891.jpg", FileMode.Create))
+                            string[] pathSplitted = filePathOnServer.Split('/');
+                            using (FileStream stream = new FileStream(pathSplitted[4], FileMode.Create))
                             {
                                 stream.Write(lnByte, 0, lnByte.Length);
                             }
