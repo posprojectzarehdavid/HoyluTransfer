@@ -5,14 +5,14 @@ var uuidv4 = require('uuid/v4');
 var multer = require('multer');
 var fs = require("fs");
 
-var storage = multer.diskStorage({
-    destination: function (req, file, cb) {
+var storage = multer({ dest: 'home/ts/shared/' });
+    /*destination: function (req, file, cb) {
         cb(null, '/ts/shared')
     },
     filename: function (req, file, cb) {
         cb(null, uuidv4());
     }
-});
+});*/
 
 var upload = multer({ storage: storage });
 var app = express();
