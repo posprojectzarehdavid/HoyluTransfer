@@ -7,7 +7,7 @@ var fs = require("fs");
 
 var storage = multer.diskStorage({ 
     destination: function (req, file, cb) {
-        cb(null, 'home/ts/shared')
+        cb(null, '/shared')
     },
     filename: function (req, file, cb) {
         cb(null, uuidv4());
@@ -21,22 +21,18 @@ var io = require('socket.io')(server);
 app.use(express.static(__dirname + '/node_modules'));
 
 app.post('/file_upload', upload.any(), function (req, res) {
-    var file = __dirname + "/" + req.file.originalname;
-    fs.readFile(req.file.path, function (err, data) {
-        if (err) {
-            console.error(err);
-            response = {
-                message: 'Sorry, file couldn\'t be uploaded.',
-                filename: req.file.originalname
-            };
-        } else {
-            response = {
-                message: 'File uploaded successfully',
-                filename: req.file.originalname
-            };
-        }
-        res.end(JSON.stringify(response));
-    });
+    console.log(req.files);
+
+    var tmp_path = req.files[0].path;
+    console.log(tmp_path);
+
+    var target_path = 'shared/' + req.files[0].originalname;
+    console.log(target_path);
+    var src = fs.createReadStream(tmp_path);
+    var dest = fs.createWriteStream(target_path);
+    src.pipe(dest);
+    src.on('end', function() { res.send("ok"); });
+    src.on('error', function(err) { res.send({error: "upload failed"}); });
 });
 
 var image = null;
