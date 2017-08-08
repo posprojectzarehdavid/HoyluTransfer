@@ -60,30 +60,6 @@ class HoyluDevice {
     }
 }
 
-class NetworkClient {
-    constructor(id, name, publicIP, defaultGateway) {
-        this.id = id;
-        this.name = name;
-        this.publicIP = publicIP;
-        this.defaultGateway = defaultGateway;
-    }
-    toString() {
-        return this.id + ', ' + this.name;
-    }
-}
-
-class BluetoothClient {
-    constructor(id, name, bluetoothAddress) {
-        this.id = id;
-        this.name = name;
-        this.bluetoothAddress = bluetoothAddress;
-        
-    }
-    toString() {
-        return this.id + ', ' + this.name;
-    }
-}
-
 function getNetworkClients(publicIP, defaultGateway) {
     var networkDev = new Array();
     for (var d in hoyluDevices) {

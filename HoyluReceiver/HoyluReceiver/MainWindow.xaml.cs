@@ -2,31 +2,20 @@
 using Quobject.SocketIoClientDotNet.Client;
 using System;
 using System.IO;
-using System.IO.Compression;
-using System.Linq;
 using System.Net;
 using System.Net.NetworkInformation;
 using System.Runtime.Serialization.Formatters.Binary;
-using System.Security.Cryptography;
-using System.Text;
-using System.Threading;
 using System.Windows;
-using System.Windows.Media;
 using System.Windows.Media.Imaging;
 
 namespace HoyluReceiver
 {
-    /// <summary>
-    /// Interaktionslogik für MainWindow.xaml
-    /// </summary>
-    /// 
     public partial class MainWindow : Window
     {
         Socket s;
         string name, hoyluId, bluetoothAddress, qrValue, nfcValue, publicIp, defaultGateway;
         HoyluDevice hoyluDevice;
         BitmapImage bitmapImage;
-        string imageString;
 
         public MainWindow()
         {
@@ -64,44 +53,14 @@ namespace HoyluReceiver
                             }
                         }
                     }
-                    bitmapImage = ToImage(lnByte);
+                    bitmapImage = ByteArrayToImage(lnByte);
                     image.Source = bitmapImage;
-                });
-
-                s.On("showImage", () =>
-                {
-                    //Console.WriteLine(data.ToString());
-                    //Console.WriteLine(imageString);
-                    //byte[] encoded = new UTF8Encoding().GetBytes(imageString);
-                    //byte[] hash = ((HashAlgorithm)CryptoConfig.CreateFromName("MD5")).ComputeHash(encoded);
-                    //if (data.ToString().Equals(hash.ToString()))
-                    //{
-                    Console.WriteLine("Daten wurden vollständig übertragen");
-                    Dispatcher.BeginInvoke(
-                   new Action(() =>
-                   {
-                       byte[] x = Convert.FromBase64String(imageString);
-                      
-                   })
-                );
-
-                    //}
                 });
             });
             s.Connect();
         }
 
-        public static byte[] ObjectToByteArray(object obj)
-        {
-            BinaryFormatter bf = new BinaryFormatter();
-            using (var ms = new MemoryStream())
-            {
-                bf.Serialize(ms, obj);
-                return ms.ToArray();
-            }
-        }
-
-        public BitmapImage ToImage(byte[] byteVal)
+        public BitmapImage ByteArrayToImage(byte[] byteVal)
         {
             if (byteVal == null)
             {

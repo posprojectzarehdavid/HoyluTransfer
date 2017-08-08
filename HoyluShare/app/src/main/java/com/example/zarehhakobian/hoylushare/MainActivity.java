@@ -83,8 +83,6 @@ public class MainActivity extends Activity implements DeviceSelectedListener {
             Analytics.trackEvent("App started", properties);
             Log.i("App", "AppStarted");
 
-            connectToServer();
-
         } else {
             requestPermissions();
         }
@@ -226,7 +224,6 @@ public class MainActivity extends Activity implements DeviceSelectedListener {
             Log.d(TAG, "Camera and internet permission granted");
             permissionsGranted = true;
             setContentView(R.layout.activity_main);
-            connectToServer();
             return;
         }
         setContentView(R.layout.activity_main);
@@ -253,31 +250,8 @@ public class MainActivity extends Activity implements DeviceSelectedListener {
         dialog = new ProgressDialog(MainActivity.this);
         dialog.setMessage("Daten werden am Server hochgeladen...");
         dialog.show();
-        /*final String imageInBytes = getImageForServer();
-        String[] parts = Iterables.toArray(
-                Splitter
-                        .fixedLength(100000)
-                        .split(imageInBytes),
-                String.class
-        );
-        for (int i = 0; i < parts.length; i++) {
-            final JSONObject jsonObject = new JSONObject();
-            try {
-                if (i == parts.length - 1) {
-                    jsonObject.put("imagePart", parts[i]);
-                    jsonObject.put("displayId", id);
-                    jsonObject.put("last", true);
-                } else {
-                    jsonObject.put("imagePart", parts[i]);
-                    jsonObject.put("displayId", id);
-                    jsonObject.put("last", false);
-                }
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
 
-            socket.emit("imagepartsForServer", jsonObject);
-        }*/
+        connectToServer();
 
         Ion.with(getApplicationContext())
                 .load("POST", "http://40.114.246.211:4200/file_upload")
@@ -324,6 +298,8 @@ public class MainActivity extends Activity implements DeviceSelectedListener {
             }
 
             socket.emit("uploadFinished", jsonObject);
+            socket.off();
+            socket.disconnect();
             Toast.makeText(getApplicationContext(), "Server benachrichtigt", Toast.LENGTH_SHORT).show();
         }
     }
@@ -338,26 +314,6 @@ public class MainActivity extends Activity implements DeviceSelectedListener {
                     socket.emit("client", "MainClient");
                 }
             });
-            /*socket.on("allPartsReceived", new Emitter.Listener() {
-                @Override
-                public void call(Object... args) {
-                    dialog.dismiss();
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            AlertDialog.Builder ad = new AlertDialog.Builder(MainActivity.this);
-                            ad.setMessage("Alle Teile wurden verschicket!");
-                            ad.setNeutralButton("OK", new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialog, int which) {
-                                    dialog.dismiss();
-                                }
-                            });
-                            ad.show();
-                        }
-                    });
-                }
-            });*/
             socket.connect();
 
         } catch (Exception e) {

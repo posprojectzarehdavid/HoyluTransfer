@@ -152,7 +152,7 @@ public class NetworkFragment extends Fragment {
                             try {
                                 JSONObject j = (JSONObject) args[0];
                                 JSONArray dev = j.getJSONArray("list");
-                                if(dev != null){
+                                if(dev.length() > 0){
                                     for (int i = 0; i < dev.length(); i++) {
                                         JSONObject jsonObject = dev.getJSONObject(i);
                                         String id = jsonObject.getString("hoyluId");
@@ -165,17 +165,15 @@ public class NetworkFragment extends Fragment {
                                         String socketId = jsonObject.getString("socketId");
                                         HoyluDevice hd = new HoyluDevice(id, name,btAddress,qrValue,nfcValue, pubIp, defGate,socketId);
                                         hoyluDevices.add(hd);
-                                        socket.disconnect();
-                                        socket.off();
-                                        if(getActivity() != null){
-                                            getActivity().runOnUiThread(new Runnable() {
-                                                @Override
-                                                public void run() {
-                                                    aa.notifyDataSetChanged();
-                                                    Toast.makeText(getActivity(), "Neu gefüllt",Toast.LENGTH_SHORT).show();
-                                                }
-                                            });
-                                        }
+                                    }
+                                    if(getActivity() != null){
+                                        getActivity().runOnUiThread(new Runnable() {
+                                            @Override
+                                            public void run() {
+                                                aa.notifyDataSetChanged();
+                                                Toast.makeText(getActivity(), "Neu gefüllt",Toast.LENGTH_SHORT).show();
+                                            }
+                                        });
                                     }
 
                                     for (HoyluDevice d : hoyluDevices) {
@@ -186,6 +184,7 @@ public class NetworkFragment extends Fragment {
                                         getActivity().runOnUiThread(new Runnable() {
                                             @Override
                                             public void run() {
+                                                aa.notifyDataSetChanged();
                                                 Toast.makeText(getActivity(), "Keine Geräte im Netzwerk",Toast.LENGTH_SHORT).show();
                                             }
                                         });
@@ -195,6 +194,8 @@ public class NetworkFragment extends Fragment {
                             } catch (JSONException e) {
                                 e.printStackTrace();
                             }
+                            socket.disconnect();
+                            socket.off();
                         }
                     });
                 }
