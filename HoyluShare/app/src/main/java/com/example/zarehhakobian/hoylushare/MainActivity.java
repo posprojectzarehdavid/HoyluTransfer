@@ -219,13 +219,14 @@ public class MainActivity extends Activity implements DeviceSelectedListener {
                                            @NonNull String[] permissions,
                                            @NonNull int[] grantResults) {
 
-        if (grantResults.length != 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED
+        if (grantResults.length != 0
+                && grantResults[0] == PackageManager.PERMISSION_GRANTED
                 && grantResults[1] == PackageManager.PERMISSION_GRANTED
                 && grantResults[2] == PackageManager.PERMISSION_GRANTED) {
             Log.d(TAG, "Camera and internet permission granted");
             permissionsGranted = true;
             setContentView(R.layout.activity_main);
-
+            connectToServer();
             return;
         }
         setContentView(R.layout.activity_main);

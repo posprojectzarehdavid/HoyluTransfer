@@ -31,17 +31,6 @@ namespace HoyluReceiver
         public MainWindow()
         {
             InitializeComponent();
-            /*
-            bluetoothAddress = GetBTMacAddress();
-            hoyluId = Guid.NewGuid().ToString();
-            name = Environment.MachineName;
-            qrValue = hoyluId;
-            nfcValue = hoyluId;
-            publicIp = new WebClient().DownloadString(@"http://icanhazip.com").Trim();
-            defaultGateway = GetDefaultGatewayAddress();
-            hoyluDevice = new HoyluDevice(name, hoyluId, bluetoothAddress, qrValue, nfcValue, publicIp, defaultGateway);
-            ConnectToServer();
-            */
         }
 
         private void ConnectToServer()
@@ -57,7 +46,7 @@ namespace HoyluReceiver
                 s.On("getImage", (data) =>
                 {
                     string filePathOnServer = data.ToString();  //"/home/ts/shared/cd4f5d64-a764-402c-a464-7df88bac091a";
-                    string url = @"http://40.114.246.211/" + filePathOnServer;
+                    string url = @"http://40.114.246.211:4200" + filePathOnServer;
                     byte[] lnByte;
 
                     HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);

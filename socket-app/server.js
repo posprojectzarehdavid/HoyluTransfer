@@ -143,7 +143,10 @@ setInterval(garcol, 1000 * 5);
 setInterval(showHoyluDevices, 1000 * 5);
 
 io.on('connection', function (socket) {
-    connectedClients.push(socket);
+    if (connectedClients.find(socket) == null){
+        connectedClients.push(socket);
+    }
+    
     socket.on('client', function (data) {
         console.log(data + ' with SocketId ' + socket.id + ' connected...');
     });
@@ -185,7 +188,7 @@ io.on('connection', function (socket) {
 
     socket.on('disconnect', function () {
         for (var d in connectedClients) {
-            console.log(connectedClients[d].Name + ', ' + connectedClients.indexOf(d));
+            console.log(connectedClients[d].id + ', ' + connectedClients.indexOf(d));
         }
 
         for (var d in hoyluDevices) {
