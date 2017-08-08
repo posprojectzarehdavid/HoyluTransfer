@@ -70,7 +70,7 @@ public class BluetoothFragment extends Fragment {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 if (listener != null) {
-                    listener.sendImageToServer(filteredDeviceList.get(position).getId(), "BluetoothClient");             //Was mitgeben?
+                    listener.uploadImageToServer(filteredDeviceList.get(position).getId(), "BluetoothClient");             //Was mitgeben?
                 }
             }
         });

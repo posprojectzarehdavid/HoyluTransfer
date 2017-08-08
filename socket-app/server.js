@@ -149,7 +149,7 @@ io.on('connection', function (socket) {
             var d = getHoyluDeviceWithId(id);
             if (d != null) {
                 console.log(d.socketId+' wird benachrichtigt');
-                socket.to(d.socketId).emit('getImage', imagePath);
+                //socket.to(d.socketId).emit('getImage', imagePath);
                 global.gc();
             }            
         }     

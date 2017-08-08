@@ -23,7 +23,7 @@
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceLarge"
         android:layout_centerHorizontal="true"
-        android:text="Auf Anzeige Tippen, um zu scannen"
+        android:text="Auf einen QR-Code richten"
         android:textAlignment="center" />
 
 </LinearLayout>

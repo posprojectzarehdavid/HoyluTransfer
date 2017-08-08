@@ -111,6 +111,7 @@ public class CameraFragment extends Fragment implements BarcodeGraphic.BoundingB
         super.onStop();
         if(socket != null && socket.connected()){
             socket.disconnect();
+            socket.off();
             mPreview.release();
         }
     }
@@ -227,30 +228,30 @@ public class CameraFragment extends Fragment implements BarcodeGraphic.BoundingB
                             @Override
                             public void call(Object... args) {
                                 isGueltigeID = (boolean) args[0];
-                                final Runnable r = new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        if (isGueltigeID) {
+                                if(isGueltigeID) {
+                                    getActivity().runOnUiThread(new Runnable() {
+                                        @Override
+                                        public void run() {
                                             scannedBarcodeValues.add(barcode.displayValue);
                                             Toast.makeText(getActivity(), "Gültige ID", Toast.LENGTH_SHORT).show();
-                                            if(listener != null){
+                                            if (listener != null) {
                                                 MainActivity.end = System.currentTimeMillis();
                                                 Map<String, String> time = new HashMap<>();
-                                                time.put("Zeit bis Async Aufruf", ""+(MainActivity.end-MainActivity.start));
+                                                time.put("Zeit bis uploadImage Aufruf", "" + (MainActivity.end - MainActivity.start));
                                                 MetricsManager.trackEvent("CameraClient", time);
                                                 MainActivity.start = System.currentTimeMillis();
-                                                listener.sendImageToServer(barcode.displayValue, "CameraClient");
+                                                listener.uploadImageToServer(barcode.displayValue, "CameraClient");
+
                                             }
-                                            mPreview.release();
-                                            socket.disconnect();
-                                            socket.off();
-                                        } else {
-                                            scannedBarcodeValues.add(barcode.displayValue);
-                                            Toast.makeText(getActivity(), "Keine Gültige ID", Toast.LENGTH_SHORT).show();
                                         }
-                                    }
-                                };
-                                getActivity().runOnUiThread(r);
+                                    });
+                                    mPreview.release();
+                                    socket.disconnect();
+                                    socket.off();
+                                }else {
+                                    scannedBarcodeValues.add(barcode.displayValue);
+                                    Toast.makeText(getActivity(), "Keine Gültige ID", Toast.LENGTH_SHORT).show();
+                                }
                             }
                         });
                     }

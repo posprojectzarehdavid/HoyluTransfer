@@ -4,14 +4,18 @@ import android.Manifest;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.test.espresso.core.deps.guava.base.Splitter;
 import android.support.test.espresso.core.deps.guava.collect.Iterables;
@@ -58,15 +62,59 @@ public class MainActivity extends Activity implements DeviceSelectedListener {
     public static long end;
     UploadingAsyncTask uat;
     ProgressDialog dialog;
+    public static boolean isWifiConn, isMobileConn;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        checkConnectivity();
+        if(!isWifiConn && !isMobileConn){
+            AlertDialog.Builder ad = new AlertDialog.Builder(MainActivity.this);
+            ad.setTitle("Keine Internetverbindung!");
+            ad.setMessage("Wollen Sie sich verbinden?");
+            ad.setPositiveButton("Ja", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    dialog.dismiss();
+                    startActivityForResult(new Intent(Settings.ACTION_WIFI_SETTINGS),0);
+                }
+            });
+            ad.setNegativeButton("Nein", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    dialog.dismiss();
+                    Toast.makeText(getApplication(), "Leider benötigen Sie für diese App eine Internetverbindung!",
+                            Toast.LENGTH_LONG).show();
+                    finish();
+                }
+            });
+            ad.show();
+        }
+        if(!isWifiConn && isMobileConn){
+            AlertDialog.Builder ad = new AlertDialog.Builder(MainActivity.this);
+            ad.setTitle("Achtung!");
+            ad.setMessage("Um Geräte in Ihrem Netzwerk zu identifizieren, schalten Sie WLAN ein!");
+            ad.setNeutralButton("OK", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    dialog.dismiss();
+                    startActivityForResult(new Intent(Settings.ACTION_WIFI_SETTINGS),0);
+                }
+            });
+            ad.show();
+        }
+        if(isWifiConn){
+            startMethod();
+        }
+    }
+
+    private void startMethod() {
         start = System.currentTimeMillis();
-        int rc = ActivityCompat.checkSelfPermission(this, android.Manifest.permission.CAMERA);
+        int rc = ActivityCompat.checkSelfPermission(this, Manifest.permission.CAMERA);
         int i = ActivityCompat.checkSelfPermission(this, Manifest.permission.INTERNET);
         int readPerm = ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE);
-        if (rc == PackageManager.PERMISSION_GRANTED && i == PackageManager.PERMISSION_GRANTED &&
+        if (rc == PackageManager.PERMISSION_GRANTED &&
+                i == PackageManager.PERMISSION_GRANTED &&
                 readPerm == PackageManager.PERMISSION_GRANTED) {
             permissionsGranted = true;
             setContentView(R.layout.activity_main);
@@ -82,10 +130,30 @@ public class MainActivity extends Activity implements DeviceSelectedListener {
 
             Analytics.trackEvent("App started", properties);
             Log.i("App", "AppStarted");
-
         } else {
             requestPermissions();
         }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if(requestCode == 0){
+            checkConnectivity();
+            if(isWifiConn || isMobileConn){
+                startMethod();
+            }else {
+                finish();
+            }
+        }
+    }
+
+    public void checkConnectivity(){
+        ConnectivityManager connMgr = (ConnectivityManager)getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo networkInfo = connMgr.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
+        isWifiConn = networkInfo.isConnected();
+        networkInfo = connMgr.getNetworkInfo(ConnectivityManager.TYPE_MOBILE);
+        isMobileConn = networkInfo.isConnected();
     }
 
     @Override
@@ -98,8 +166,10 @@ public class MainActivity extends Activity implements DeviceSelectedListener {
     @Override
     public void onBackPressed() {
         super.onBackPressed();
-        socket.disconnect();
-        socket.off();
+        if(socket != null){
+            socket.disconnect();
+            socket.off();
+        }
         if (dialog != null) {
             dialog.dismiss();
         }
@@ -222,8 +292,7 @@ public class MainActivity extends Activity implements DeviceSelectedListener {
                 && grantResults[1] == PackageManager.PERMISSION_GRANTED
                 && grantResults[2] == PackageManager.PERMISSION_GRANTED) {
             Log.d(TAG, "Camera and internet permission granted");
-            permissionsGranted = true;
-            setContentView(R.layout.activity_main);
+            startMethod();
             return;
         }
         setContentView(R.layout.activity_main);
@@ -245,7 +314,7 @@ public class MainActivity extends Activity implements DeviceSelectedListener {
     }
 
     @Override
-    public void sendImageToServer(final String id, final String client) {
+    public void uploadImageToServer(final String id, final String client) {
         MetricsManager.trackEvent("Uploading image");
         dialog = new ProgressDialog(MainActivity.this);
         dialog.setMessage("Daten werden am Server hochgeladen...");
@@ -260,55 +329,74 @@ public class MainActivity extends Activity implements DeviceSelectedListener {
                 .asString()
                 .setCallback(new FutureCallback<String>() {
                     @Override
-                    public void onCompleted(Exception e, final String result) {
+                    public void onCompleted(Exception e, String result) {
                         dialog.dismiss();
-                        AlertDialog.Builder ad = new AlertDialog.Builder(MainActivity.this);
-                        ad.setMessage(result);
-                        ad.setNeutralButton("OK", new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                dialog.dismiss();
-                                notifyServer(result, id);
-                            }
-                        });
-                        ad.show();
+
+                        JSONObject j;
+                        boolean uploaded = false;
+                        String path = "";
+                        try {
+                            j = new JSONObject(result);
+                            uploaded = j.optBoolean("uploaded");
+                            path = j.optString("path");
+                        } catch (JSONException e1) {
+                            e1.printStackTrace();
+                        }
+                        if (uploaded) {
+                            end = System.currentTimeMillis();
+                            Map<String, String> time = new HashMap<>();
+                            time.put("Zeit bis Bildupload", "" + (end - start));
+                            MetricsManager.trackEvent(client, time);
+                            AlertDialog.Builder ad = new AlertDialog.Builder(MainActivity.this);
+                            ad.setMessage("Bild erfolgreich hochgeladen!");
+                            final String finalPath = path;
+                            ad.setNeutralButton("OK", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    dialog.dismiss();
+                                    notifyServer(finalPath, id);
+                                }
+                            });
+                            ad.show();
+                        } else{
+                            AlertDialog.Builder ad = new AlertDialog.Builder(MainActivity.this);
+                            ad.setMessage("Fehler beim Hochladen des Bildes!");
+                            final String finalPath = path;
+                            ad.setNeutralButton("OK", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    dialog.dismiss();
+                                    socket.off();
+                                    socket.disconnect();
+                                    finish();
+                                }
+                            });
+                        }
                     }
                 });
     }
 
-    private void notifyServer(String result, String id) {
-        JSONObject j;
-        boolean uploaded = false;
-        String path = "";
+    private void notifyServer(String path, String id) {
+        JSONObject jsonObject = new JSONObject();
         try {
-            j = new JSONObject(result);
-            uploaded = j.optBoolean("uploaded");
-            path = j.optString("path");
-        } catch (JSONException e1) {
-            e1.printStackTrace();
-        }
-        if (uploaded) {
-            JSONObject jsonObject = new JSONObject();
-            try {
-                jsonObject.put("imagePath", path);
-                jsonObject.put("displayId", id);
+            jsonObject.put("imagePath", path);
+            jsonObject.put("displayId", id);
 
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-
-            socket.emit("uploadFinished", jsonObject);
-            socket.off();
-            socket.disconnect();
-            Toast.makeText(getApplicationContext(), "Server benachrichtigt", Toast.LENGTH_SHORT).show();
+        } catch (JSONException e) {
+            e.printStackTrace();
         }
+        socket.emit("uploadFinished", jsonObject);
+        Toast.makeText(getApplicationContext(), "Server benachrichtigt", Toast.LENGTH_SHORT).show();
+        socket.off();
+        socket.disconnect();
+        finish();
     }
 
     public void connectToServer() {
         try {
             socket = IO.socket(CONNECTION_STRING);
-                socket.on(Socket.EVENT_CONNECT, new Emitter.Listener() {
-                    @Override
+            socket.on(Socket.EVENT_CONNECT, new Emitter.Listener() {
+                @Override
                 public void call(Object... args) {
                     Log.i("hallo", "connected");
                     socket.emit("client", "MainClient");

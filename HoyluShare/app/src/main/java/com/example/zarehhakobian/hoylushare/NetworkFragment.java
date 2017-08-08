@@ -16,6 +16,7 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.github.nkzawa.emitter.Emitter;
@@ -45,6 +46,7 @@ import java.util.TimerTask;
 
 public class NetworkFragment extends Fragment {
     ListView lv;
+    TextView tv;
     final public ArrayList<HoyluDevice> hoyluDevices = new ArrayList<>();
     ArrayAdapter aa;
 
@@ -55,11 +57,13 @@ public class NetworkFragment extends Fragment {
     Document doc = null;
 
     DeviceSelectedListener listener;
+    Timer t;
 
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.network_list,container,false);
+        tv = (TextView) v.findViewById(R.id.textView);
         lv = (ListView) v.findViewById(R.id.listview);
         lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -68,10 +72,10 @@ public class NetworkFragment extends Fragment {
                     HoyluDevice hd = hoyluDevices.get(position);
                     MainActivity.end = System.currentTimeMillis();
                     Map<String, String> time = new HashMap<>();
-                    time.put("Zeit bis Async Aufruf", ""+(MainActivity.end-MainActivity.start));
+                    time.put("Zeit bis uploadImage Aufruf", ""+(MainActivity.end-MainActivity.start));
                     MetricsManager.trackEvent("NetworkClient", time);
                     MainActivity.start = System.currentTimeMillis();
-                    listener.sendImageToServer(hd.getHoyluId(), "NetworkClient");
+                    listener.uploadImageToServer(hd.getHoyluId(), "NetworkClient");
                     Map<String, String> properties = new HashMap<>();
                     properties.put("Device", hd.getHoyluId());
                     MetricsManager.trackEvent("Device selected", properties);
@@ -81,7 +85,6 @@ public class NetworkFragment extends Fragment {
         });
         aa = new ArrayAdapter(getActivity(), android.R.layout.simple_list_item_1, hoyluDevices);
         lv.setAdapter(aa);
-
         return v;
     }
 
@@ -95,8 +98,13 @@ public class NetworkFragment extends Fragment {
 
     @Override
     public void onDestroy() {
-        socket.disconnect();
-        socket.off();
+        if(socket != null){
+            socket.disconnect();
+            socket.off();
+        }
+        if(t != null){
+            t.cancel();
+        }
         super.onDestroy();
     }
 
@@ -105,24 +113,27 @@ public class NetworkFragment extends Fragment {
         StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
         StrictMode.setThreadPolicy(policy);
 
-        try {
-            doc = Jsoup.connect("http://icanhazip.com").get();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        wifi = (WifiManager) getActivity().getSystemService(Context.WIFI_SERVICE);
-        d = wifi.getDhcpInfo();
-
-        defaultGateway = String.valueOf(Formatter.formatIpAddress(d.gateway));
-        publicIP = doc.body().getAllElements().first().text();
-        Timer t = new Timer();
-        t.schedule(new TimerTask() {
-            @Override
-            public void run() {
-                connectToServer(publicIP, defaultGateway);
+        if(MainActivity.isWifiConn){
+            try {
+                doc = Jsoup.connect("http://icanhazip.com").get();
+            } catch (IOException e) {
+                e.printStackTrace();
             }
+            wifi = (WifiManager) getActivity().getSystemService(Context.WIFI_SERVICE);
+            d = wifi.getDhcpInfo();
 
-        }, 0, 10000);
+            defaultGateway = String.valueOf(Formatter.formatIpAddress(d.gateway));
+            publicIP = doc.body().getAllElements().first().text();
+            t = new Timer();
+            t.schedule(new TimerTask() {
+                @Override
+                public void run() {
+                    connectToServer(publicIP, defaultGateway);
+                }
+            }, 0, 10000);
+        } else{
+            tv.setText("Schalten Sie Ihr WLAN ein");
+        }
         super.onViewCreated(view, savedInstanceState);
     }
 
