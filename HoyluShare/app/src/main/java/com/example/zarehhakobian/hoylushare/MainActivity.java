@@ -331,8 +331,8 @@ public class MainActivity extends Activity implements DeviceSelectedListener {
     public void connectToServer() {
         try {
             socket = IO.socket(CONNECTION_STRING);
-            socket.on(Socket.EVENT_CONNECT, new Emitter.Listener() {
-                @Override
+                socket.on(Socket.EVENT_CONNECT, new Emitter.Listener() {
+                    @Override
                 public void call(Object... args) {
                     Log.i("hallo", "connected");
                     socket.emit("client", "MainClient");
