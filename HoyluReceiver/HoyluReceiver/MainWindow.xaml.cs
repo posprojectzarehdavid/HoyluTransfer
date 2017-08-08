@@ -54,14 +54,14 @@ namespace HoyluReceiver
                 string hoyluDeviceAsJson = JsonConvert.SerializeObject(hoyluDevice);
                 s.Emit("device_properties", hoyluDeviceAsJson);
 
-                s.On("receiveImage", (data) =>
+                s.On("getImage", (data) =>
                 {
                     string filePathOnServer = data.ToString();  //"/home/ts/shared/cd4f5d64-a764-402c-a464-7df88bac091a";
                     string url = @"http://40.114.246.211/" + filePathOnServer;
                     byte[] lnByte;
 
                     HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
-                    String lsResponse = string.Empty;
+                    string lsResponse = string.Empty;
 
                     using (HttpWebResponse response = (HttpWebResponse)request.GetResponse())
                     {

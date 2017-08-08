@@ -102,7 +102,7 @@ public class MainActivity extends Activity implements DeviceSelectedListener {
         super.onBackPressed();
         socket.disconnect();
         socket.off();
-        if(dialog != null){
+        if (dialog != null) {
             dialog.dismiss();
         }
     }
@@ -248,9 +248,9 @@ public class MainActivity extends Activity implements DeviceSelectedListener {
 
     @Override
     public void sendImageToServer(final String id, final String client) {
-        MetricsManager.trackEvent("Sending image");
+        MetricsManager.trackEvent("Uploading image");
         dialog = new ProgressDialog(MainActivity.this);
-        dialog.setMessage("Daten werden an den Server geschickt...");
+        dialog.setMessage("Daten werden am Server hochgeladen...");
         dialog.show();
         /*final String imageInBytes = getImageForServer();
         String[] parts = Iterables.toArray(
@@ -285,12 +285,46 @@ public class MainActivity extends Activity implements DeviceSelectedListener {
                 .asString()
                 .setCallback(new FutureCallback<String>() {
                     @Override
-                    public void onCompleted(Exception e, String result) {
+                    public void onCompleted(Exception e, final String result) {
                         dialog.dismiss();
-                        Log.i("futcall", result);
-                        Toast.makeText(getApplication(), "completed", Toast.LENGTH_SHORT).show();
+                        AlertDialog.Builder ad = new AlertDialog.Builder(MainActivity.this);
+                        ad.setMessage(result);
+                        ad.setNeutralButton("OK", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                dialog.dismiss();
+                                notifyServer(result, id);
+                            }
+                        });
+                        ad.show();
                     }
                 });
+    }
+
+    private void notifyServer(String result, String id) {
+        JSONObject j;
+        boolean uploaded = false;
+        String path = "";
+        try {
+            j = new JSONObject(result);
+            uploaded = j.optBoolean("uploaded");
+            path = j.optString("path");
+        } catch (JSONException e1) {
+            e1.printStackTrace();
+        }
+        if (uploaded) {
+            JSONObject jsonObject = new JSONObject();
+            try {
+                jsonObject.put("imagePath", path);
+                jsonObject.put("displayId", id);
+
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+
+            socket.emit("uploadFinished", jsonObject);
+            Toast.makeText(getApplicationContext(), "Server benachrichtigt", Toast.LENGTH_SHORT).show();
+        }
     }
 
     public void connectToServer() {

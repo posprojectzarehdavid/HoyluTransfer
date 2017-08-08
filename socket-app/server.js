@@ -41,7 +41,7 @@ app.post('/file_upload', upload.any(), function (req, res) {
     });
 });
 
-var image = null;
+var imagePath = null;
 var connectedClients = new Array();
 
 class HoyluDevice {
@@ -169,25 +169,18 @@ io.on('connection', function (socket) {
 
     //socket.on('bluetoothAddresses', sendBluetoothMatchesToClient);
 
-    socket.on('imagepartsForServer', function (data) {
-        image = data.imagePart;
+    socket.on('uploadFinished', function (data) {
+        imagePath = data.imagePath;
         var id = data.displayId;
-        var last = data.last;
-        if (image != null) {
+        if (imagePath != null) {
             var d = getHoyluDeviceWithId(id);
             if (d != null) {
-                console.log('image wird an ' + d.socketId+' verschickt');
-                socket.to(d.socketId).emit('receiveImage', image);
+                console.log(d.socketId+' wird benachrichtigt');
+                socket.to(d.socketId).emit('getImage', imagePath);
                 global.gc();
-                if (last) {
-                    console.log('letzten teil erhalten');
-                    socket.to(socket.socketId).emit('allPartsReceived');
-                    socket.to(d.socketId).emit('showImage');
-                }
             }            
-        }
-        last = false;        
-        image = null;
+        }     
+        imagePath = null;
     });
 
     socket.on('disconnect', function () {
