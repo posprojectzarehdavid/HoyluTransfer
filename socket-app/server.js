@@ -143,7 +143,7 @@ setInterval(garcol, 1000 * 5);
 setInterval(showHoyluDevices, 1000 * 5);
 
 io.on('connection', function (socket) {
-    if (connectedClients.find(socket) == null){
+    if (connectedClients.find(x => x === socket) == null) {
         connectedClients.push(socket);
     }
     
@@ -187,12 +187,13 @@ io.on('connection', function (socket) {
     });
 
     socket.on('disconnect', function () {
+        console.log('aktuelles socket: ' + socket.id);
         for (var d in connectedClients) {
-            console.log(connectedClients[d].id + ', ' + connectedClients.indexOf(d));
+            console.log('client: '+connectedClients[d].id + ', ' + connectedClients.indexOf(connectedClients[d]));
         }
 
         for (var d in hoyluDevices) {
-            console.log(hoyluDevices[d].socketId + ', ' + socket.id);
+            console.log('device: '+hoyluDevices[d].socketId + ', ' + socket.id);
             if (hoyluDevices[d].socketId === socket.id) {
                 hoyluDevices.splice(hoyluDevices.indexOf(d), 1);
             }
@@ -204,7 +205,16 @@ io.on('connection', function (socket) {
             connectedClients.splice(index, 1);
             console.info('Client with SocketId ' + socket.id + ' disconnected.');
         }
+
         console.log('--------------------------------------------------------------------');
+        console.log('hoyludevices: ' + hoyluDevices.length);
+        for (var d in hoyluDevices) {
+            console.log('hoylu: ' + hoyluDevices[d].socketId + ', ' + hoyluDevices.indexOf(hoyluDevices[d]));
+        }
+        console.log('clients: ' + connectedClients.length);
+        for (var d in connectedClients) {
+            console.log('client: ' + connectedClients[d].id + ', ' + connectedClients.indexOf(connectedClients[d]));
+        }
     });
 });
 server.listen(4200);

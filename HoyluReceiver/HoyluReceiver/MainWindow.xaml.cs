@@ -143,7 +143,7 @@ namespace HoyluReceiver
         {
             hoyluId = Guid.NewGuid().ToString();
             if (registerBluetooth.IsChecked == true) bluetoothAddress = GetBTMacAddress();
-            if (registerQRCode.IsChecked == true) qrValue = hoyluId;
+            if (registerQRCode.IsChecked == true) qrValue = hoyluId; Console.WriteLine(qrValue);
             if (registerNFC.IsChecked == true) nfcValue = hoyluId;
             if (registerNetwork.IsChecked == true)
             {
