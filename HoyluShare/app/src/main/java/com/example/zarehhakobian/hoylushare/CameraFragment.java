@@ -79,8 +79,8 @@ public class CameraFragment extends Fragment implements BarcodeGraphic.BoundingB
         mPreview.setOnTouchListener(new View.OnTouchListener() {
             public boolean onTouch(View v, MotionEvent e) {
                 boolean b = scaleGestureDetector.onTouchEvent(e);
-                boolean c = gestureDetector.onTouchEvent(e);
-                return b || c;
+                //boolean c = gestureDetector.onTouchEvent(e);
+                return b;
             }
         });
         if (MainActivity.permissionsGranted) {

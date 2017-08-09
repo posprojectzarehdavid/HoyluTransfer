@@ -171,8 +171,9 @@ io.on('connection', function (socket) {
     });
 
     socket.on("imageReceived", function () {
-        //fs.unlinkSync(file);
+        fs.unlinkSync(file);
         console.log(file + ' gelöscht');
+        file = null;
     });
 
     socket.on('disconnect', function () {
