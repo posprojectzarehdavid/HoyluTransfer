@@ -50,21 +50,70 @@ namespace HoyluReceiver
                         using (BinaryReader reader = new BinaryReader(response.GetResponseStream()))
                         {
                             lnByte = reader.ReadBytes(1 * 1024 * 1024 * 10);
-                            string[] pathSplitted = filePathOnServer.Split('/');
-                            using (FileStream stream = new FileStream(pathSplitted[4], FileMode.Create))
+                            using (FileStream stream = new FileStream(filePathOnServer, FileMode.Create))
                             {
                                 stream.Write(lnByte, 0, lnByte.Length);
                             }
                         }
                     }
-                    bitmapImage = ByteArrayToImage(lnByte);
-                    image.Source = bitmapImage;
+
+
+
+                    Dispatcher.BeginInvoke(
+                   new Action(() =>
+                   {
+                       bitmapImage = ToImage(lnByte);
+                       image.Source = bitmapImage;
+                   })
+                );
+
                 });
             });
             s.Connect();
         }
 
-        public BitmapImage ByteArrayToImage(byte[] byteVal)
+        private static byte[] DownloadRemoteImageFile(string uri)
+        {
+            HttpWebRequest request = (HttpWebRequest)WebRequest.Create(uri);
+            HttpWebResponse response = (HttpWebResponse)request.GetResponse();
+
+            using (Stream inputStream = response.GetResponseStream())
+
+            {
+                byte[] buffer = new byte[4096];
+                int bytesRead;
+                do
+                {
+                    bytesRead = inputStream.Read(buffer, 0, buffer.Length);
+                } while (bytesRead != 0);
+                return buffer;
+            }
+
+        }
+
+        public BitmapImage GetImage(byte[] rawImageBytes)
+        {
+            BitmapImage imageSource = null;
+
+            try
+            {
+                using (MemoryStream stream = new MemoryStream(rawImageBytes))
+                {
+                    stream.Seek(0, SeekOrigin.Begin);
+                    BitmapImage b = new BitmapImage();
+                    b.StreamSource = stream;
+                    b.DecodePixelWidth = 200;
+                    imageSource = b;
+                }
+            }
+            catch (Exception ex)
+            {
+            }
+
+            return imageSource;
+        }
+
+        public BitmapImage ToImage(byte[] byteVal)
         {
             if (byteVal == null)
             {
@@ -78,12 +127,13 @@ namespace HoyluReceiver
                 myBitmapImage.BeginInit();
                 myBitmapImage.StreamSource = strmImg;
                 myBitmapImage.DecodePixelWidth = 200;
+                myBitmapImage.CacheOption = BitmapCacheOption.OnLoad;
                 myBitmapImage.EndInit();
+                myBitmapImage.Freeze();
                 return myBitmapImage;
             }
-            catch (Exception e)
+            catch (Exception)
             {
-                Console.WriteLine(e.Message);
                 return null;
             }
         }

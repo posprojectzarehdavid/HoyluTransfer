@@ -9,7 +9,7 @@ var fs = require("fs");
 
 var storage = multer.diskStorage({ 
     destination: function (req, file, cb) {
-        cb(null, '/home/ts/shared')
+        cb(null, __dirname + '/shared')
     },
     filename: function (req, file, cb) {
         cb(null, uuidv4());
@@ -23,10 +23,11 @@ var io = require('socket.io')(server);
 app.use(express.static(__dirname + '/node_modules'));
 
 app.get('/file_for_download/:filename', function (request, response) {
-    console.log(request.params.filename);
-    var file = __dirname + '/home/ts/shared/' + request.params.filename;
+    var filename = request.params.filename;
+    console.log(filename.substring(1));
+    var file = 'hoylutransfer/socket-app/home/ts/shared/' + filename.substring(1);
     console.log(file.toString());
-    //response.download(file);
+    response.download(file);
     response.end(file);
 });
 
