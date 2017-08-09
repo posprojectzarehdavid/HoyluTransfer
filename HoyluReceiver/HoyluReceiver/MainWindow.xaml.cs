@@ -1,11 +1,15 @@
 ﻿using Newtonsoft.Json;
+using QRCoder;
 using Quobject.SocketIoClientDotNet.Client;
 using System;
+using System.Drawing;
 using System.IO;
 using System.Net;
 using System.Net.NetworkInformation;
 using System.Runtime.Serialization.Formatters.Binary;
+using System.Web;
 using System.Windows;
+using System.Windows.Media;
 using System.Windows.Media.Imaging;
 
 namespace HoyluReceiver
@@ -102,7 +106,16 @@ namespace HoyluReceiver
         {
             hoyluId = Guid.NewGuid().ToString();
             if (registerBluetooth.IsChecked == true) bluetoothAddress = GetBTMacAddress();
-            if (registerQRCode.IsChecked == true) qrValue = hoyluId; Console.WriteLine(qrValue);
+            if (registerQRCode.IsChecked == true)
+            {
+                qrValue = hoyluId;
+                QRCodeGenerator qrGenerator = new QRCodeGenerator();
+                QRCodeData qrCodeData = qrGenerator.CreateQrCode(qrValue, QRCodeGenerator.ECCLevel.L);
+                QRCode qrCode = new QRCode(qrCodeData);
+                Bitmap qrCodeImage = qrCode.GetGraphic(20);
+                qrCodeView.Source = BitmapToImageSource(qrCodeImage);
+
+            }
             if (registerNFC.IsChecked == true) nfcValue = hoyluId;
             if (registerNetwork.IsChecked == true)
             {
@@ -112,6 +125,22 @@ namespace HoyluReceiver
             name = deviceName.Text;
             hoyluDevice = new HoyluDevice(name, hoyluId, bluetoothAddress, qrValue, nfcValue, publicIp, defaultGateway);
             ConnectToServer();
+        }
+
+        BitmapImage BitmapToImageSource(Bitmap bitmap)
+        {
+            using (MemoryStream memory = new MemoryStream())
+            {
+                bitmap.Save(memory, System.Drawing.Imaging.ImageFormat.Bmp);
+                memory.Position = 0;
+                BitmapImage bitmapimage = new BitmapImage();
+                bitmapimage.BeginInit();
+                bitmapimage.StreamSource = memory;
+                bitmapimage.CacheOption = BitmapCacheOption.OnLoad;
+                bitmapimage.EndInit();
+
+                return bitmapimage;
+            }
         }
 
         public static string GetDefaultGatewayAddress()

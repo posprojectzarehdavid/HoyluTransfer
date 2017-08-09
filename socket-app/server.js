@@ -81,7 +81,6 @@ function checkGuid(qrValue) {
 
 var sendNetworkMatchesToClient = function (data, cb) {
     var d = getNetworkClients(data.pub, data.gateway)
-    //console.clear;
     console.log('Public IP: ' + data.pub);
     console.log('Default Gateway: ' + data.gateway);
     return cb({ list: d });

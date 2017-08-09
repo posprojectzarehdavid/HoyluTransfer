@@ -132,7 +132,7 @@ public class NetworkFragment extends Fragment {
                 }
             }, 0, 10000);
         } else{
-            tv.setText("Schalten Sie Ihr WLAN ein");
+            tv.setText(R.string.turn_on_wifi);
         }
         super.onViewCreated(view, savedInstanceState);
     }
@@ -182,7 +182,6 @@ public class NetworkFragment extends Fragment {
                                             @Override
                                             public void run() {
                                                 aa.notifyDataSetChanged();
-                                                Toast.makeText(getActivity(), "Neu gefüllt",Toast.LENGTH_SHORT).show();
                                             }
                                         });
                                     }
@@ -196,7 +195,7 @@ public class NetworkFragment extends Fragment {
                                             @Override
                                             public void run() {
                                                 aa.notifyDataSetChanged();
-                                                Toast.makeText(getActivity(), "Keine Geräte im Netzwerk",Toast.LENGTH_SHORT).show();
+                                                Toast.makeText(getActivity(), R.string.no_devices,Toast.LENGTH_SHORT).show();
                                             }
                                         });
                                     }
@@ -215,6 +214,7 @@ public class NetworkFragment extends Fragment {
 
         } catch (Exception e) {
             e.printStackTrace();
+            Toast.makeText(getActivity(), R.string.server_off, Toast.LENGTH_SHORT).show();
         }
     }
 }

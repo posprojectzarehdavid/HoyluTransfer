@@ -8,23 +8,22 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.content.res.Configuration;
+import android.content.res.Resources;
 import android.database.Cursor;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.provider.Settings;
 import android.support.annotation.NonNull;
-import android.support.test.espresso.core.deps.guava.base.Splitter;
-import android.support.test.espresso.core.deps.guava.collect.Iterables;
 import android.support.v4.app.ActivityCompat;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.widget.Toast;
 
 import com.github.nkzawa.emitter.Emitter;
-import com.github.nkzawa.socketio.client.Ack;
 import com.github.nkzawa.socketio.client.IO;
 import com.github.nkzawa.socketio.client.Socket;
 import com.koushikdutta.async.future.FutureCallback;
@@ -32,7 +31,6 @@ import com.koushikdutta.ion.Ion;
 import com.microsoft.azure.mobile.MobileCenter;
 import com.microsoft.azure.mobile.analytics.Analytics;
 import com.microsoft.azure.mobile.crashes.Crashes;
-import com.oschrenk.io.Base64;
 
 import net.hockeyapp.android.CrashManager;
 import net.hockeyapp.android.UpdateManager;
@@ -42,17 +40,12 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.PrintWriter;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 
 public class MainActivity extends Activity implements DeviceSelectedListener {
 
-    String imagePath;
     private static final String TAG = "Main";
     public static final String CONNECTION_STRING = "http://40.114.246.211:4200";
     private static final int RC_Handle_CAMERA_AND_INTERNET_PERM_AND_READ_PERM = 2;
@@ -60,30 +53,34 @@ public class MainActivity extends Activity implements DeviceSelectedListener {
     Socket socket;
     public static long start;
     public static long end;
-    UploadingAsyncTask uat;
     ProgressDialog dialog;
     public static boolean isWifiConn, isMobileConn;
+
+    Resources res;
+    DisplayMetrics dm;
+    Configuration conf;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setLanguage();
         checkConnectivity();
         if(!isWifiConn && !isMobileConn){
             AlertDialog.Builder ad = new AlertDialog.Builder(MainActivity.this);
-            ad.setTitle("Keine Internetverbindung!");
-            ad.setMessage("Wollen Sie sich verbinden?");
-            ad.setPositiveButton("Ja", new DialogInterface.OnClickListener() {
+            ad.setTitle(R.string.no_inet_connection);
+            ad.setMessage(R.string.want_connection);
+            ad.setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
                     dialog.dismiss();
                     startActivityForResult(new Intent(Settings.ACTION_WIFI_SETTINGS),0);
                 }
             });
-            ad.setNegativeButton("Nein", new DialogInterface.OnClickListener() {
+            ad.setNegativeButton(R.string.no, new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
                     dialog.dismiss();
-                    Toast.makeText(getApplication(), "Leider benötigen Sie für diese App eine Internetverbindung!",
+                    Toast.makeText(getApplication(), R.string.destroy_message,
                             Toast.LENGTH_LONG).show();
                     finish();
                 }
@@ -92,8 +89,8 @@ public class MainActivity extends Activity implements DeviceSelectedListener {
         }
         if(!isWifiConn && isMobileConn){
             AlertDialog.Builder ad = new AlertDialog.Builder(MainActivity.this);
-            ad.setTitle("Achtung!");
-            ad.setMessage("Um Geräte in Ihrem Netzwerk zu identifizieren, schalten Sie WLAN ein!");
+            ad.setTitle(R.string.attention);
+            ad.setMessage(R.string.identify_message);
             ad.setNeutralButton("OK", new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
@@ -106,6 +103,21 @@ public class MainActivity extends Activity implements DeviceSelectedListener {
         if(isWifiConn){
             startMethod();
         }
+    }
+
+    private void setLanguage() {
+        String systemlanguage = Locale.getDefault().getDisplayLanguage();
+        res = getResources();
+        dm = res.getDisplayMetrics();
+        conf = res.getConfiguration();
+
+        if (systemlanguage.equals("Deutsch") || systemlanguage.equals("German")) {
+            Log.i("syslang", "systemlang gesetzt " + systemlanguage);
+            conf.locale = new Locale("de");
+        } else{
+            conf.locale = new Locale("en");
+        }
+        res.updateConfiguration(conf, dm);
     }
 
     private void startMethod() {
@@ -181,60 +193,10 @@ public class MainActivity extends Activity implements DeviceSelectedListener {
         String type = intent.getType();
         if (Intent.ACTION_SEND.equals(action) && type != null) {
             if (type.startsWith("image/")) {
-                imagePath = getImagePathFromIntent(intent);
-                File file = new File(imagePath);
-                byte[] imageBytes = imageToByteArray(file);
-                String imageDataString = encodeImage(imageBytes);
-                Log.i("imageString", imageDataString);
-                //writeToFile(imageInBytes);
-                return file;
+                return new File(getImagePathFromIntent(intent));
             }
         }
         return null;
-    }
-
-    public void writeToFile(byte[] x) {
-        File root = android.os.Environment.getExternalStorageDirectory();
-        File dir = new File(root.getAbsolutePath() + "/Download");
-        dir.mkdirs();
-        File file = new File(dir, "imageInBytes.txt");
-
-        try {
-            FileOutputStream f = new FileOutputStream(file);
-            PrintWriter pw = new PrintWriter(f);
-            for (int i = 0; i < x.length; i++) {
-                pw.println(x[i]);
-                pw.flush();
-            }
-
-            pw.flush();
-            pw.close();
-            f.close();
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-            Log.i(TAG, "******* File not found. Did you add a WRITE_EXTERNAL_STORAGE permission to the   manifest?");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public byte[] imageToByteArray(File f) {
-        FileInputStream fis = null;
-        byte[] bytesArray = new byte[(int) f.length()];
-        try {
-            fis = new FileInputStream(f);
-            fis.read(bytesArray);
-            fis.close();
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return bytesArray;
-    }
-
-    public String encodeImage(byte[] imageByteArray) {
-        return Base64.encodeBytes(imageByteArray);
     }
 
     private String getImagePathFromIntent(Intent intent) {
@@ -249,8 +211,6 @@ public class MainActivity extends Activity implements DeviceSelectedListener {
         String filePath = cursor.getString(columnIndex);
         cursor.close();
         Toast.makeText(this, filePath, Toast.LENGTH_LONG).show();
-        //return BitmapFactory.decodeFile(filePath);
-
         return filePath;
     }
 
@@ -308,7 +268,7 @@ public class MainActivity extends Activity implements DeviceSelectedListener {
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("QR-Code-Scanner")
-                .setMessage("Keine Erlaubnis für Kamera")
+                .setMessage(R.string.no_camera_permission)
                 .setPositiveButton("OK", listener)
                 .show();
     }
@@ -317,7 +277,7 @@ public class MainActivity extends Activity implements DeviceSelectedListener {
     public void uploadImageToServer(final String id, final String client) {
         MetricsManager.trackEvent("Uploading image");
         dialog = new ProgressDialog(MainActivity.this);
-        dialog.setMessage("Daten werden am Server hochgeladen...");
+        dialog.setMessage(getResources().getString(R.string.uploading_message));
         dialog.show();
 
         connectToServer();
@@ -348,7 +308,7 @@ public class MainActivity extends Activity implements DeviceSelectedListener {
                             time.put("Zeit bis Bildupload", "" + (end - start));
                             MetricsManager.trackEvent(client, time);
                             AlertDialog.Builder ad = new AlertDialog.Builder(MainActivity.this);
-                            ad.setMessage("Bild erfolgreich hochgeladen!");
+                            ad.setMessage(R.string.upload_successful);
                             final String finalPath = path;
                             ad.setNeutralButton("OK", new DialogInterface.OnClickListener() {
                                 @Override
@@ -360,8 +320,7 @@ public class MainActivity extends Activity implements DeviceSelectedListener {
                             ad.show();
                         } else{
                             AlertDialog.Builder ad = new AlertDialog.Builder(MainActivity.this);
-                            ad.setMessage("Fehler beim Hochladen des Bildes!");
-                            final String finalPath = path;
+                            ad.setMessage(R.string.uploading_error);
                             ad.setNeutralButton("OK", new DialogInterface.OnClickListener() {
                                 @Override
                                 public void onClick(DialogInterface dialog, int which) {
@@ -386,7 +345,7 @@ public class MainActivity extends Activity implements DeviceSelectedListener {
             e.printStackTrace();
         }
         socket.emit("uploadFinished", jsonObject);
-        Toast.makeText(getApplicationContext(), "Server benachrichtigt", Toast.LENGTH_SHORT).show();
+        Toast.makeText(getApplicationContext(), R.string.notify_server, Toast.LENGTH_SHORT).show();
         socket.off();
         socket.disconnect();
         finish();
@@ -403,138 +362,9 @@ public class MainActivity extends Activity implements DeviceSelectedListener {
                 }
             });
             socket.connect();
-
         } catch (Exception e) {
             e.printStackTrace();
-        }
-    }
-
-    class UploadingAsyncTask extends AsyncTask<String, Void, String> {
-        ProgressDialog dialog = new ProgressDialog(MainActivity.this);
-        boolean gotServerMessage = false;
-
-        @Override
-        protected void onPreExecute() {
-            dialog.setMessage("Daten werden an den Server geschickt...");
-            dialog.show();
-            super.onPreExecute();
-        }
-
-        protected String doInBackground(String... args) {
-            final String[] serverMessage = {""};
-            final String id = args[0];
-            final String client = args[1];
-            final String imageInBytes = "";// getImageForServer();
-
-            try {
-                socket = IO.socket(CONNECTION_STRING);
-                socket.on(Socket.EVENT_CONNECT, new Emitter.Listener() {
-                    @Override
-                    public void call(Object... args) {
-                        Log.i("hallo", "connected");
-
-                        String[] parts =
-                                Iterables.toArray(
-                                        Splitter
-                                                .fixedLength(100000)
-                                                .split(imageInBytes),
-                                        String.class
-                                );
-                        for (int i = 0; i < parts.length; i++) {
-                            JSONObject jsonObject = new JSONObject();
-                            try {
-                                if (i == parts.length - 1) {
-                                    jsonObject.put("imagePart", parts[i]);
-                                    jsonObject.put("displayId", id);
-                                    jsonObject.put("last", true);
-                                } else {
-                                    jsonObject.put("imagePart", parts[i]);
-                                    jsonObject.put("displayId", id);
-                                    jsonObject.put("last", false);
-                                }
-
-                            } catch (JSONException e) {
-                                e.printStackTrace();
-                            }
-
-                            socket.emit("main_client", jsonObject, new Ack() {
-                                @Override
-                                public void call(Object... args) {
-                                    serverMessage[0] = (String) args[0];
-                                    Log.i("mainclient", serverMessage[0]);
-                                    gotServerMessage = true;
-                                    /*end = System.currentTimeMillis();
-                                    Map<String, String> time = new HashMap<>();
-                                    time.put("Zeit bis Bildempfang", ""+(end-start));
-                                    MetricsManager.trackEvent(client, time);*/
-
-                                }
-                            });
-                            if (i == parts.length - 1) {
-                                onPostExecute(serverMessage[0], id);
-                            }
-                        }
-
-
-                        /*socket.on("sendChecksum", new Emitter.Listener() {
-                            @Override
-                            public void call(Object... args) {
-                                Log.i("checksum", "hallo");
-                                byte[] thedigest = null;
-                                try {
-                                    byte[] bytesOfMessage = imageInBytes.getBytes("UTF-8");
-                                    MessageDigest md = MessageDigest.getInstance("MD5");
-                                    thedigest = md.digest(bytesOfMessage);
-                                } catch (NoSuchAlgorithmException e) {
-                                    e.printStackTrace();
-                                } catch (UnsupportedEncodingException e) {
-                                    e.printStackTrace();
-                                }
-
-                                JSONObject checksumJson = new JSONObject();
-                                try {
-                                    checksumJson.put("check", thedigest);
-                                    checksumJson.put("id", id);
-                                } catch (JSONException e) {
-                                    e.printStackTrace();
-                                }
-                                socket.emit("checksum", checksumJson);
-
-                            }
-                        });*/
-                    }
-                });
-                socket.connect();
-
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-            return serverMessage[0];
-        }
-
-        protected void onPostExecute(final String result, String id) {
-            if (gotServerMessage) {
-                socket.emit("finished", id);
-                socket.disconnect();
-                socket.off();
-                dialog.dismiss();
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        AlertDialog.Builder ad = new AlertDialog.Builder(MainActivity.this);
-                        ad.setMessage(result);
-                        ad.setNeutralButton("OK", new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                dialog.dismiss();
-                            }
-                        });
-                        ad.show();
-                    }
-                });
-                gotServerMessage = false;
-            }
-
+            Toast.makeText(getApplicationContext(), R.string.server_off, Toast.LENGTH_SHORT).show();
         }
     }
 }

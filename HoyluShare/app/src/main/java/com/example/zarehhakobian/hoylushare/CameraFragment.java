@@ -87,7 +87,6 @@ public class CameraFragment extends Fragment implements BarcodeGraphic.BoundingB
             createCameraSource(true, false);
             gestureDetector = new GestureDetector(getActivity(), new CaptureGestureListener());
             scaleGestureDetector = new ScaleGestureDetector(getActivity(), new ScaleListener());
-            Toast.makeText(getActivity(), "Tippen, um zu scannen.", Toast.LENGTH_LONG).show();
         }
         return view;
     }
@@ -233,7 +232,7 @@ public class CameraFragment extends Fragment implements BarcodeGraphic.BoundingB
                                         @Override
                                         public void run() {
                                             scannedBarcodeValues.add(barcode.displayValue);
-                                            Toast.makeText(getActivity(), "Gültige ID", Toast.LENGTH_SHORT).show();
+                                            Toast.makeText(getActivity(), R.string.valid, Toast.LENGTH_SHORT).show();
                                             if (listener != null) {
                                                 MainActivity.end = System.currentTimeMillis();
                                                 Map<String, String> time = new HashMap<>();
@@ -241,7 +240,6 @@ public class CameraFragment extends Fragment implements BarcodeGraphic.BoundingB
                                                 MetricsManager.trackEvent("CameraClient", time);
                                                 MainActivity.start = System.currentTimeMillis();
                                                 listener.uploadImageToServer(barcode.displayValue, "CameraClient");
-
                                             }
                                         }
                                     });
@@ -250,7 +248,7 @@ public class CameraFragment extends Fragment implements BarcodeGraphic.BoundingB
                                     socket.off();
                                 }else {
                                     scannedBarcodeValues.add(barcode.displayValue);
-                                    Toast.makeText(getActivity(), "Keine Gültige ID", Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(getActivity(), R.string.invalid, Toast.LENGTH_SHORT).show();
                                 }
                             }
                         });
@@ -259,6 +257,7 @@ public class CameraFragment extends Fragment implements BarcodeGraphic.BoundingB
                 socket.connect();
             } catch (Exception e) {
                 e.printStackTrace();
+                Toast.makeText(getActivity(), R.string.server_off, Toast.LENGTH_SHORT).show();
             }
         }
     }
