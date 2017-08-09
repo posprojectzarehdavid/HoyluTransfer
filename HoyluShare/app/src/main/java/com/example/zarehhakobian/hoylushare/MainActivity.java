@@ -359,6 +359,8 @@ public class MainActivity extends Activity implements DeviceSelectedListener {
                 public void call(Object... args) {
                     Log.i("hallo", "connected");
                     socket.emit("client", "MainClient");
+
+
                 }
             });
             socket.connect();

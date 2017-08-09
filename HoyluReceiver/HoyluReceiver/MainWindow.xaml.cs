@@ -6,10 +6,7 @@ using System.Drawing;
 using System.IO;
 using System.Net;
 using System.Net.NetworkInformation;
-using System.Runtime.Serialization.Formatters.Binary;
-using System.Web;
 using System.Windows;
-using System.Windows.Media;
 using System.Windows.Media.Imaging;
 
 namespace HoyluReceiver
@@ -57,60 +54,17 @@ namespace HoyluReceiver
                         }
                     }
 
-
-
                     Dispatcher.BeginInvoke(
-                   new Action(() =>
-                   {
-                       bitmapImage = ToImage(lnByte);
-                       image.Source = bitmapImage;
-                   })
-                );
+                       new Action(() =>
+                       {
+                           bitmapImage = ToImage(lnByte);
+                           image.Source = bitmapImage;
+                       })
+                    );
 
                 });
             });
             s.Connect();
-        }
-
-        private static byte[] DownloadRemoteImageFile(string uri)
-        {
-            HttpWebRequest request = (HttpWebRequest)WebRequest.Create(uri);
-            HttpWebResponse response = (HttpWebResponse)request.GetResponse();
-
-            using (Stream inputStream = response.GetResponseStream())
-
-            {
-                byte[] buffer = new byte[4096];
-                int bytesRead;
-                do
-                {
-                    bytesRead = inputStream.Read(buffer, 0, buffer.Length);
-                } while (bytesRead != 0);
-                return buffer;
-            }
-
-        }
-
-        public BitmapImage GetImage(byte[] rawImageBytes)
-        {
-            BitmapImage imageSource = null;
-
-            try
-            {
-                using (MemoryStream stream = new MemoryStream(rawImageBytes))
-                {
-                    stream.Seek(0, SeekOrigin.Begin);
-                    BitmapImage b = new BitmapImage();
-                    b.StreamSource = stream;
-                    b.DecodePixelWidth = 200;
-                    imageSource = b;
-                }
-            }
-            catch (Exception ex)
-            {
-            }
-
-            return imageSource;
         }
 
         public BitmapImage ToImage(byte[] byteVal)
@@ -188,7 +142,6 @@ namespace HoyluReceiver
                 bitmapimage.StreamSource = memory;
                 bitmapimage.CacheOption = BitmapCacheOption.OnLoad;
                 bitmapimage.EndInit();
-
                 return bitmapimage;
             }
         }
