@@ -23,16 +23,11 @@ var io = require('socket.io')(server);
 app.use(express.static(__dirname + '/node_modules'));
 
 app.get('/file_for_download/:filename', function (request, response) {
-    debug('validating documentId via REST: ' + request.params.filename);
     console.log(request.params.filename);
-    /*let validateResult = validateDocument(request.params.filename);
-    if (validateResult === 'non-existing') {
-        response.status(404);
-    }*/
     var file = __dirname + '/home/ts/shared/' + request.params.filename;
     console.log(file.toString());
     //response.download(file);
-    response.end("hallo");
+    response.end(file);
 });
 
 app.post('/file_upload', upload.any(), function (req, res) {
@@ -163,7 +158,7 @@ io.on('connection', function (socket) {
             var d = getHoyluDeviceWithId(id);
             if (d != null) {
                 console.log(d.socketId+' wird benachrichtigt');
-                //socket.to(d.socketId).emit('getImage', imagePath);
+                socket.to(d.socketId).emit('getImage', imagePath);
                 global.gc();
             }            
         }     
