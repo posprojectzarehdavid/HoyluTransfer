@@ -22,15 +22,17 @@ var server = require('http').createServer(app);
 var io = require('socket.io')(server);
 app.use(express.static(__dirname + '/node_modules'));
 
-express.get('file_for_download/:filename', function (request, response) {
+app.get('/file_for_download/:filename', function (request, response) {
     debug('validating documentId via REST: ' + request.params.filename);
-    let validateResult = validateDocument(request.params.filename);
+    console.log(request.params.filename);
+    /*let validateResult = validateDocument(request.params.filename);
     if (validateResult === 'non-existing') {
         response.status(404);
-    }
-    var file = __dirname + '/home/ts/shared/'+request.params.filename;
-    response.download(file);
-    response.send(validateResult);
+    }*/
+    var file = __dirname + '/home/ts/shared/' + request.params.filename;
+    console.log(file.toString());
+    //response.download(file);
+    response.end("hallo");
 });
 
 app.post('/file_upload', upload.any(), function (req, res) {
@@ -47,7 +49,7 @@ app.post('/file_upload', upload.any(), function (req, res) {
         } else {
             response = {
                 uploaded: true,
-                path: req.files[0].path
+                path: req.files[0].filename
             };
         }
         res.end(JSON.stringify(response));
