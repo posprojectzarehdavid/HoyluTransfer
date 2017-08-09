@@ -58,7 +58,12 @@ namespace HoyluReceiver
                        new Action(() =>
                        {
                            bitmapImage = ToImage(lnByte);
-                           image.Source = bitmapImage;
+                           if(bitmapImage != null)
+                           {
+                               image.Source = bitmapImage;
+                               s.Emit("imageReceived");
+                           }
+                           
                        })
                     );
 

@@ -20,12 +20,13 @@ var upload = multer({ storage: storage });
 var app = express();
 var server = require('http').createServer(app);
 var io = require('socket.io')(server);
+var file;
 app.use(express.static(__dirname + '/node_modules'));
 
 app.get('/file_for_download/:filename', function (request, response) {
     var filename = request.params.filename;
     console.log(filename.substring(1));
-    var file = '/home/ts/shared/' + filename.substring(1);
+    file = '/home/ts/shared/' + filename.substring(1);
     console.log(file.toString());
     response.download(file);
 });
@@ -167,6 +168,11 @@ io.on('connection', function (socket) {
             }            
         }     
         imagePath = null;
+    });
+
+    socket.on("imageReceived", function () {
+        fs.unlinkSync(file);
+        console.log(file + ' gelöscht');
     });
 
     socket.on('disconnect', function () {
