@@ -85,7 +85,7 @@ public class CameraFragment extends Fragment implements BarcodeGraphic.BoundingB
         });
         if (MainActivity.permissionsGranted) {
             createCameraSource(true, false);
-            gestureDetector = new GestureDetector(getActivity(), new CaptureGestureListener());
+            //gestureDetector = new GestureDetector(getActivity(), new CaptureGestureListener());
             scaleGestureDetector = new ScaleGestureDetector(getActivity(), new ScaleListener());
         }
         return view;
@@ -175,7 +175,7 @@ public class CameraFragment extends Fragment implements BarcodeGraphic.BoundingB
         }
     }
 
-    private boolean onTap(float rawX, float rawY) {
+    /*private boolean onTap(float rawX, float rawY) {
         // Find tap point in preview frame coordinates.
         int[] location = new int[2];
         mGraphicOverlay.getLocationOnScreen(location);
@@ -206,7 +206,7 @@ public class CameraFragment extends Fragment implements BarcodeGraphic.BoundingB
             return true;
         }
         return false;
-    }
+    }*/
 
     public void bestCodeCaptured(Barcode best) {
         barcode = best;
@@ -273,12 +273,12 @@ public class CameraFragment extends Fragment implements BarcodeGraphic.BoundingB
         }
     }
 
-    private class CaptureGestureListener extends GestureDetector.SimpleOnGestureListener {
+    /*private class CaptureGestureListener extends GestureDetector.SimpleOnGestureListener {
         @Override
         public boolean onSingleTapConfirmed(MotionEvent e) {
             return onTap(e.getRawX(), e.getRawY()) || super.onSingleTapConfirmed(e);
         }
-    }
+    }*/
 
     private class ScaleListener implements ScaleGestureDetector.OnScaleGestureListener {
         /**

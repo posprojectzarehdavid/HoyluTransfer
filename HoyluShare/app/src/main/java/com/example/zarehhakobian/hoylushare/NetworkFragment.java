@@ -211,7 +211,6 @@ public class NetworkFragment extends Fragment {
                 }
             });
             socket.connect();
-
         } catch (Exception e) {
             e.printStackTrace();
             Toast.makeText(getActivity(), R.string.server_off, Toast.LENGTH_SHORT).show();

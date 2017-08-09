@@ -22,6 +22,17 @@ var server = require('http').createServer(app);
 var io = require('socket.io')(server);
 app.use(express.static(__dirname + '/node_modules'));
 
+express.get('file_for_download/:filename', function (request, response) {
+    debug('validating documentId via REST: ' + request.params.filename);
+    let validateResult = validateDocument(request.params.filename);
+    if (validateResult === 'non-existing') {
+        response.status(404);
+    }
+    var file = __dirname + '/home/ts/shared/'+request.params.filename;
+    response.download(file);
+    response.send(validateResult);
+});
+
 app.post('/file_upload', upload.any(), function (req, res) {
     console.log(req.files);
     var tmp_path = req.files[0].path;
@@ -41,14 +52,6 @@ app.post('/file_upload', upload.any(), function (req, res) {
         }
         res.end(JSON.stringify(response));
     });
-});
-
-app.get('/home/ts/shared', function (req, res) {
-    res.download(req);
-    /*
-    var filestream = fs.createReadStream(req.query);
-    filestream.pipe(res);
-    */
 });
 
 var imagePath = null;
