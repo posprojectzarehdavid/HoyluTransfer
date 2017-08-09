@@ -46,8 +46,8 @@ public class BluetoothFragment extends Fragment {
     BluetoothAdapter adapter;
 
     ArrayList<BluetoothDevice> deviceList;      //Own detected addresses
-    ArrayList<BluetoothDeviceCustom> filteredDeviceList;  //Matching addresses
-    ArrayList<BluetoothDeviceCustom> serverAquiredDeviceList; // Bluetoothaddresses from Server
+    ArrayList<HoyluDevice> filteredDeviceList;  //Matching addresses
+    ArrayList<HoyluDevice> serverAquiredDeviceList; // Bluetoothaddresses from Server
 
     ArrayAdapter aa;
 
@@ -70,14 +70,14 @@ public class BluetoothFragment extends Fragment {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 if (listener != null) {
-                    listener.uploadImageToServer(filteredDeviceList.get(position).getId(), "BluetoothClient");             //Was mitgeben?
+                    listener.uploadImageToServer(filteredDeviceList.get(position).getHoyluId(), "BluetoothClient");             //Was mitgeben?
                 }
             }
         });
         adapter = BluetoothAdapter.getDefaultAdapter();
         deviceList = new ArrayList<BluetoothDevice>();
-        filteredDeviceList = new ArrayList<BluetoothDeviceCustom>();
-        serverAquiredDeviceList = new ArrayList<BluetoothDeviceCustom>();
+        filteredDeviceList = new ArrayList<HoyluDevice>();
+        serverAquiredDeviceList = new ArrayList<HoyluDevice>();
 
         aa = new ArrayAdapter(getActivity(), android.R.layout.simple_list_item_1, filteredDeviceList);
         lv.setAdapter(aa);
@@ -218,11 +218,10 @@ public class BluetoothFragment extends Fragment {
         filteredDeviceList.clear();
         for (BluetoothDevice d:
              deviceList) {
-            for (BluetoothDeviceCustom dc:
+            for (HoyluDevice dc:
                  serverAquiredDeviceList) {
                 String dAdd = d.getAddress();
-                String dcAdd = dc.bluetoothAddress;
-                if(d.getAddress().equals(dc.bluetoothAddress))
+                if(d.getAddress().equals(dc.btAddress))
                 {
                     filteredDeviceList.add(dc);
                     Log.i("MATCHED", "Device " +d.getName()+" matched");
@@ -260,11 +259,16 @@ public class BluetoothFragment extends Fragment {
                                 JSONArray dev = j.getJSONArray("list");
                                 for (int i = 0; i < dev.length(); i++) {
                                     JSONObject jsonObject = dev.getJSONObject(i);
-                                    String id = jsonObject.getString("id");
+                                    String id = jsonObject.getString("hoyluId");
                                     String name = jsonObject.getString("name");
-                                    String blAddress = jsonObject.getString("bluetoothAddress");
-                                    BluetoothDeviceCustom bdc = new BluetoothDeviceCustom(id, name, blAddress);
-                                    serverAquiredDeviceList.add(bdc);
+                                    String btAddress = jsonObject.getString("btAddress");
+                                    String qrValue = jsonObject.getString("qrValue");
+                                    String nfcValue = jsonObject.getString("nfcValue");
+                                    String pubIp = jsonObject.getString("publicIp");
+                                    String defGate = jsonObject.getString("defaultGateway");
+                                    String socketId = jsonObject.getString("socketId");
+                                    HoyluDevice hd = new HoyluDevice(id, name,btAddress,qrValue,nfcValue, pubIp, defGate,socketId);
+                                    serverAquiredDeviceList.add(hd);
                                     getActivity().runOnUiThread(new Runnable() {
                                         @Override
                                         public void run() {
@@ -280,8 +284,8 @@ public class BluetoothFragment extends Fragment {
                                         }
                                     });
                                 }
-                                for (BluetoothDeviceCustom d : serverAquiredDeviceList) {
-                                    Log.i("ServerBluetoothDevices", d.toString() + " " + d.bluetoothAddress);
+                                for (HoyluDevice d : serverAquiredDeviceList) {
+                                    Log.i("ServerBluetoothDevices", d.toString() + " " + d.btAddress);
                                 }
                             } catch (JSONException e) {
                                 e.printStackTrace();
