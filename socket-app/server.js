@@ -28,7 +28,6 @@ app.get('/file_for_download/:filename', function (request, response) {
     var file = '/home/ts/shared/' + filename.substring(1);
     console.log(file.toString());
     response.download(file);
-    response.end(file);
 });
 
 app.post('/file_upload', upload.any(), function (req, res) {
@@ -98,8 +97,12 @@ var sendNetworkMatchesToClient = function (data, cb) {
 };
 
 var sendBluetoothMatchesToClient = function(data, cb) {
-    var d = bluetoothClients ;
-    //console.clear;
+    var d = new Array();
+    for (var device in hoyluDevices) {
+        if (hoyluDevices[d].btAddress != null) {
+            d.push(hoyluDevices[device]);
+        }
+    }
     
     return cb({ list: d });
 };
@@ -150,7 +153,7 @@ io.on('connection', function (socket) {
 
     socket.on('addresses', sendNetworkMatchesToClient);
 
-    //socket.on('bluetoothAddresses', sendBluetoothMatchesToClient);
+    socket.on('bluetoothAddresses', sendBluetoothMatchesToClient);
 
     socket.on('uploadFinished', function (data) {
         imagePath = data.imagePath;
