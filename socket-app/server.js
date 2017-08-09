@@ -3,6 +3,8 @@
 var express = require('express');
 var uuidv4 = require('uuid/v4');
 var multer = require('multer');
+var http = require("http");
+//var url = require("url");
 var fs = require("fs");
 
 var storage = multer.diskStorage({ 
@@ -39,6 +41,14 @@ app.post('/file_upload', upload.any(), function (req, res) {
         }
         res.end(JSON.stringify(response));
     });
+});
+
+app.get('/home/ts/shared', function (req, res) {
+    res.download(req);
+    /*
+    var filestream = fs.createReadStream(req.query);
+    filestream.pipe(res);
+    */
 });
 
 var imagePath = null;

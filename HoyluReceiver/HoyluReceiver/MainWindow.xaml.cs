@@ -38,7 +38,7 @@ namespace HoyluReceiver
 
                 s.On("getImage", (data) =>
                 {
-                    string filePathOnServer = data.ToString();  //"/home/ts/shared/cd4f5d64-a764-402c-a464-7df88bac091a";
+                    string filePathOnServer = data.ToString();  //"cd4f5d64-a764-402c-a464-7df88bac091a";
                     string url = @"http://40.114.246.211:4200" + filePathOnServer;
                     byte[] lnByte;
 
