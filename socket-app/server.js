@@ -129,17 +129,14 @@ function showHoyluDevices() {
     }
 }
 
-function isInArray(value, array) {
-    return array.indexOf(value) > -1;
-}
-
 setInterval(garcol, 1000 * 5);
 setInterval(showHoyluDevices, 1000 * 5);
 
 io.on('connection', function (socket) {
     for (var s in io.sockets.clients()) {
-        if (socket.socketId == s.socketId) {
-            s.disconnect();
+        if (socket.id == s.id) {
+            console.log(socket.id + ', ' + s.id);
+            socket.disconnect();
         }
     }
     socket.on('client', function (data) {
@@ -170,7 +167,7 @@ io.on('connection', function (socket) {
 
     socket.on('bluetoothAddresses', sendBluetoothMatchesToClient);
 
-    socket.on('uploadFinished', function (data,cb) {
+    socket.on('uploadFinished', function (data) {
         filename = data.filename;
         originalname = data.originalName;
         var id = data.displayId;
@@ -181,12 +178,8 @@ io.on('connection', function (socket) {
                 console.log(d.socketId+' wird benachrichtigt');
                 socket.to(d.socketId).emit('getImage', { Filename: filename, Originalname: originalname });
                 global.gc();
-                receiverBenachrichtigt = true;
             }            
-        } else {
-            receiverBenachrichtigt = false;
         }
-        return cb(receiverBenachrichtigt);
     });
 
     socket.on("imageReceived", function () {

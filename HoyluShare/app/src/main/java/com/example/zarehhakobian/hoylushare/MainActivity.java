@@ -28,7 +28,6 @@ import android.util.Log;
 import android.widget.Toast;
 
 import com.github.nkzawa.emitter.Emitter;
-import com.github.nkzawa.socketio.client.Ack;
 import com.github.nkzawa.socketio.client.IO;
 import com.github.nkzawa.socketio.client.Socket;
 import com.koushikdutta.async.future.FutureCallback;
@@ -401,32 +400,12 @@ public class MainActivity extends Activity implements DeviceSelectedListener {
         } catch (JSONException e) {
             e.printStackTrace();
         }
-        socket.emit("uploadFinished", jsonObject, new Ack() {
-            @Override
-            public void call(Object... args) {
-                receiverBenachrichtigt = (boolean) args[0];
-                if(receiverBenachrichtigt){
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            Toast.makeText(getApplicationContext(), R.string.notify_server_true, Toast.LENGTH_SHORT).show();
-                            socket.off();
-                            socket.disconnect();
-                            imageFile.delete();
-                            finish();
-                        }
-                    });
-                } else{
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            Toast.makeText(getApplicationContext(), R.string.notify_server_false, Toast.LENGTH_SHORT).show();
-                            imageFile.delete();
-                        }
-                    });
-                }
-            }
-        });
+        socket.emit("uploadFinished", jsonObject);
+        Toast.makeText(getApplicationContext(), R.string.notify_server_true, Toast.LENGTH_SHORT).show();
+        socket.off();
+        socket.disconnect();
+        imageFile.delete();
+        finish();
     }
 
     public void connectToServer() {
