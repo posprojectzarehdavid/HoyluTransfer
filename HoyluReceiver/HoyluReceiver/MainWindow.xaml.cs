@@ -35,8 +35,9 @@ namespace HoyluReceiver
 
                 s.On("getImage", (data) =>
                 {
-                    string filePathOnServer = data.ToString();  //"cd4f5d64-a764-402c-a464-7df88bac091a";
-                    string url = @"http://40.114.246.211:4200/file_for_download/:" + filePathOnServer;
+
+                    string filenameOnServer = data.ToString();  //"cd4f5d64-a764-402c-a464-7df88bac091a";
+                    string url = @"http://40.114.246.211:4200/file_for_download/:" + filenameOnServer;
                     byte[] lnByte;
 
                     HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
@@ -47,12 +48,13 @@ namespace HoyluReceiver
                         using (BinaryReader reader = new BinaryReader(response.GetResponseStream()))
                         {
                             lnByte = reader.ReadBytes(1 * 1024 * 1024 * 10);
-                            using (FileStream stream = new FileStream(filePathOnServer, FileMode.Create))
+                            using (FileStream stream = new FileStream(filenameOnServer, FileMode.Create))
                             {
                                 stream.Write(lnByte, 0, lnByte.Length);
                             }
                         }
                     }
+                    string desktoppath = Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory);
 
                     Dispatcher.BeginInvoke(
                        new Action(() =>

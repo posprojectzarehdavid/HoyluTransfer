@@ -40,19 +40,22 @@ app.post('/file_upload', upload.any(), function (req, res) {
             console.log(err);
             response = {
                 uploaded: false,
-                path: null
+                filename: null,
+                originalName: null
             }
         } else {
             response = {
                 uploaded: true,
-                path: req.files[0].filename
+                filename: req.files[0].filename,
+                originalName: req.files[0].originalname
             };
         }
         res.end(JSON.stringify(response));
     });
 });
 
-var imagePath = null;
+var filename = null;
+var originalname = null;
 var hoyluDevices = new Array();
 
 class HoyluDevice {
@@ -104,7 +107,6 @@ var sendBluetoothMatchesToClient = function(data, cb) {
             d.push(hoyluDevices[device]);
         }
     }
-    
     return cb({ list: d });
 };
 
@@ -157,17 +159,18 @@ io.on('connection', function (socket) {
     socket.on('bluetoothAddresses', sendBluetoothMatchesToClient);
 
     socket.on('uploadFinished', function (data) {
-        imagePath = data.imagePath;
+        filename = data.filename;
+        originalname = data.originalName;
         var id = data.displayId;
-        if (imagePath != null) {
+        if (filename != null) {
             var d = getHoyluDeviceWithId(id);
             if (d != null) {
                 console.log(d.socketId+' wird benachrichtigt');
-                socket.to(d.socketId).emit('getImage', imagePath);
+                socket.to(d.socketId).emit('getImage', { fn: filename, on: originalname });
                 global.gc();
             }            
         }     
-        imagePath = null;
+        filename = null;
     });
 
     socket.on("imageReceived", function () {

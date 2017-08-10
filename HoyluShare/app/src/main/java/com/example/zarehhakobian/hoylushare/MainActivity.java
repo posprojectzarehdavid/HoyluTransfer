@@ -294,11 +294,13 @@ public class MainActivity extends Activity implements DeviceSelectedListener {
 
                         JSONObject j;
                         boolean uploaded = false;
-                        String path = "";
+                        String filename = "";
+                        String originalName = "";
                         try {
                             j = new JSONObject(result);
                             uploaded = j.optBoolean("uploaded");
-                            path = j.optString("path");
+                            filename = j.optString("filename");
+                            originalName = j.optString("originalName");
                         } catch (JSONException e1) {
                             e1.printStackTrace();
                         }
@@ -309,12 +311,13 @@ public class MainActivity extends Activity implements DeviceSelectedListener {
                             MetricsManager.trackEvent(client, time);
                             AlertDialog.Builder ad = new AlertDialog.Builder(MainActivity.this);
                             ad.setMessage(R.string.upload_successful);
-                            final String finalPath = path;
+                            final String finalFilename = filename;
+                            final String finalOriginalName = originalName;
                             ad.setNeutralButton("OK", new DialogInterface.OnClickListener() {
                                 @Override
                                 public void onClick(DialogInterface dialog, int which) {
                                     dialog.dismiss();
-                                    notifyServer(finalPath, id);
+                                    notifyServer(finalFilename, id, finalOriginalName);
                                 }
                             });
                             ad.show();
@@ -335,12 +338,12 @@ public class MainActivity extends Activity implements DeviceSelectedListener {
                 });
     }
 
-    private void notifyServer(String path, String id) {
+    private void notifyServer(String filename, String id, String originalName) {
         JSONObject jsonObject = new JSONObject();
         try {
-            jsonObject.put("imagePath", path);
+            jsonObject.put("filename", filename);
             jsonObject.put("displayId", id);
-
+            jsonObject.put("originalName", originalName);
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -359,8 +362,6 @@ public class MainActivity extends Activity implements DeviceSelectedListener {
                 public void call(Object... args) {
                     Log.i("hallo", "connected");
                     socket.emit("client", "MainClient");
-
-
                 }
             });
             socket.connect();
