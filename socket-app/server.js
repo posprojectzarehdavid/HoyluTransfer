@@ -134,9 +134,17 @@ setInterval(garcol, 1000 * 5);
 setInterval(showHoyluDevices, 1000 * 5);
 
 io.on('connection', function (socket) {
-    if (connectedClients.indexOf(socket) < 0) {
+    if (connectedClients.length == 0) {
         connectedClients.push(socket);
+        console.log(connectedClients.indexOf(socket));
+    } else {
+        if (connectedClients.indexOf(socket) < 0) {
+            connectedClients.push(socket);
+            console.log(connectedClients.indexOf(socket));
+        }
     }
+    
+    
     
     socket.on('client', function (data) {
         console.log(data + ' with SocketId ' + socket.id + ' connected...');
