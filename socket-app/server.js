@@ -152,6 +152,8 @@ io.on('connection', function (socket) {
         for (var c in connectedClients) {
             if (connectedClients[c].id != socket.id) {
                 connectedClients.push(socket);
+            } else {
+                socket.disconnect();
             }
         }
     }
