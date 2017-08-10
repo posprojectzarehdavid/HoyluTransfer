@@ -142,6 +142,9 @@ io.on('connection', function (socket) {
             connectedClients.push(socket);
             console.log(connectedClients.indexOf(socket));
         }
+        else {
+            socket.disconnect();
+        }
     }
     
     
@@ -182,14 +185,9 @@ io.on('connection', function (socket) {
         if (filename !== null) {
             var d = getHoyluDeviceWithId(id);
             if (d !== null) {
-                for (var s in connectedClients) {
-                    if (connectedClients[s].id === d.socketId) {
-                        console.log(d.socketId + ' wird benachrichtigt');
-                        socket.to(connectedClients[s]).emit('getImage', { Filename: filename, Originalname: originalname });
-                        global.gc();
-                        break;
-                    }
-                }
+                console.log(d.socketId + ' wird benachrichtigt');
+                socket.to(d.socketId).emit('getImage', { Filename: filename, Originalname: originalname });
+                global.gc();
             }            
         }
     });
