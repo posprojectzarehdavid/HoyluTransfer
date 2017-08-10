@@ -137,8 +137,10 @@ setInterval(garcol, 1000 * 5);
 setInterval(showHoyluDevices, 1000 * 5);
 
 io.on('connection', function (socket) {
-    if(io.sockets.clients().indexOf(socket)>-1){
-        socket.disconnect();
+    for (var s in io.sockets.clients()) {
+        if (socket.socketId == s.socketId) {
+            s.disconnect();
+        }
     }
     socket.on('client', function (data) {
         console.log(data + ' with SocketId ' + socket.id + ' connected...');
