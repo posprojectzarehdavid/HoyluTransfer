@@ -9,7 +9,7 @@ var fs = require("fs");
 
 var storage = multer.diskStorage({ 
     destination: function (req, file, cb) {
-        cb(null, '../../shared')
+        cb(null, '../../shared');
     },
     filename: function (req, file, cb) {
         cb(null, uuidv4());
@@ -42,7 +42,7 @@ app.post('/file_upload', upload.any(), function (req, res) {
                 uploaded: false,
                 filename: null,
                 originalName: null
-            }
+            };
         } else {
             response = {
                 uploaded: true,
@@ -94,7 +94,7 @@ function checkGuid(qrValue) {
 }
 
 var sendNetworkMatchesToClient = function (data, cb) {
-    var d = getNetworkClients(data.pub, data.gateway)
+    var d = getNetworkClients(data.pub, data.gateway);
     console.log('Public IP: ' + data.pub);
     console.log('Default Gateway: ' + data.gateway);
     return cb({ list: d });
@@ -103,7 +103,7 @@ var sendNetworkMatchesToClient = function (data, cb) {
 var sendBluetoothMatchesToClient = function(data, cb) {
     var d = new Array();
     for (var device in hoyluDevices) {
-        if (hoyluDevices[d].btAddress != null) {
+        if (hoyluDevices[d].btAddress !== null) {
             d.push(hoyluDevices[device]);
         }
     }
@@ -127,7 +127,7 @@ function showHoyluDevices() {
     for (var d in hoyluDevices) {
         console.log(hoyluDevices[d].name + ', ' + hoyluDevices[d].defaultGateway + ', ' + hoyluDevices[d].btAddress);
     }
-};
+}
 
 setInterval(garcol, 1000 * 5);
 setInterval(showHoyluDevices, 1000 * 5);
@@ -162,11 +162,11 @@ io.on('connection', function (socket) {
         filename = data.filename;
         originalname = data.originalName;
         var id = data.displayId;
-        if (filename != null) {
+        if (filename !== null) {
             var d = getHoyluDeviceWithId(id);
-            if (d != null) {
+            if (d !== null) {
                 console.log(d.socketId+' wird benachrichtigt');
-                socket.to(d.socketId).emit('getImage', { fn: filename, on: originalname });
+                socket.to(d.socketId).emit('getImage', { Filename: filename, Originalname: originalname });
                 global.gc();
             }            
         }     

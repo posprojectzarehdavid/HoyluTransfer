@@ -36,8 +36,8 @@ namespace HoyluReceiver
                 s.On("getImage", (data) =>
                 {
 
-                    string filenameOnServer = data.ToString();  //"cd4f5d64-a764-402c-a464-7df88bac091a";
-                    string url = @"http://40.114.246.211:4200/file_for_download/:" + filenameOnServer;
+                    ServerFile file = JsonConvert.DeserializeObject<ServerFile>(data.ToString());  //"cd4f5d64-a764-402c-a464-7df88bac091a";
+                    string url = @"http://40.114.246.211:4200/file_for_download/:" + file.Filename;
                     byte[] lnByte;
 
                     HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
@@ -48,13 +48,13 @@ namespace HoyluReceiver
                         using (BinaryReader reader = new BinaryReader(response.GetResponseStream()))
                         {
                             lnByte = reader.ReadBytes(1 * 1024 * 1024 * 10);
-                            using (FileStream stream = new FileStream(filenameOnServer, FileMode.Create))
+                            using (FileStream stream = new FileStream(file.Filename, FileMode.Create))
                             {
                                 stream.Write(lnByte, 0, lnByte.Length);
                             }
                         }
                     }
-                    string desktoppath = Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory);
+                    string desktoppath = Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory)+file.Originalname;
 
                     Dispatcher.BeginInvoke(
                        new Action(() =>
@@ -64,6 +64,8 @@ namespace HoyluReceiver
                            {
                                image.Source = bitmapImage;
                                s.Emit("imageReceived");
+                               //SaveOnDesktop(bitmapImage, desktoppath, s);
+                               Console.WriteLine("Hallo");
                            }
                            
                        })
@@ -72,6 +74,18 @@ namespace HoyluReceiver
                 });
             });
             s.Connect();
+        }
+
+        public static void SaveOnDesktop(BitmapImage image, string filePath, Socket s)
+        {
+            BitmapEncoder encoder = new PngBitmapEncoder();
+            encoder.Frames.Add(BitmapFrame.Create(image));
+
+            using (var fileStream = new FileStream(filePath, FileMode.Create))
+            {
+                encoder.Save(fileStream);
+            }
+            
         }
 
         public BitmapImage ToImage(byte[] byteVal)
