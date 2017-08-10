@@ -211,14 +211,12 @@ io.on('connection', function (socket) {
 
     socket.on('disconnect', function () {
         console.info('Client with SocketId ' + socket.id + ' disconnected.');
-        for (var s in connectedClients) {
-            connectedClients.splice(connectedClients.indexOf(s), 1);
-        }
+        connectedClients.splice(connectedClients.indexOf(socket), 1);
         console.log('--------------------------------------------------------------------');
         for (var d in hoyluDevices) {
             console.log(hoyluDevices[d].Name+', '+hoyluDevices[d].socketId + ', aktuelles socket: ' + socket.id);
-            if (hoyluDevices[d].socketId === socket.id) {
-                hoyluDevices.splice(hoyluDevices.indexOf(d), 1);
+            if (hoyluDevices[d].socketId == socket.id) {
+                hoyluDevices.splice(hoyluDevices.indexOf(hoyluDevices[d]), 1);
             }
         }
         console.log('--------------------------------------------------------------------');
