@@ -57,6 +57,7 @@ app.post('/file_upload', upload.any(), function (req, res) {
 var filename = null;
 var originalname = null;
 var hoyluDevices = new Array();
+var connectedClients = new Array();
 
 class HoyluDevice {
     constructor(hoyluId, name, btAddress, qrValue, nfcValue, publicIp, defaultGateway, socketId) {
@@ -133,10 +134,10 @@ setInterval(garcol, 1000 * 5);
 setInterval(showHoyluDevices, 1000 * 5);
 
 io.on('connection', function (socket) {
-    for (var s in io.sockets.clients()) {
-        if (socket.id == s.id) {
-            console.log(socket.id + ', ' + s.id);
-            socket.disconnect();
+    for (var s in connectedClients) {
+        if (socket.id !== connectedClients[s].id) {
+            console.log(socket.id + ', ' + connectedClients[s].id);
+            connectedClients.push(socket);
         }
     }
     socket.on('client', function (data) {
@@ -175,9 +176,14 @@ io.on('connection', function (socket) {
         if (filename !== null) {
             var d = getHoyluDeviceWithId(id);
             if (d !== null) {
-                console.log(d.socketId+' wird benachrichtigt');
-                socket.to(d.socketId).emit('getImage', { Filename: filename, Originalname: originalname });
-                global.gc();
+                for (var s in connectedClients) {
+                    if (connectedClients[s].id === d.socketId) {
+                        console.log(d.socketId + ' wird benachrichtigt');
+                        socket.to(connectedClients[s]).emit('getImage', { Filename: filename, Originalname: originalname });
+                        global.gc();
+                        break;
+                    }
+                }
             }            
         }
     });
@@ -190,6 +196,9 @@ io.on('connection', function (socket) {
 
     socket.on('disconnect', function () {
         console.info('Client with SocketId ' + socket.id + ' disconnected.');
+        for (var s in connectedClients) {
+            connectedClients.splice(connectedClients.indexOf(s), 1);
+        }
         console.log('--------------------------------------------------------------------');
         for (var d in hoyluDevices) {
             console.log(hoyluDevices[d].Name+', '+hoyluDevices[d].socketId + ', aktuelles socket: ' + socket.id);
@@ -198,7 +207,7 @@ io.on('connection', function (socket) {
             }
         }
         console.log('--------------------------------------------------------------------');
-        console.log('hoyludevices: ' + hoyluDevices.length);
+        console.log('hoyludevices: ' + hoyluDevices.length +' connectedclients: '+connectedClients.length);
     });
 });
 server.listen(4200);
