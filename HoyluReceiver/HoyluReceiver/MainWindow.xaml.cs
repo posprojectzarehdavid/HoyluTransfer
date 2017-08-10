@@ -35,8 +35,7 @@ namespace HoyluReceiver
 
                 s.On("getImage", (data) =>
                 {
-
-                    ServerFile file = JsonConvert.DeserializeObject<ServerFile>(data.ToString());  //"cd4f5d64-a764-402c-a464-7df88bac091a";
+                    ServerFile file = JsonConvert.DeserializeObject<ServerFile>(data.ToString()); 
                     string url = @"http://40.114.246.211:4200/file_for_download/:" + file.Filename;
                     byte[] lnByte;
 
@@ -69,10 +68,8 @@ namespace HoyluReceiver
                                s.Emit("imageReceived");
                                Console.WriteLine("Hallo");
                            }
-                           
                        })
                     );
-
                 });
             });
             s.Connect();
@@ -103,7 +100,6 @@ namespace HoyluReceiver
                 BitmapImage myBitmapImage = new BitmapImage();
                 myBitmapImage.BeginInit();
                 myBitmapImage.StreamSource = strmImg;
-                //myBitmapImage.DecodePixelWidth = 200;
                 myBitmapImage.CacheOption = BitmapCacheOption.OnLoad;
                 myBitmapImage.EndInit();
                 myBitmapImage.Freeze();

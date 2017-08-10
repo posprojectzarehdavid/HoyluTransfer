@@ -129,17 +129,27 @@ function showHoyluDevices() {
     }
 }
 
+function isInArray(value, array) {
+    return array.indexOf(value) > -1;
+}
+
 setInterval(garcol, 1000 * 5);
 setInterval(showHoyluDevices, 1000 * 5);
 
 io.on('connection', function (socket) {
+    if(isInArray(socket, io.sockets.clients())){
+        socket.disconnect();
+    }
     socket.on('client', function (data) {
         console.log(data + ' with SocketId ' + socket.id + ' connected...');
     });
 
     socket.on('device_properties', function (data) {
         var object = JSON.parse(data);
-        hoyluDevices.push(new HoyluDevice(object.HoyluId, object.Name, object.BluetoothAddress, object.QrValue, object.NfcValue, object.PublicIp, object.DefaultGateway, socket.id));
+        var hoylu = new HoyluDevice(object.HoyluId, object.Name, object.BluetoothAddress, object.QrValue, object.NfcValue, object.PublicIp, object.DefaultGateway, socket.id);
+        if(isInArray(hoylu, hoyluDevices) == false){
+            hoyluDevices.push(hoylu);
+        }
     });
 
     socket.on('qr_code', function (data, cb) {
