@@ -149,12 +149,10 @@ io.on('connection', function (socket) {
     if (connectedClients.length == 0) {
         connectedClients.push(socket);
     } else {
-        for (var c in connectedClients) {
-            if (connectedClients[c].id != socket.id) {
-                connectedClients.push(socket);
-            } else {
-                socket.disconnect();
-            }
+        if (connectedClients.indexOf(socket) != -1) {
+            socket.disconnect();
+        } else {
+            connectedClients.push(socket);
         }
     }
     
