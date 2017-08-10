@@ -11,11 +11,15 @@ import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.provider.MediaStore;
+import android.provider.OpenableColumns;
 import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
@@ -40,9 +44,15 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
+import java.util.UUID;
 
 public class MainActivity extends Activity implements DeviceSelectedListener {
 
@@ -59,13 +69,14 @@ public class MainActivity extends Activity implements DeviceSelectedListener {
     Resources res;
     DisplayMetrics dm;
     Configuration conf;
+    File imageFile = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setLanguage();
         checkConnectivity();
-        if(!isWifiConn && !isMobileConn){
+        if (!isWifiConn && !isMobileConn) {
             AlertDialog.Builder ad = new AlertDialog.Builder(MainActivity.this);
             ad.setTitle(R.string.no_inet_connection);
             ad.setMessage(R.string.want_connection);
@@ -73,7 +84,7 @@ public class MainActivity extends Activity implements DeviceSelectedListener {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
                     dialog.dismiss();
-                    startActivityForResult(new Intent(Settings.ACTION_WIFI_SETTINGS),0);
+                    startActivityForResult(new Intent(Settings.ACTION_WIFI_SETTINGS), 0);
                 }
             });
             ad.setNegativeButton(R.string.no, new DialogInterface.OnClickListener() {
@@ -87,7 +98,7 @@ public class MainActivity extends Activity implements DeviceSelectedListener {
             });
             ad.show();
         }
-        if(!isWifiConn && isMobileConn){
+        if (!isWifiConn && isMobileConn) {
             AlertDialog.Builder ad = new AlertDialog.Builder(MainActivity.this);
             ad.setTitle(R.string.attention);
             ad.setMessage(R.string.identify_message);
@@ -95,12 +106,12 @@ public class MainActivity extends Activity implements DeviceSelectedListener {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
                     dialog.dismiss();
-                    startActivityForResult(new Intent(Settings.ACTION_WIFI_SETTINGS),0);
+                    startActivityForResult(new Intent(Settings.ACTION_WIFI_SETTINGS), 0);
                 }
             });
             ad.show();
         }
-        if(isWifiConn){
+        if (isWifiConn) {
             startMethod();
         }
     }
@@ -114,7 +125,7 @@ public class MainActivity extends Activity implements DeviceSelectedListener {
         if (systemlanguage.equals("Deutsch") || systemlanguage.equals("German")) {
             Log.i("syslang", "systemlang gesetzt " + systemlanguage);
             conf.locale = new Locale("de");
-        } else{
+        } else {
             conf.locale = new Locale("en");
         }
         res.updateConfiguration(conf, dm);
@@ -150,18 +161,18 @@ public class MainActivity extends Activity implements DeviceSelectedListener {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if(requestCode == 0){
+        if (requestCode == 0) {
             checkConnectivity();
-            if(isWifiConn || isMobileConn){
+            if (isWifiConn || isMobileConn) {
                 startMethod();
-            }else {
+            } else {
                 finish();
             }
         }
     }
 
-    public void checkConnectivity(){
-        ConnectivityManager connMgr = (ConnectivityManager)getSystemService(Context.CONNECTIVITY_SERVICE);
+    public void checkConnectivity() {
+        ConnectivityManager connMgr = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo networkInfo = connMgr.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
         isWifiConn = networkInfo.isConnected();
         networkInfo = connMgr.getNetworkInfo(ConnectivityManager.TYPE_MOBILE);
@@ -178,7 +189,7 @@ public class MainActivity extends Activity implements DeviceSelectedListener {
     @Override
     public void onBackPressed() {
         super.onBackPressed();
-        if(socket != null){
+        if (socket != null) {
             socket.disconnect();
             socket.off();
         }
@@ -193,14 +204,55 @@ public class MainActivity extends Activity implements DeviceSelectedListener {
         String type = intent.getType();
         if (Intent.ACTION_SEND.equals(action) && type != null) {
             if (type.startsWith("image/")) {
-                return new File(getImagePathFromIntent(intent));
+                //return new File(getImagePathFromIntent(intent));
+                return getFileFromIntent(intent);
             }
         }
         return null;
     }
 
+    private File getFileFromIntent(Intent intent) {
+        InputStream stream = null;
+        try {
+            UUID uuid = UUID.randomUUID();
+            Uri imageUri = intent.getParcelableExtra(Intent.EXTRA_STREAM);
+            String filename = null;
+            if (imageUri.getScheme().equals("content")) {
+                Cursor cursor = getContentResolver().query(imageUri, null, null, null, null);
+                try {
+                    if (cursor != null && cursor.moveToFirst()) {
+                        filename = cursor.getString(cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME));
+                    }
+                } finally {
+                    cursor.close();
+                }
+            } else{
+                filename = uuid.toString();
+            }
+            stream = getContentResolver().openInputStream(imageUri);
+            Bitmap bitmap = BitmapFactory.decodeStream(stream);
+            stream.close();
+
+            File filesDir = getApplicationContext().getExternalFilesDir(Environment.DIRECTORY_PICTURES);
+            imageFile = new File(filesDir, filename);
+
+            OutputStream os;
+            os = new FileOutputStream(imageFile);
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, os);
+            os.flush();
+            os.close();
+
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return imageFile;
+    }
+
     private String getImagePathFromIntent(Intent intent) {
         Uri imageUri = intent.getParcelableExtra(Intent.EXTRA_STREAM);
+
         String[] filePathColumn = {MediaStore.Images.Media.DATA};
 
         Cursor cursor = getContentResolver().query(
@@ -321,7 +373,7 @@ public class MainActivity extends Activity implements DeviceSelectedListener {
                                 }
                             });
                             ad.show();
-                        } else{
+                        } else {
                             AlertDialog.Builder ad = new AlertDialog.Builder(MainActivity.this);
                             ad.setMessage(R.string.uploading_error);
                             ad.setNeutralButton("OK", new DialogInterface.OnClickListener() {
@@ -351,6 +403,7 @@ public class MainActivity extends Activity implements DeviceSelectedListener {
         Toast.makeText(getApplicationContext(), R.string.notify_server, Toast.LENGTH_SHORT).show();
         socket.off();
         socket.disconnect();
+        imageFile.delete();
         finish();
     }
 

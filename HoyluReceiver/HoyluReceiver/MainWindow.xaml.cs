@@ -53,8 +53,10 @@ namespace HoyluReceiver
                                 stream.Write(lnByte, 0, lnByte.Length);
                             }
                         }
+                        response.Close();
                     }
-                    string desktoppath = Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory)+file.Originalname;
+                    
+                    string desktoppath = Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory)+"\\"+file.Originalname;
 
                     Dispatcher.BeginInvoke(
                        new Action(() =>
@@ -63,8 +65,8 @@ namespace HoyluReceiver
                            if(bitmapImage != null)
                            {
                                image.Source = bitmapImage;
+                               SaveOnDesktop(bitmapImage, desktoppath, s);
                                s.Emit("imageReceived");
-                               //SaveOnDesktop(bitmapImage, desktoppath, s);
                                Console.WriteLine("Hallo");
                            }
                            
@@ -101,7 +103,7 @@ namespace HoyluReceiver
                 BitmapImage myBitmapImage = new BitmapImage();
                 myBitmapImage.BeginInit();
                 myBitmapImage.StreamSource = strmImg;
-                myBitmapImage.DecodePixelWidth = 200;
+                //myBitmapImage.DecodePixelWidth = 200;
                 myBitmapImage.CacheOption = BitmapCacheOption.OnLoad;
                 myBitmapImage.EndInit();
                 myBitmapImage.Freeze();

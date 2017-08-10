@@ -21,6 +21,16 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
 
+        <provider
+            android:name="android.support.v4.content.FileProvider"
+            android:authorities="com.myapp.testshare.fileprovider"
+            android:grantUriPermissions="true"
+            android:exported="false">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/filepaths" />
+        </provider>
+
         <meta-data
             android:name="net.hockeyapp.android.appIdentifier"
             android:value="268b893dc1734435b6d1c2b301f0f498" />
@@ -41,6 +51,7 @@
 
             <intent-filter android:label="HoyluShare">>
                 <action android:name="android.intent.action.SEND" />
+                <action android:name="android.intent.action.GET_CONTENT"/>
                 <category android:name="android.intent.category.DEFAULT" />
                 <data android:mimeType="image/*" />
             </intent-filter>
