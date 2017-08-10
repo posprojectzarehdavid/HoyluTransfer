@@ -11,7 +11,8 @@
     <string name="uploading_message">Daten werden am Server hochgeladen...</string>
     <string name="upload_successful">Bild erfolgreich hochgeladen!</string>
     <string name="uploading_error">Fehler beim Hochladen des Bildes!</string>
-    <string name="notify_server">Server benachrichtigt</string>
+    <string name="notify_server_true">Server benachrichtigt</string>
+    <string name="notify_server_false">Server nicht benachrichtigt</string>
     <string name="turn_on_wifi">Schalten Sie Ihr WLAN ein</string>
     <string name="no_devices">Keine Geräte im Netzwerk</string>
     <string name="focus_on_qr">Auf einen QR-Code richten</string>

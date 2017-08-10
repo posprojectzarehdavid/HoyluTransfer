@@ -158,19 +158,23 @@ io.on('connection', function (socket) {
 
     socket.on('bluetoothAddresses', sendBluetoothMatchesToClient);
 
-    socket.on('uploadFinished', function (data) {
+    socket.on('uploadFinished', function (data,cb) {
         filename = data.filename;
         originalname = data.originalName;
         var id = data.displayId;
+        var receiverBenachrichtigt;
         if (filename !== null) {
             var d = getHoyluDeviceWithId(id);
             if (d !== null) {
                 console.log(d.socketId+' wird benachrichtigt');
                 socket.to(d.socketId).emit('getImage', { Filename: filename, Originalname: originalname });
                 global.gc();
+                receiverBenachrichtigt = true;
             }            
-        }     
-        filename = null;
+        } else {
+            receiverBenachrichtigt = false;
+        }
+        return cb(receiverBenachrichtigt);
     });
 
     socket.on("imageReceived", function () {

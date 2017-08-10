@@ -247,8 +247,13 @@ public class CameraFragment extends Fragment implements BarcodeGraphic.BoundingB
                                     socket.disconnect();
                                     socket.off();
                                 }else {
-                                    scannedBarcodeValues.add(barcode.displayValue);
-                                    Toast.makeText(getActivity(), R.string.invalid, Toast.LENGTH_SHORT).show();
+                                    getActivity().runOnUiThread(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            scannedBarcodeValues.add(barcode.displayValue);
+                                            Toast.makeText(getActivity(), R.string.invalid, Toast.LENGTH_SHORT).show();
+                                        }
+                                    });
                                 }
                             }
                         });

@@ -9,7 +9,6 @@
     <string name="attention">Attention!</string>
     <string name="identify_message">To identify devices in same network, turn on Wi-Fi!</string>
     <string name="no_camera_permission">No permission for camera</string>
-    <string name="notify_server">Server notified</string>
     <string name="upload_successful">Image uploaded successfully!</string>
     <string name="uploading_error">Error while uploading image!</string>
     <string name="uploading_message">Data is being uploaded on server...</string>
@@ -19,4 +18,7 @@
     <string name="no_devices">No devices in network</string>
     <string name="turn_on_wifi">Turn on Wi-Fi</string>
     <string name="valid">Valid ID</string>
+    <string name="notify_server_true">Server notified</string>
+    <string name="notify_server_false">Did not notify server</string>
+    <string name="server_off">Server is offline</string>
 </resources>
