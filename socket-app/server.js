@@ -137,7 +137,7 @@ setInterval(garcol, 1000 * 5);
 setInterval(showHoyluDevices, 1000 * 5);
 
 io.on('connection', function (socket) {
-    if(isInArray(socket, io.sockets.clients())){
+    if(io.sockets.clients().indexOf(socket)>-1){
         socket.disconnect();
     }
     socket.on('client', function (data) {
@@ -147,7 +147,7 @@ io.on('connection', function (socket) {
     socket.on('device_properties', function (data) {
         var object = JSON.parse(data);
         var hoylu = new HoyluDevice(object.HoyluId, object.Name, object.BluetoothAddress, object.QrValue, object.NfcValue, object.PublicIp, object.DefaultGateway, socket.id);
-        if(isInArray(hoylu, hoyluDevices) == false){
+        if(hoyluDevices.indexOf(hoylu) < 0){
             hoyluDevices.push(hoylu);
         }
     });
