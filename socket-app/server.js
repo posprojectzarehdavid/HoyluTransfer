@@ -146,10 +146,14 @@ io.on('connection', function (socket) {
         }
     }*/
 
-    if (connectedClients.indexOf(socket) > -1) {
-        socket.disconnect();
-    } else {
+    if (connectedClients.length == 0) {
         connectedClients.push(socket);
+    } else {
+        for (var c in connectedClients) {
+            if (connectedClients[c].id != socket.id) {
+                connectedClients.push(socket);
+            }
+        }
     }
     
     
