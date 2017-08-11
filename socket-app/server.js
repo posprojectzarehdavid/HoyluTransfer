@@ -180,7 +180,7 @@ io.on('connection', function (socket) {
         }
         if (vorhanden == false) {
             hoyluDevices.push(hoylu);
-            //socket.emit('device_registered');
+            socket.emit('device_registered');
         }
     });
 
