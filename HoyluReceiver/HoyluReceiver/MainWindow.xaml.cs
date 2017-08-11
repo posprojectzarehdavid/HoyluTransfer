@@ -35,7 +35,12 @@ namespace HoyluReceiver
             string hoyluDeviceAsJson = JsonConvert.SerializeObject(hoyluDevice);
             s.Emit("device_properties", hoyluDeviceAsJson);
             s.On("device_registered", ()=>{
-                dialog.Close();
+                Dispatcher.BeginInvoke(
+                   new Action(() =>
+                   {
+                       dialog.Close();
+                   })
+                );
             });
 
             s.On("getImage", (data) =>

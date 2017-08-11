@@ -149,7 +149,18 @@ io.on('connection', function (socket) {
 
        
     socket.on('client', function (data) {
-        if (connectedClients.length == 0) {
+        var vorhanden = false;
+        for (var c in connectedClients) {
+            if (connectedClients[c].id == socket.id) {
+                vorhanden = true;
+            }
+        }
+        if (vorhanden == false) {
+            connectedClients.push(socket);
+        } else {
+            socket.disconnect();
+        }
+        /*if (connectedClients.length == 0) {
             connectedClients.push(socket);
         } else {
             if (connectedClients.indexOf(socket) != -1) {
@@ -157,7 +168,7 @@ io.on('connection', function (socket) {
             } else {
                 connectedClients.push(socket);
             }
-        }
+        }*/
         console.log(data + ' with SocketId ' + socket.id + ' connected...');
         console.log('--------------------------------------------------------------------');
         for (var d in hoyluDevices) {
