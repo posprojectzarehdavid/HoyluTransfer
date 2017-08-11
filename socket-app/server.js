@@ -147,8 +147,8 @@ io.on('connection', function (socket) {
         console.log(hoyluDevices[d].name + ', ' + hoyluDevices[d].socketId + ', aktuelles socket: ' + socket.id);
     }
     
-    for (var s in connectedClients) {
-        console.log('connectedclient: '+connectedClients[s].id);
+    for (var s in io.socket.clients) {
+        console.log('connectedclient: '+io.socket.clients[s].id);
     }
     /*if (connectedClients.length == 0) {
         connectedClients.push(socket);
@@ -242,7 +242,7 @@ io.on('connection', function (socket) {
             }
         }
         console.log('--------------------------------------------------------------------');
-        console.log('hoyludevices: ' + hoyluDevices.length +' connectedclients: '+connectedClients.length);
+        console.log('hoyludevices: ' + hoyluDevices.length +' connectedclients: '+io.socket.connectedClients.length);
     });
 });
 server.listen(4200);
