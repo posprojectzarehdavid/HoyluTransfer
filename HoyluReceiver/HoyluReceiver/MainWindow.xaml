@@ -5,7 +5,8 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:HoyluReceiver"
         mc:Ignorable="d"
-        Title="MainWindow" Height="350" Width="423.031">
+        Title="MainWindow" Height="350" Width="423.031"
+        WindowStartupLocation="CenterScreen">
     <Grid>
         <Label x:Name="label" Content="Register Options:" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top"/>
         <CheckBox x:Name="registerBluetooth" Content="Bluetooth" HorizontalAlignment="Left" Margin="22,70,0,0" VerticalAlignment="Top" RenderTransformOrigin="0.261,0.251"/>

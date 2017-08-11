@@ -172,16 +172,9 @@ io.on('connection', function (socket) {
     socket.on('device_properties', function (data) {
         var object = JSON.parse(data);
         var hoylu = new HoyluDevice(object.HoyluId, object.Name, object.BluetoothAddress, object.QrValue, object.NfcValue, object.PublicIp, object.DefaultGateway, socket.id);
-        if (hoyluDevices.length == 0) {
+        if (hoyluDevices.indexOf(hoylu) < 0) {
             hoyluDevices.push(hoylu);
             socket.emit('device_registered');
-        } else {
-            for (var h in hoyluDevices) {
-                if (hoyluDevices[h].hoyluId != hoylu.hoyluId) {
-                    hoyluDevices.push(hoylu);
-                    socket.emit('device_registered');
-                }
-            }
         }
     });
 

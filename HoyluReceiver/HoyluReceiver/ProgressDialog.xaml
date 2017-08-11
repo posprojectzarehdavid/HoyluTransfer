@@ -5,7 +5,8 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:HoyluReceiver"
         mc:Ignorable="d"
-        Title="ProgressDialog" Height="150" Width="300">
+        Title="ProgressDialog" Height="150" Width="300"
+        WindowStartupLocation="CenterScreen">
     <Grid>
         <ProgressBar Minimum="0" Maximum="100" Name="pbStatus" IsIndeterminate="true" Margin="30,65,30,35"/>
         <Label x:Name="label" Content="Gerät wird am Server registriert" HorizontalAlignment="Left" Margin="30,34,0,0" VerticalAlignment="Top"/>
