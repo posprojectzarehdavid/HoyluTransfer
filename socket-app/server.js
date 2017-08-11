@@ -134,6 +134,13 @@ setInterval(garcol, 1000 * 5);
 setInterval(showHoyluDevices, 1000 * 5);
 
 io.on('connection', function (socket) {
+    for (var d in hoyluDevices) {
+        console.log(hoyluDevices[d].name + ', ' + hoyluDevices[d].socketId + ', aktuelles socket: ' + socket.id);
+    }
+    
+    for (var s in connectedClients) {
+        console.log('connectedclient: '+connectedClients[s].id);
+    }
     /*if (connectedClients.length == 0) {
         connectedClients.push(socket);
     } else {
@@ -154,9 +161,7 @@ io.on('connection', function (socket) {
         } else {
             connectedClients.push(socket);
         }
-    }
-    
-    
+    }    
     
     socket.on('client', function (data) {
         console.log(data + ' with SocketId ' + socket.id + ' connected...');
@@ -192,7 +197,7 @@ io.on('connection', function (socket) {
 
     socket.on('bluetoothAddresses', sendBluetoothMatchesToClient);
 
-    socket.on('uploadFinished', function (data) {
+    socket.on('uploadFinished', function (data, cb) {
         filename = data.filename;
         originalname = data.originalName;
         var id = data.displayId;
@@ -203,8 +208,12 @@ io.on('connection', function (socket) {
                 console.log(d.socketId + ' wird benachrichtigt');
                 socket.to(d.socketId).emit('getImage', { Filename: filename, Originalname: originalname });
                 global.gc();
-            }            
+                receiverBenachrichtigt = true;
+            } else {
+                receiverBenachrichtigt = false;
+            }
         }
+        return cb(receiverBenachrichtigt);
     });
 
     socket.on("imageReceived", function () {
@@ -218,7 +227,7 @@ io.on('connection', function (socket) {
         connectedClients.splice(connectedClients.indexOf(socket), 1);
         console.log('--------------------------------------------------------------------');
         for (var d in hoyluDevices) {
-            console.log(hoyluDevices[d].Name+', '+hoyluDevices[d].socketId + ', aktuelles socket: ' + socket.id);
+            //console.log(hoyluDevices[d].Name+', '+hoyluDevices[d].socketId + ', aktuelles socket: ' + socket.id);
             if (hoyluDevices[d].socketId == socket.id) {
                 hoyluDevices.splice(hoyluDevices.indexOf(hoyluDevices[d]), 1);
             }
