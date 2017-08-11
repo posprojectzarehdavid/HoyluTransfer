@@ -120,6 +120,15 @@ function getHoyluDeviceWithId(id) {
     return null;
 }
 
+function getConnectedClientWithId(socketId) {
+    for (var c in connectedClients) {
+        if (connectedClients[c].id === socketId) {
+            return connectedClients[c].id;
+        }
+    }
+    return null;
+}
+
 var garcol = function () {
     global.gc();
 };
@@ -206,7 +215,7 @@ io.on('connection', function (socket) {
             var d = getHoyluDeviceWithId(id);
             if (d !== null) {
                 console.log(d.socketId + ' wird benachrichtigt');
-                socket.to(d.socketId).emit('getImage', { Filename: filename, Originalname: originalname });
+                socket.to(getConnectedClientWithId(d.socketId)).emit('getImage', { Filename: filename, Originalname: originalname });
                 global.gc();
                 receiverBenachrichtigt = true;
             } else {
