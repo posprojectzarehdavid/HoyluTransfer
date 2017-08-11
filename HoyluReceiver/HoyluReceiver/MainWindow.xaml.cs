@@ -32,10 +32,7 @@ namespace HoyluReceiver
                 s.Emit("client", "WindowsClient");
                 string hoyluDeviceAsJson = JsonConvert.SerializeObject(hoyluDevice);
                 s.Emit("device_properties", hoyluDeviceAsJson);
-                s.On("device_registered", () =>
-                {
-
-                });
+                
                 s.On("getImage", (data) =>
                 {
                     ServerFile file = JsonConvert.DeserializeObject<ServerFile>(data.ToString());

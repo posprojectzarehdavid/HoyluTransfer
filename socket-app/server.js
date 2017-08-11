@@ -171,10 +171,16 @@ io.on('connection', function (socket) {
 
     socket.on('device_properties', function (data) {
         var object = JSON.parse(data);
+        var vorhanden = false;
         var hoylu = new HoyluDevice(object.HoyluId, object.Name, object.BluetoothAddress, object.QrValue, object.NfcValue, object.PublicIp, object.DefaultGateway, socket.id);
-        if (hoyluDevices.indexOf(hoylu) < 0) {
+        for (var h in hoyluDevices) {
+            if (hoyluDevices[h].hoyluId == hoylu.hoyluId) {
+                vorhanden = true;
+            }
+        }
+        if (vorhanden == false) {
             hoyluDevices.push(hoylu);
-            socket.emit('device_registered');
+            //socket.emit('device_registered');
         }
     });
 
