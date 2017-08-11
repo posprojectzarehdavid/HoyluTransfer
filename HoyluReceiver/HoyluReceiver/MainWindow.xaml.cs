@@ -25,6 +25,8 @@ namespace HoyluReceiver
 
         private void ConnectToServer()
         {
+            ProgressDialog pd = new ProgressDialog();
+            pd.Show();
             s = IO.Socket("http://40.114.246.211:4200");
             s.On(Socket.EVENT_CONNECT, (fn) =>
             {
@@ -32,7 +34,10 @@ namespace HoyluReceiver
                 s.Emit("client", "WindowsClient");
                 string hoyluDeviceAsJson = JsonConvert.SerializeObject(hoyluDevice);
                 s.Emit("device_properties", hoyluDeviceAsJson);
-
+                s.On("device_registered", () =>
+                {
+                    pd.Close();   
+                });
                 s.On("getImage", (data) =>
                 {
                     ServerFile file = JsonConvert.DeserializeObject<ServerFile>(data.ToString());

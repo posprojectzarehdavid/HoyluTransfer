@@ -18,7 +18,5 @@
 
         <Image x:Name="image" HorizontalAlignment="Left" Height="156" Margin="197,110,0,0" VerticalAlignment="Top" Width="165" RenderTransformOrigin="0.515,0.494"/>
         <Image x:Name="qrCodeView" HorizontalAlignment="Left" Height="112" Margin="22,199,0,0" VerticalAlignment="Top" Width="128"/>
-
-
     </Grid>
 </Window>

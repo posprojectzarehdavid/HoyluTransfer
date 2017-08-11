@@ -174,10 +174,12 @@ io.on('connection', function (socket) {
         var hoylu = new HoyluDevice(object.HoyluId, object.Name, object.BluetoothAddress, object.QrValue, object.NfcValue, object.PublicIp, object.DefaultGateway, socket.id);
         if (hoyluDevices.length == 0) {
             hoyluDevices.push(hoylu);
+            socket.emit('device_registered');
         } else {
             for (var h in hoyluDevices) {
                 if (hoyluDevices[h].hoyluId != hoylu.hoyluId) {
                     hoyluDevices.push(hoylu);
+                    socket.emit('device_registered');
                 }
             }
         }
@@ -227,15 +229,15 @@ io.on('connection', function (socket) {
     socket.on('disconnect', function () {
         console.info('Client with SocketId ' + socket.id + ' disconnected.');
         for (var c in connectedClients) {
-            if (connectedClients[c].id = socket.id) {
-                connectedClients.splice(connectedClients.indexOf(connectedClients[socket]), 1);
+            if (connectedClients[c].id == socket.id) {
+                connectedClients.splice(connectedClients.indexOf(socket), 1);
             }
         }
         
         console.log('--------------------------------------------------------------------');
         for (var d in hoyluDevices) {
             if (hoyluDevices[d].socketId == socket.id) {
-                hoyluDevices.splice(hoyluDevices.indexOf(hoyluDevices[d]), 1);
+                hoyluDevices.splice(hoyluDevices.indexOf(d), 1);
             }
         }
         console.log('--------------------------------------------------------------------');

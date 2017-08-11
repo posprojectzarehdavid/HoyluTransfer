@@ -44,3 +44,5 @@ C:\Users\David\Desktop\Diplomarbeit\HoyluTransfer\HoyluReceiver\HoyluReceiver\ob
 C:\Users\David\Desktop\Diplomarbeit\HoyluTransfer\HoyluReceiver\HoyluReceiver\obj\Debug\HoyluReceiver.csproj.GenerateResource.Cache
 C:\MyFiles\Schule\Diplomarbeit\HoyluTransfer\HoyluReceiver\HoyluReceiver\bin\Debug\QRCoder.dll
 C:\MyFiles\Schule\Diplomarbeit\HoyluTransfer\HoyluReceiver\HoyluReceiver\bin\Debug\UnityEngine.dll
+C:\MyFiles\Schule\Diplomarbeit\HoyluTransfer\HoyluReceiver\HoyluReceiver\obj\Debug\ProgressDialog.g.cs
+C:\MyFiles\Schule\Diplomarbeit\HoyluTransfer\HoyluReceiver\HoyluReceiver\obj\Debug\ProgressDialog.baml
