@@ -21,25 +21,6 @@ namespace HoyluReceiver
         public MainWindow()
         {
             InitializeComponent();
-            hoyluId = Guid.NewGuid().ToString();
-            if (registerBluetooth.IsChecked == true) bluetoothAddress = GetBTMacAddress();
-
-            qrValue = hoyluId;
-            QRCodeGenerator qrGenerator = new QRCodeGenerator();
-            QRCodeData qrCodeData = qrGenerator.CreateQrCode(qrValue, QRCodeGenerator.ECCLevel.L);
-            QRCode qrCode = new QRCode(qrCodeData);
-            Bitmap qrCodeImage = qrCode.GetGraphic(20);
-            qrCodeView.Source = BitmapToImageSource(qrCodeImage);
-
-            if (registerNFC.IsChecked == true) nfcValue = hoyluId;
-
-            publicIp = new WebClient().DownloadString(@"http://icanhazip.com").Trim();
-            defaultGateway = GetDefaultGatewayAddress();
-
-            name = deviceName.Text;
-            hoyluDevice = new HoyluDevice(name, hoyluId, bluetoothAddress, qrValue, nfcValue, publicIp, defaultGateway);
-            ConnectToServer();
-
         }
 
         private void ConnectToServer()
@@ -146,7 +127,26 @@ namespace HoyluReceiver
 
         private void register_Click(object sender, RoutedEventArgs e)
         {
+            hoyluId = Guid.NewGuid().ToString();
+            if (registerBluetooth.IsChecked == true) bluetoothAddress = GetBTMacAddress();
 
+            qrValue = hoyluId;
+            QRCodeGenerator qrGenerator = new QRCodeGenerator();
+            QRCodeData qrCodeData = qrGenerator.CreateQrCode(qrValue, QRCodeGenerator.ECCLevel.L);
+            QRCode qrCode = new QRCode(qrCodeData);
+            Bitmap qrCodeImage = qrCode.GetGraphic(20);
+            qrCodeView.Source = BitmapToImageSource(qrCodeImage);
+
+            if (registerNFC.IsChecked == true) nfcValue = hoyluId;
+            if(registerNetwork.IsChecked == true)
+            {
+                publicIp = new WebClient().DownloadString(@"http://icanhazip.com").Trim();
+                defaultGateway = GetDefaultGatewayAddress();
+            }
+            
+            name = deviceName.Text;
+            hoyluDevice = new HoyluDevice(name, hoyluId, bluetoothAddress, qrValue, nfcValue, publicIp, defaultGateway);
+            ConnectToServer();
         }
 
         BitmapImage BitmapToImageSource(Bitmap bitmap)
