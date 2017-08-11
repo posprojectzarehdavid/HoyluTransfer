@@ -143,13 +143,7 @@ setInterval(garcol, 1000 * 5);
 setInterval(showHoyluDevices, 1000 * 5);
 
 io.on('connection', function (socket) {
-    for (var d in hoyluDevices) {
-        console.log(hoyluDevices[d].name + ', ' + hoyluDevices[d].socketId + ', aktuelles socket: ' + socket.id);
-    }
     
-    for (var s in io.socket.clients) {
-        console.log('connectedclient: '+io.socket.clients[s].id);
-    }
     /*if (connectedClients.length == 0) {
         connectedClients.push(socket);
     } else {
@@ -162,18 +156,26 @@ io.on('connection', function (socket) {
         }
     }*/
 
-    if (connectedClients.length == 0) {
-        connectedClients.push(socket);
-    } else {
-        if (connectedClients.indexOf(socket) != -1) {
-            socket.disconnect();
-        } else {
-            connectedClients.push(socket);
-        }
-    }    
-    
+       
     socket.on('client', function (data) {
+        if (connectedClients.length == 0) {
+            connectedClients.push(socket);
+        } else {
+            if (connectedClients.indexOf(socket) != -1) {
+                socket.disconnect();
+            } else {
+                connectedClients.push(socket);
+            }
+        }
         console.log(data + ' with SocketId ' + socket.id + ' connected...');
+        console.log('--------------------------------------------------------------------');
+        for (var d in hoyluDevices) {
+            console.log(hoyluDevices[d].name + ', ' + hoyluDevices[d].socketId + ', aktuelles socket: ' + socket.id);
+        }
+        console.log('--------------------------------------------------------------------');
+        for (var s in io.socket.clients) {
+            console.log('connectedclient: ' + io.socket.clients[s].id);
+        }
     });
 
     socket.on('device_properties', function (data) {
