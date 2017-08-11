@@ -126,7 +126,7 @@ var garcol = function () {
 
 function showHoyluDevices() {
     for (var d in hoyluDevices) {
-        console.log(hoyluDevices[d].name + ', ' + hoyluDevices[d].defaultGateway + ', ' + hoyluDevices[d].btAddress);
+        console.log(hoyluDevices[d].name + ', ' + hoyluDevices[d].defaultGateway + ', ' + hoyluDevices[d].socketId);
     }
 }
 
@@ -165,7 +165,7 @@ io.on('connection', function (socket) {
         }
         console.log('--------------------------------------------------------------------');
         for (var s in connectedClients){
-            console.log('connectedclient: ' + connectedClients);
+            console.log('connectedclient: ' + connectedClients[s].id);
         }
     });
 
