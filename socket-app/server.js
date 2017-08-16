@@ -127,7 +127,7 @@ var garcol = function () {
 
 function showHoyluDevices() {
     for (var d in hoyluDevices) {
-        console.log(hoyluDevices[d].name + ', ' + hoyluDevices[d].socketId + ', hoyluid: ' + hoyluDevices[d].id);
+        console.log(hoyluDevices[d].name + ', ' + hoyluDevices[d].socketId + ', hoyluid: ' + hoyluDevices[d].hoyluId);
     }
 }
 
@@ -159,7 +159,7 @@ io.on('connection', function (socket) {
     }*/
 
        
-    socket.on('client', function (data) {
+    socket.once('client', function (data) {
         console.log(data + ' with SocketId ' + socket.id + ' connected...');
        
 
@@ -179,7 +179,7 @@ io.on('connection', function (socket) {
         //showConnectedClients();
     });
 
-    socket.on('windowsClient', function (data) {
+    socket.once('windowsClient', function (data) {
         console.log('WindowsClient with SocketId ' + socket.id + ' connected...');
         var v = false;
         for (var c in connectedClients) {
@@ -226,7 +226,7 @@ io.on('connection', function (socket) {
 
     socket.on('bluetoothAddresses', sendBluetoothMatchesToClient);
 
-    socket.on('uploadFinished', function (data,cb) {
+    socket.once('uploadFinished', function (data,cb) {
         filename = data.filename;
         originalname = data.originalName;
         var id = data.displayId;
@@ -246,10 +246,10 @@ io.on('connection', function (socket) {
         return cb(receiverBenachrichtigt);
     });
 
-    socket.on("imageReceived", function () {
+    socket.once("imageReceived", function () {
         fs.unlinkSync(file);
         console.log(file + ' gelöscht');
-        file = null;
+        //file = null;
     });
 
     socket.on('disconnect', function () {

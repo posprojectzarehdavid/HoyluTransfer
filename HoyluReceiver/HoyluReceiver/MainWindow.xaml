@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:HoyluReceiver"
         mc:Ignorable="d"
-        Title="MainWindow" Height="350" Width="423.031"
+        Title="MainWindow" Height="389.2" Width="423.031"
         WindowStartupLocation="CenterScreen"
         Closing="Window_Closing">
     <Grid>
@@ -16,9 +16,10 @@
         <CheckBox x:Name="registerNetwork" Content="Network(IP Address)" HorizontalAlignment="Left" Margin="22,130,0,0" VerticalAlignment="Top" RenderTransformOrigin="0.261,0.251"/>
         <Label x:Name="label1" Content="Name for your Device:" HorizontalAlignment="Left" Margin="14,41,0,0" VerticalAlignment="Top" RenderTransformOrigin="-0.343,0.372" Height="27"/>
         <TextBox x:Name="deviceName" HorizontalAlignment="Left" Height="23" Margin="147,45,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="120"/>
-        <Button x:Name="register" Content="Register your Device" HorizontalAlignment="Left" Margin="22,161,0,0" VerticalAlignment="Top" Width="120" Click="register_Click"/>
+        <Button x:Name="register" Content="Register your Device" HorizontalAlignment="Left" Margin="22,189,0,0" VerticalAlignment="Top" Width="120" Click="register_Click"/>
 
         <Image x:Name="image" HorizontalAlignment="Left" Height="156" Margin="197,110,0,0" VerticalAlignment="Top" Width="165" RenderTransformOrigin="0.515,0.494"/>
-        <Image x:Name="qrCodeView" HorizontalAlignment="Left" Height="112" Margin="22,199,0,0" VerticalAlignment="Top" Width="128"/>
+        <Image x:Name="qrCodeView" HorizontalAlignment="Left" Height="112" Margin="22,237,0,0" VerticalAlignment="Top" Width="128"/>
+        <Label x:Name="ips" Content="" HorizontalAlignment="Left" Margin="48,145,0,0" VerticalAlignment="Top"/>
     </Grid>
 </Window>

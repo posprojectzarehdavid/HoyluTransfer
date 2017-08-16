@@ -167,6 +167,7 @@ namespace HoyluReceiver
             {
                 publicIp = new WebClient().DownloadString(@"http://icanhazip.com").Trim();
                 defaultGateway = GetDefaultGatewayAddress();
+                ips.Content = "public IP: " + publicIp + "   defaultgateway: " + defaultGateway;
             }
 
             name = deviceName.Text;
