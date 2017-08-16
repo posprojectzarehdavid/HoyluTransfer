@@ -199,7 +199,7 @@ io.on('connection', function (socket) {
         if (v === false) {
             connectedClients.push(socket);
         } else {
-            connectedClients.splice(connectedClients.indexOf(socket), 1);
+            connectedClients.disconnect();
         }
 
         var object = JSON.parse(data);
