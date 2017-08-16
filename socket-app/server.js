@@ -21,6 +21,7 @@ var app = express();
 var server = require('http').createServer(app);
 var io = require('socket.io')(server);
 var file;
+var duplicates;
 app.use(express.static(__dirname + '/node_modules'));
 
 app.get('/file_for_download/:filename', function (request, response) {
@@ -199,7 +200,8 @@ io.on('connection', function (socket) {
         if (v === false) {
             connectedClients.push(socket);
         } else {
-            connectedClients.disconnect();
+            duplicates = true;
+            socket.disconnect();
         }
 
         var object = JSON.parse(data);
@@ -261,7 +263,16 @@ io.on('connection', function (socket) {
 
     socket.on('disconnect', function () {
         console.info('Client with SocketId ' + socket.id + ' disconnected.');
+        var counter = 0;
         showConnectedClients();
+        if (duplicates) {
+            for (var c in connectedClients) {
+                if (connectedClients[c].id == socket.id) {
+                    counter++;
+                }
+            }
+        }
+        console.log('anzahl duplicates: ' + counter);
         for (var c in connectedClients) {
             if (connectedClients[c].id == socket.id) {
                 console.log('connectedclient with id ' + connectedClients[c].id + ' removed');
