@@ -30,170 +30,180 @@ namespace HoyluReceiver
             s = IO.Socket("http://40.114.246.211:4200");
             s.On(Socket.EVENT_CONNECT, (fn) =>
             {
-            Console.WriteLine("Connected");
-            s.Emit("client", "WindowsClient");
-            string hoyluDeviceAsJson = JsonConvert.SerializeObject(hoyluDevice);
-            s.Emit("device_properties", hoyluDeviceAsJson);
-            s.On("device_registered", ()=>{
-                Dispatcher.BeginInvoke(
-                   new Action(() =>
-                   {
-                       dialog.Close();
-                   })
-                );
-            });
-
-            s.On("getImage", (data) =>
-            {
-                ServerFile file = JsonConvert.DeserializeObject<ServerFile>(data.ToString());
-                string url = @"http://40.114.246.211:4200/file_for_download/:" + file.Filename;
-                byte[] lnByte;
-
-                HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
-                string lsResponse = string.Empty;
-
-                using (HttpWebResponse response = (HttpWebResponse)request.GetResponse())
+                Console.WriteLine("Connected");
+                s.Emit("client", "WindowsClient");
+                string hoyluDeviceAsJson = JsonConvert.SerializeObject(hoyluDevice);
+                s.Emit("device_properties", hoyluDeviceAsJson);
+                s.On("device_registered", () =>
                 {
-                    using (BinaryReader reader = new BinaryReader(response.GetResponseStream()))
-                    {
-                        lnByte = reader.ReadBytes(1 * 1024 * 1024 * 10);
-                        using (FileStream stream = new FileStream(file.Filename, FileMode.Create))
-                        {
-                            stream.Write(lnByte, 0, lnByte.Length);
-                        }
-                    }
-                    response.Close();
-                }
-
-                string desktoppath = Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory) + "\\" + file.Originalname;
-
-                Dispatcher.BeginInvoke(
-                   new Action(() =>
-                   {
-                       bitmapImage = ToImage(lnByte);
-                       if (bitmapImage != null)
+                    Dispatcher.BeginInvoke(
+                       new Action(() =>
                        {
-                           image.Source = bitmapImage;
-                           SaveOnDesktop(bitmapImage, desktoppath, s);
-                           s.Emit("imageReceived");
-                           Console.WriteLine("Hallo");
-                       }
-                   })
-                );
+                           dialog.Close();
+                       })
+                    );
+                });
+
+                s.On("getImage", (data) =>
+                {
+                    ServerFile file = JsonConvert.DeserializeObject<ServerFile>(data.ToString());
+                    string url = @"http://40.114.246.211:4200/file_for_download/:" + file.Filename;
+                    byte[] lnByte;
+
+                    HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
+                    string lsResponse = string.Empty;
+
+                    using (HttpWebResponse response = (HttpWebResponse)request.GetResponse())
+                    {
+                        using (BinaryReader reader = new BinaryReader(response.GetResponseStream()))
+                        {
+                            lnByte = reader.ReadBytes(1 * 1024 * 1024 * 10);
+                            using (FileStream stream = new FileStream(file.Filename, FileMode.Create))
+                            {
+                                stream.Write(lnByte, 0, lnByte.Length);
+                            }
+                        }
+                        response.Close();
+                    }
+
+                    string desktoppath = Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory) + "\\" + file.Originalname;
+
+                    Dispatcher.BeginInvoke(
+                       new Action(() =>
+                       {
+                           bitmapImage = ToImage(lnByte);
+                           if (bitmapImage != null)
+                           {
+                               image.Source = bitmapImage;
+                               SaveOnDesktop(bitmapImage, desktoppath, s);
+                               s.Emit("imageReceived");
+                               Console.WriteLine("Hallo");
+                           }
+                       })
+                    );
+                });
             });
-        });
             s.Connect();
         }
 
-    public static void SaveOnDesktop(BitmapImage image, string filePath, Socket s)
-    {
-        BitmapEncoder encoder = new PngBitmapEncoder();
-        encoder.Frames.Add(BitmapFrame.Create(image));
-
-        using (var fileStream = new FileStream(filePath, FileMode.Create))
+        private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
-            encoder.Save(fileStream);
-        }
-
-    }
-
-    public BitmapImage ToImage(byte[] byteVal)
-    {
-        if (byteVal == null)
-        {
-            return null;
-        }
-
-        try
-        {
-            MemoryStream strmImg = new MemoryStream(byteVal);
-            BitmapImage myBitmapImage = new BitmapImage();
-            myBitmapImage.BeginInit();
-            myBitmapImage.StreamSource = strmImg;
-            myBitmapImage.CacheOption = BitmapCacheOption.OnLoad;
-            myBitmapImage.EndInit();
-            myBitmapImage.Freeze();
-            return myBitmapImage;
-        }
-        catch (Exception)
-        {
-            return null;
-        }
-    }
-
-    public static string GetBTMacAddress()
-    {
-        foreach (NetworkInterface nic in NetworkInterface.GetAllNetworkInterfaces())
-        {
-            if (nic.NetworkInterfaceType != NetworkInterfaceType.FastEthernetFx &&
-                nic.NetworkInterfaceType != NetworkInterfaceType.Wireless80211 &&
-                (nic.Name.Contains("Bluetooth") || nic.Name.Contains("bluetooth")))
+            if(s != null)
             {
-                return nic.GetPhysicalAddress().ToString();
+                s.Disconnect();
+                s.Off();
             }
         }
-        return null;
-    }
 
-    private void register_Click(object sender, RoutedEventArgs e)
-    {
-        hoyluId = Guid.NewGuid().ToString();
-        if (registerBluetooth.IsChecked == true) bluetoothAddress = GetBTMacAddress();
-
-        qrValue = hoyluId;
-        QRCodeGenerator qrGenerator = new QRCodeGenerator();
-        QRCodeData qrCodeData = qrGenerator.CreateQrCode(qrValue, QRCodeGenerator.ECCLevel.L);
-        QRCode qrCode = new QRCode(qrCodeData);
-        Bitmap qrCodeImage = qrCode.GetGraphic(20);
-        qrCodeView.Source = BitmapToImageSource(qrCodeImage);
-
-        if (registerNFC.IsChecked == true) nfcValue = hoyluId;
-        if (registerNetwork.IsChecked == true)
+        public static void SaveOnDesktop(BitmapImage image, string filePath, Socket s)
         {
-            publicIp = new WebClient().DownloadString(@"http://icanhazip.com").Trim();
-            defaultGateway = GetDefaultGatewayAddress();
-        }
+            BitmapEncoder encoder = new PngBitmapEncoder();
+            encoder.Frames.Add(BitmapFrame.Create(image));
 
-        name = deviceName.Text;
-        hoyluDevice = new HoyluDevice(name, hoyluId, bluetoothAddress, qrValue, nfcValue, publicIp, defaultGateway);
-        ConnectToServer();
-    }
-
-    BitmapImage BitmapToImageSource(Bitmap bitmap)
-    {
-        using (MemoryStream memory = new MemoryStream())
-        {
-            bitmap.Save(memory, System.Drawing.Imaging.ImageFormat.Bmp);
-            memory.Position = 0;
-            BitmapImage bitmapimage = new BitmapImage();
-            bitmapimage.BeginInit();
-            bitmapimage.StreamSource = memory;
-            bitmapimage.CacheOption = BitmapCacheOption.OnLoad;
-            bitmapimage.EndInit();
-            return bitmapimage;
-        }
-    }
-
-    public static string GetDefaultGatewayAddress()
-    {
-        NetworkInterface[] adapters = NetworkInterface.GetAllNetworkInterfaces();
-        foreach (NetworkInterface adapter in adapters)
-        {
-            IPInterfaceProperties adapterProperties = adapter.GetIPProperties();
-            GatewayIPAddressInformationCollection addresses = adapterProperties.GatewayAddresses;
-            if (addresses.Count > 0)
+            using (var fileStream = new FileStream(filePath, FileMode.Create))
             {
-                Console.WriteLine(adapter.Description);
-                foreach (GatewayIPAddressInformation address in addresses)
+                encoder.Save(fileStream);
+            }
+
+        }
+
+        public BitmapImage ToImage(byte[] byteVal)
+        {
+            if (byteVal == null)
+            {
+                return null;
+            }
+
+            try
+            {
+                MemoryStream strmImg = new MemoryStream(byteVal);
+                BitmapImage myBitmapImage = new BitmapImage();
+                myBitmapImage.BeginInit();
+                myBitmapImage.StreamSource = strmImg;
+                myBitmapImage.CacheOption = BitmapCacheOption.OnLoad;
+                myBitmapImage.EndInit();
+                myBitmapImage.Freeze();
+                return myBitmapImage;
+            }
+            catch (Exception)
+            {
+                return null;
+            }
+        }
+
+        public static string GetBTMacAddress()
+        {
+            foreach (NetworkInterface nic in NetworkInterface.GetAllNetworkInterfaces())
+            {
+                if (nic.NetworkInterfaceType != NetworkInterfaceType.FastEthernetFx &&
+                    nic.NetworkInterfaceType != NetworkInterfaceType.Wireless80211 &&
+                    (nic.Name.Contains("Bluetooth") || nic.Name.Contains("bluetooth")))
                 {
-                    if (address.Address.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork)
+                    return nic.GetPhysicalAddress().ToString();
+                }
+            }
+            return null;
+        }
+
+        private void register_Click(object sender, RoutedEventArgs e)
+        {
+            hoyluId = Guid.NewGuid().ToString();
+            if (registerBluetooth.IsChecked == true) bluetoothAddress = GetBTMacAddress();
+
+            qrValue = hoyluId;
+            QRCodeGenerator qrGenerator = new QRCodeGenerator();
+            QRCodeData qrCodeData = qrGenerator.CreateQrCode(qrValue, QRCodeGenerator.ECCLevel.L);
+            QRCode qrCode = new QRCode(qrCodeData);
+            Bitmap qrCodeImage = qrCode.GetGraphic(20);
+            qrCodeView.Source = BitmapToImageSource(qrCodeImage);
+
+            if (registerNFC.IsChecked == true) nfcValue = hoyluId;
+            if (registerNetwork.IsChecked == true)
+            {
+                publicIp = new WebClient().DownloadString(@"http://icanhazip.com").Trim();
+                defaultGateway = GetDefaultGatewayAddress();
+            }
+
+            name = deviceName.Text;
+            hoyluDevice = new HoyluDevice(name, hoyluId, bluetoothAddress, qrValue, nfcValue, publicIp, defaultGateway);
+            ConnectToServer();
+        }
+
+        BitmapImage BitmapToImageSource(Bitmap bitmap)
+        {
+            using (MemoryStream memory = new MemoryStream())
+            {
+                bitmap.Save(memory, System.Drawing.Imaging.ImageFormat.Bmp);
+                memory.Position = 0;
+                BitmapImage bitmapimage = new BitmapImage();
+                bitmapimage.BeginInit();
+                bitmapimage.StreamSource = memory;
+                bitmapimage.CacheOption = BitmapCacheOption.OnLoad;
+                bitmapimage.EndInit();
+                return bitmapimage;
+            }
+        }
+
+        public static string GetDefaultGatewayAddress()
+        {
+            NetworkInterface[] adapters = NetworkInterface.GetAllNetworkInterfaces();
+            foreach (NetworkInterface adapter in adapters)
+            {
+                IPInterfaceProperties adapterProperties = adapter.GetIPProperties();
+                GatewayIPAddressInformationCollection addresses = adapterProperties.GatewayAddresses;
+                if (addresses.Count > 0)
+                {
+                    Console.WriteLine(adapter.Description);
+                    foreach (GatewayIPAddressInformation address in addresses)
                     {
-                        return address.Address.ToString();
+                        if (address.Address.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork)
+                        {
+                            return address.Address.ToString();
+                        }
                     }
                 }
             }
+            return null;
         }
-        return null;
     }
-}
 }

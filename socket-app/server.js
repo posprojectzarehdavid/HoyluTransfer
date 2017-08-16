@@ -96,8 +96,8 @@ function checkGuid(qrValue) {
 
 var sendNetworkMatchesToClient = function (data, cb) {
     var d = getNetworkClients(data.pub, data.gateway);
-    console.log('Public IP: ' + data.pub);
-    console.log('Default Gateway: ' + data.gateway);
+    //console.log('Public IP: ' + data.pub);
+    //console.log('Default Gateway: ' + data.gateway);
     return cb({ list: d });
 };
 
@@ -126,7 +126,13 @@ var garcol = function () {
 
 function showHoyluDevices() {
     for (var d in hoyluDevices) {
-        console.log(hoyluDevices[d].name + ', ' + hoyluDevices[d].defaultGateway + ', ' + hoyluDevices[d].socketId);
+        console.log(hoyluDevices[d].name + ', ' + hoyluDevices[d].socketId + ', aktuelles socket: ' + socket.id);
+    }
+}
+
+function showConnectedClients() {
+    for (var s in connectedClients) {
+        console.log('connectedclient: ' + connectedClients[s].id);
     }
 }
 
@@ -149,13 +155,14 @@ io.on('connection', function (socket) {
 
        
     socket.on('client', function (data) {
+        console.log(data + ' with SocketId ' + socket.id + ' connected...');
         var vorhanden = false;
         for (var c in connectedClients) {
-            if (connectedClients[c].id == socket.id) {
+            if (connectedClients[c].id === socket.id) {
                 vorhanden = true;
             }
         }
-        if (vorhanden == false) {
+        if (vorhanden === false) {
             connectedClients.push(socket);
         } else {
             socket.disconnect();
@@ -169,15 +176,11 @@ io.on('connection', function (socket) {
                 connectedClients.push(socket);
             }
         }*/
-        console.log(data + ' with SocketId ' + socket.id + ' connected...');
+        //console.log(data + ' with SocketId ' + socket.id + ' connected...');
         console.log('--------------------------------------------------------------------');
-        for (var d in hoyluDevices) {
-            console.log(hoyluDevices[d].name + ', ' + hoyluDevices[d].socketId + ', aktuelles socket: ' + socket.id);
-        }
+        showHoyluDevices();
         console.log('--------------------------------------------------------------------');
-        for (var s in connectedClients){
-            console.log('connectedclient: ' + connectedClients[s].id);
-        }
+        showConnectedClients();
     });
 
     socket.on('device_properties', function (data) {
@@ -185,12 +188,13 @@ io.on('connection', function (socket) {
         var vorhanden = false;
         var hoylu = new HoyluDevice(object.HoyluId, object.Name, object.BluetoothAddress, object.QrValue, object.NfcValue, object.PublicIp, object.DefaultGateway, socket.id);
         for (var h in hoyluDevices) {
-            if (hoyluDevices[h].hoyluId == hoylu.hoyluId) {
+            if (hoyluDevices[h].hoyluId === hoylu.hoyluId) {
                 vorhanden = true;
             }
         }
-        if (vorhanden == false) {
+        if (vorhanden === false) {
             hoyluDevices.push(hoylu);
+            console.log(hoylu.name + ' hinzugefügt');
             socket.emit('device_registered');
         }
     });
@@ -219,9 +223,9 @@ io.on('connection', function (socket) {
         if (filename !== null) {
             var d = getHoyluDeviceWithId(id);
             if (d !== null) {
+                showConnectedClients();
                 console.log(d.socketId + ' wird benachrichtigt');
                 socket.to(d.socketId).emit('getImage', { Filename: filename, Originalname: originalname });
-                global.gc();
                 receiverBenachrichtigt = true;
             } else {
                 receiverBenachrichtigt = false;
@@ -238,16 +242,22 @@ io.on('connection', function (socket) {
 
     socket.on('disconnect', function () {
         console.info('Client with SocketId ' + socket.id + ' disconnected.');
+        showConnectedClients();
         for (var c in connectedClients) {
             if (connectedClients[c].id == socket.id) {
-                connectedClients.splice(connectedClients.indexOf(socket), 1);
+                console.log('connectedclient with id ' + connectedClients[c].id + ' removed');
+                connectedClients.splice(connectedClients.indexOf(connectedClients[c]), 1);
+                showConnectedClients();
             }
         }
         
         console.log('--------------------------------------------------------------------');
+        showHoyluDevices();
         for (var d in hoyluDevices) {
             if (hoyluDevices[d].socketId == socket.id) {
-                hoyluDevices.splice(hoyluDevices.indexOf(d), 1);
+                console.log('hoyludevice with socketid ' + hoyluDevices[d].socketId + ' removed');
+                hoyluDevices.splice(hoyluDevices.indexOf(hoyluDevices[d]), 1);
+                showHoyluDevices();
             }
         }
         console.log('--------------------------------------------------------------------');
