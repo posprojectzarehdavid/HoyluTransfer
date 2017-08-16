@@ -58,7 +58,7 @@ app.post('/file_upload', upload.any(), function (req, res) {
 var filename = null;
 var originalname = null;
 var hoyluDevices = new Array();
-var connectedClients = new Array();
+//var connectedClients = new Array();
 
 class HoyluDevice {
     constructor(hoyluId, name, btAddress, qrValue, nfcValue, publicIp, defaultGateway, socketId) {
@@ -137,25 +137,14 @@ function showConnectedClients() {
     }
 }
 
-function removeDuplicates(originalArray, prop) {
-    var newArray = [];
-    var lookupObject = {};
-
-    for (var i in originalArray) {
-        lookupObject[originalArray[i][prop]] = originalArray[i];
-    }
-
-    for (i in lookupObject) {
-        newArray.push(lookupObject[i]);
-    }
-    return newArray;
-}
-
-
 setInterval(garcol, 1000 * 5);
 setInterval(showHoyluDevices, 1000 * 5);
 
 io.on('connection', function (socket) {
+
+    for (var c in io.sockets.sockets) {
+        console.log('io.sockets: ' + io.sockets.sockets[c].id);
+    }
     
     /*if (connectedClients.length == 0) {
         connectedClients.push(socket);
@@ -172,10 +161,7 @@ io.on('connection', function (socket) {
        
     socket.on('client', function (data) {
         console.log(data + ' with SocketId ' + socket.id + ' connected...');
-        
-        for (var c in io.sockets.clients) {
-            console.log('io.sockets: ' + io.sockets.clients[c]);
-        }
+       
 
         /*if (connectedClients.length == 0) {
             connectedClients.push(socket);
@@ -196,7 +182,7 @@ io.on('connection', function (socket) {
     socket.on('windowsClient', function (data) {
         console.log('WindowsClient with SocketId ' + socket.id + ' connected...');
         var v = false;
-        for (var c in connectedClients) {
+        /*for (var c in connectedClients) {
             if (connectedClients[c].id === socket.id) {
                 v = true;
             }
@@ -207,7 +193,7 @@ io.on('connection', function (socket) {
             duplicates = true;
             console.log(socket.id + ' schon vorhanden');
             socket.disconnect();
-        }
+        }*/
 
         var object = JSON.parse(data);
         var vorhanden = false;
@@ -249,7 +235,7 @@ io.on('connection', function (socket) {
             console.log('filename: '+filename);
             var d = getHoyluDeviceWithId(id);
             if (d !== null) {
-                showConnectedClients();
+                //showConnectedClients();
                 console.log(d.socketId + ' wird benachrichtigt');
                 socket.to(d.socketId).emit('getImage', { Filename: filename, Originalname: originalname });
                 receiverBenachrichtigt = true;
@@ -269,7 +255,7 @@ io.on('connection', function (socket) {
     socket.on('disconnect', function () {
         console.info('Client with SocketId ' + socket.id + ' disconnected.');
         var counter = 0;
-        showConnectedClients();
+        /*showConnectedClients();
         if (duplicates) {
             for (var c in connectedClients) {
                 if (connectedClients[c].id == socket.id) {
@@ -285,7 +271,7 @@ io.on('connection', function (socket) {
                 connectedClients.splice(connectedClients.indexOf(socket), 1);
                 showConnectedClients();
             }
-        }
+        }*/
         
         console.log('--------------------------------------------------------------------');
         showHoyluDevices();
@@ -297,7 +283,7 @@ io.on('connection', function (socket) {
             }
         }
         console.log('--------------------------------------------------------------------');
-        console.log('hoyludevices: ' + hoyluDevices.length +' connectedclients: '+connectedClients.length);
+        console.log('hoyludevices: ' + hoyluDevices.length);
     });
 });
 server.listen(4200);
