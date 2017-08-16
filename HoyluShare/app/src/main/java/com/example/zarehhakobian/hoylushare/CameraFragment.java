@@ -64,7 +64,7 @@ public class CameraFragment extends Fragment implements BarcodeGraphic.BoundingB
     BarcodeDetector barcodeDetector;
     View view;
 
-    private Socket socket;
+    private Socket cameraSocket;
     Barcode barcode;
     boolean isGueltigeID;
 
@@ -108,9 +108,9 @@ public class CameraFragment extends Fragment implements BarcodeGraphic.BoundingB
     @Override
     public void onStop() {
         super.onStop();
-        if(socket != null && socket.connected()){
-            socket.disconnect();
-            socket.off();
+        if(cameraSocket != null && cameraSocket.connected()){
+            cameraSocket.disconnect();
+            cameraSocket.off();
             mPreview.release();
         }
     }
@@ -212,18 +212,18 @@ public class CameraFragment extends Fragment implements BarcodeGraphic.BoundingB
         barcode = best;
 
         if(!scannedBarcodeValues.contains(barcode.displayValue)) {
-            if (socket != null) {
-                socket.close();
+            if (cameraSocket != null) {
+                cameraSocket.close();
             }
 
             try {
-                socket = IO.socket(MainActivity.CONNECTION_STRING);
-                socket.on(Socket.EVENT_CONNECT, new Emitter.Listener() {
+                cameraSocket = IO.socket(MainActivity.CONNECTION_STRING);
+                cameraSocket.on(Socket.EVENT_CONNECT, new Emitter.Listener() {
                     @Override
                     public void call(Object... args) {
                         Log.i("hallo", "connected");
-                        socket.emit("client", "CameraClient");
-                        socket.emit("qr_code", barcode.displayValue, new Ack() {
+                        cameraSocket.emit("client", "CameraClient");
+                        cameraSocket.emit("qr_code", barcode.displayValue, new Ack() {
                             @Override
                             public void call(Object... args) {
                                 isGueltigeID = (boolean) args[0];
@@ -240,12 +240,15 @@ public class CameraFragment extends Fragment implements BarcodeGraphic.BoundingB
                                                 MetricsManager.trackEvent("CameraClient", time);
                                                 MainActivity.start = System.currentTimeMillis();
                                                 listener.uploadImageToServer(barcode.displayValue, "CameraClient");
+                                                if (cameraSocket != null) {
+                                                    cameraSocket.disconnect();
+                                                    cameraSocket.off();
+                                                }
                                             }
                                         }
                                     });
                                     mPreview.release();
-                                    socket.disconnect();
-                                    socket.off();
+
                                 }else {
                                     getActivity().runOnUiThread(new Runnable() {
                                         @Override
@@ -255,11 +258,13 @@ public class CameraFragment extends Fragment implements BarcodeGraphic.BoundingB
                                         }
                                     });
                                 }
+                                cameraSocket.disconnect();
+                                cameraSocket.off();
                             }
                         });
                     }
                 });
-                socket.connect();
+                cameraSocket.connect();
             } catch (Exception e) {
                 e.printStackTrace();
                 Toast.makeText(getActivity(), R.string.server_off, Toast.LENGTH_SHORT).show();

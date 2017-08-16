@@ -53,7 +53,7 @@ public class NetworkFragment extends Fragment {
     DhcpInfo d;
     WifiManager wifi;
     String publicIP, defaultGateway;
-    private Socket socket;
+    private Socket networkSocket;
     Document doc = null;
 
     DeviceSelectedListener listener;
@@ -76,6 +76,10 @@ public class NetworkFragment extends Fragment {
                     MetricsManager.trackEvent("NetworkClient", time);
                     MainActivity.start = System.currentTimeMillis();
                     listener.uploadImageToServer(hd.getHoyluId(), "NetworkClient");
+                    if (networkSocket != null) {
+                        networkSocket.disconnect();
+                        networkSocket.off();
+                    }
                     Map<String, String> properties = new HashMap<>();
                     properties.put("Device", hd.getHoyluId());
                     MetricsManager.trackEvent("Device selected", properties);
@@ -98,9 +102,9 @@ public class NetworkFragment extends Fragment {
 
     @Override
     public void onDestroy() {
-        if(socket != null){
-            socket.disconnect();
-            socket.off();
+        if(networkSocket != null){
+            networkSocket.disconnect();
+            networkSocket.off();
         }
         if(t != null){
             t.cancel();
@@ -138,17 +142,17 @@ public class NetworkFragment extends Fragment {
     }
 
     public void connectToServer(final String pubIP, final String gateway) {
-        if (socket != null) {
-            socket.disconnect();
+        if (networkSocket != null) {
+            networkSocket.disconnect();
         }
 
         try {
-            socket = IO.socket(MainActivity.CONNECTION_STRING);
-            socket.on(Socket.EVENT_CONNECT, new Emitter.Listener() {
+            networkSocket = IO.socket(MainActivity.CONNECTION_STRING);
+            networkSocket.on(Socket.EVENT_CONNECT, new Emitter.Listener() {
                 @Override
                 public void call(Object... args) {
                     Log.i("hallo", "connected");
-                    socket.emit("client", "NetworkClient");
+                    networkSocket.emit("client", "NetworkClient");
                     JSONObject j = new JSONObject();
                     try {
                         j.put("pub", pubIP);
@@ -156,7 +160,7 @@ public class NetworkFragment extends Fragment {
                     } catch (JSONException e) {
                         e.printStackTrace();
                     }
-                    socket.emit("addresses", j, new Ack() {
+                    networkSocket.emit("addresses", j, new Ack() {
                         @Override
                         public void call(Object... args) {
                             hoyluDevices.clear();
@@ -204,13 +208,13 @@ public class NetworkFragment extends Fragment {
                             } catch (JSONException e) {
                                 e.printStackTrace();
                             }
-                            socket.disconnect();
-                            socket.off();
+                            networkSocket.disconnect();
+                            networkSocket.off();
                         }
                     });
                 }
             });
-            socket.connect();
+            networkSocket.connect();
         } catch (Exception e) {
             e.printStackTrace();
             Toast.makeText(getActivity(), R.string.server_off, Toast.LENGTH_SHORT).show();

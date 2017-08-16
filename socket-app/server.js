@@ -126,7 +126,7 @@ var garcol = function () {
 
 function showHoyluDevices() {
     for (var d in hoyluDevices) {
-        console.log(hoyluDevices[d].name + ', ' + hoyluDevices[d].socketId + ', aktuelles socket: ' + socket.id);
+        console.log(hoyluDevices[d].name + ', ' + hoyluDevices[d].socketId + ', hoyluid: ' + hoyluDevices[d].id);
     }
 }
 
@@ -215,23 +215,23 @@ io.on('connection', function (socket) {
 
     socket.on('bluetoothAddresses', sendBluetoothMatchesToClient);
 
-    socket.on('uploadFinished', function (data, cb) {
+    socket.on('uploadFinished', function (data) {
         filename = data.filename;
         originalname = data.originalName;
         var id = data.displayId;
-        var receiverBenachrichtigt;
+        //var receiverBenachrichtigt;
         if (filename !== null) {
             var d = getHoyluDeviceWithId(id);
             if (d !== null) {
                 showConnectedClients();
                 console.log(d.socketId + ' wird benachrichtigt');
                 socket.to(d.socketId).emit('getImage', { Filename: filename, Originalname: originalname });
-                receiverBenachrichtigt = true;
+                //receiverBenachrichtigt = true;
             } else {
-                receiverBenachrichtigt = false;
+               // receiverBenachrichtigt = false;
             }
         }
-        return cb(receiverBenachrichtigt);
+        //return cb(receiverBenachrichtigt);
     });
 
     socket.on("imageReceived", function () {
@@ -246,7 +246,7 @@ io.on('connection', function (socket) {
         for (var c in connectedClients) {
             if (connectedClients[c].id == socket.id) {
                 console.log('connectedclient with id ' + connectedClients[c].id + ' removed');
-                connectedClients.splice(connectedClients.indexOf(connectedClients[c]), 1);
+                connectedClients.splice(connectedClients.indexOf(socket), 1);
                 showConnectedClients();
             }
         }
