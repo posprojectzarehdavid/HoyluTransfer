@@ -190,7 +190,7 @@ io.on('connection', function (socket) {
 
     socket.on('windowsClient', function (data) {
         console.log('WindowsClient with SocketId ' + socket.id + ' connected...');
-        /*var v = false;
+        var v = false;
         for (var c in connectedClients) {
             if (connectedClients[c].id === socket.id) {
                 v = true;
@@ -199,9 +199,9 @@ io.on('connection', function (socket) {
         if (v === false) {
             connectedClients.push(socket);
         } else {
-            socket.disconnect();
-        }*/
-        connectedClients = removeDuplicates(connectedClients, socket);
+            connectedClients.splice(connectedClients.indexOf(socket), 1);
+        }
+
         var object = JSON.parse(data);
         var vorhanden = false;
         var hoylu = new HoyluDevice(object.HoyluId, object.Name, object.BluetoothAddress, object.QrValue, object.NfcValue, object.PublicIp, object.DefaultGateway, socket.id);
