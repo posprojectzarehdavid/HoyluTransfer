@@ -136,6 +136,21 @@ function showConnectedClients() {
     }
 }
 
+function removeDuplicates(originalArray, prop) {
+    var newArray = [];
+    var lookupObject = {};
+
+    for (var i in originalArray) {
+        lookupObject[originalArray[i][prop]] = originalArray[i];
+    }
+
+    for (i in lookupObject) {
+        newArray.push(lookupObject[i]);
+    }
+    return newArray;
+}
+
+
 setInterval(garcol, 1000 * 5);
 setInterval(showHoyluDevices, 1000 * 5);
 
@@ -175,7 +190,7 @@ io.on('connection', function (socket) {
 
     socket.on('windowsClient', function (data) {
         console.log('WindowsClient with SocketId ' + socket.id + ' connected...');
-        var v = false;
+        /*var v = false;
         for (var c in connectedClients) {
             if (connectedClients[c].id === socket.id) {
                 v = true;
@@ -185,7 +200,8 @@ io.on('connection', function (socket) {
             connectedClients.push(socket);
         } else {
             socket.disconnect();
-        }
+        }*/
+        connectedClients = removeDuplicates(connectedClients, socket);
         var object = JSON.parse(data);
         var vorhanden = false;
         var hoylu = new HoyluDevice(object.HoyluId, object.Name, object.BluetoothAddress, object.QrValue, object.NfcValue, object.PublicIp, object.DefaultGateway, socket.id);
@@ -217,24 +233,24 @@ io.on('connection', function (socket) {
 
     socket.on('bluetoothAddresses', sendBluetoothMatchesToClient);
 
-    socket.on('uploadFinished', function (data) {
+    socket.on('uploadFinished', function (data,cb) {
         filename = data.filename;
         originalname = data.originalName;
         var id = data.displayId;
-        //var receiverBenachrichtigt;
+        var receiverBenachrichtigt;
         if (filename !== null) {
+            console.log('filename: '+filename);
             var d = getHoyluDeviceWithId(id);
             if (d !== null) {
                 showConnectedClients();
                 console.log(d.socketId + ' wird benachrichtigt');
                 socket.to(d.socketId).emit('getImage', { Filename: filename, Originalname: originalname });
-                socket.emit('receiverBenachrichtigt');
-                //receiverBenachrichtigt = true;
+                receiverBenachrichtigt = true;
             } else {
-               // receiverBenachrichtigt = false;
+                receiverBenachrichtigt = false;
             }
         }
-        //return cb(receiverBenachrichtigt);
+        return cb(receiverBenachrichtigt);
     });
 
     socket.on("imageReceived", function () {

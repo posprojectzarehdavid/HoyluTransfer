@@ -80,6 +80,9 @@ public class NetworkFragment extends Fragment {
                         networkSocket.disconnect();
                         networkSocket.off();
                     }
+                    if(t != null){
+                        t.cancel();
+                    }
                     Map<String, String> properties = new HashMap<>();
                     properties.put("Device", hd.getHoyluId());
                     MetricsManager.trackEvent("Device selected", properties);

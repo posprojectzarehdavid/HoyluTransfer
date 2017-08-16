@@ -23,3 +23,4 @@ C:\MyFiles\Schule\Diplomarbeit\HoyluTransfer\HoyluReceiver\HoyluReceiver\obj\Rel
 C:\MyFiles\Schule\Diplomarbeit\HoyluTransfer\HoyluReceiver\HoyluReceiver\obj\Release\HoyluReceiver.csproj.GenerateResource.Cache
 C:\MyFiles\Schule\Diplomarbeit\HoyluTransfer\HoyluReceiver\HoyluReceiver\obj\Release\HoyluReceiver.exe
 C:\MyFiles\Schule\Diplomarbeit\HoyluTransfer\HoyluReceiver\HoyluReceiver\obj\Release\HoyluReceiver.pdb
+C:\MyFiles\Schule\Diplomarbeit\HoyluTransfer\HoyluReceiver\HoyluReceiver\obj\Release\HoyluReceiver.csprojResolveAssemblyReference.cache

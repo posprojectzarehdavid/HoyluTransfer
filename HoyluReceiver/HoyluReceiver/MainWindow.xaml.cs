@@ -7,6 +7,7 @@ using System.IO;
 using System.Net;
 using System.Net.NetworkInformation;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Media.Imaging;
 
 namespace HoyluReceiver
@@ -166,6 +167,8 @@ namespace HoyluReceiver
             name = deviceName.Text;
             hoyluDevice = new HoyluDevice(name, hoyluId, bluetoothAddress, qrValue, nfcValue, publicIp, defaultGateway);
             ConnectToServer();
+            Button x = sender as Button;
+            x.IsEnabled = false;
         }
 
         BitmapImage BitmapToImageSource(Bitmap bitmap)

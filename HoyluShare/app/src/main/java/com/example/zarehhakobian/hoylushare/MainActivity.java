@@ -28,6 +28,7 @@ import android.util.Log;
 import android.widget.Toast;
 
 import com.github.nkzawa.emitter.Emitter;
+import com.github.nkzawa.socketio.client.Ack;
 import com.github.nkzawa.socketio.client.IO;
 import com.github.nkzawa.socketio.client.Socket;
 import com.koushikdutta.async.future.FutureCallback;
@@ -63,7 +64,7 @@ public class MainActivity extends Activity implements DeviceSelectedListener {
     Socket socket;
     public static long start;
     public static long end;
-    ProgressDialog dialog;
+    ProgressDialog progressDialog;
     public static boolean isWifiConn, isMobileConn;
     boolean receiverBenachrichtigt;
 
@@ -194,8 +195,8 @@ public class MainActivity extends Activity implements DeviceSelectedListener {
             socket.disconnect();
             socket.off();
         }
-        if (dialog != null) {
-            dialog.dismiss();
+        if (progressDialog != null) {
+            progressDialog.dismiss();
         }
     }
 
@@ -329,11 +330,9 @@ public class MainActivity extends Activity implements DeviceSelectedListener {
     @Override
     public void uploadImageToServer(final String id, final String client) {
         MetricsManager.trackEvent("Uploading image");
-        dialog = new ProgressDialog(MainActivity.this);
-        dialog.setMessage(getResources().getString(R.string.uploading_message));
-        dialog.show();
-
-        connectToServer();
+        progressDialog = new ProgressDialog(MainActivity.this);
+        progressDialog.setMessage(getResources().getString(R.string.uploading_message));
+        progressDialog.show();
 
         Ion.with(getApplicationContext())
                 .load("POST", "http://40.114.246.211:4200/file_upload")
@@ -343,8 +342,7 @@ public class MainActivity extends Activity implements DeviceSelectedListener {
                 .setCallback(new FutureCallback<String>() {
                     @Override
                     public void onCompleted(Exception e, String result) {
-                        dialog.dismiss();
-
+                        progressDialog.dismiss();
                         JSONObject j;
                         boolean uploaded = false;
                         String filename = "";
@@ -362,18 +360,10 @@ public class MainActivity extends Activity implements DeviceSelectedListener {
                             Map<String, String> time = new HashMap<>();
                             time.put("Zeit bis Bildupload", "" + (end - start));
                             MetricsManager.trackEvent(client, time);
-                            AlertDialog.Builder ad = new AlertDialog.Builder(MainActivity.this);
-                            ad.setMessage(R.string.upload_successful);
                             final String finalFilename = filename;
                             final String finalOriginalName = originalName;
-                            ad.setNeutralButton("OK", new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialog, int which) {
-                                    dialog.dismiss();
-                                    notifyServer(finalFilename, id, finalOriginalName);
-                                }
-                            });
-                            ad.show();
+                            notifyServer(finalFilename, id, finalOriginalName);
+
                         } else {
                             AlertDialog.Builder ad = new AlertDialog.Builder(MainActivity.this);
                             ad.setMessage(R.string.uploading_error);
@@ -400,16 +390,32 @@ public class MainActivity extends Activity implements DeviceSelectedListener {
         } catch (JSONException e) {
             e.printStackTrace();
         }
-        socket.emit("uploadFinished", jsonObject);
-        /*socket.emit("uploadFinished", jsonObject, new Ack() {
+
+        connectToServer();
+
+        socket.emit("uploadFinished", jsonObject, new Ack() {
             @Override
             public void call(Object... args) {
                 boolean receiverbenachrichtigt = (boolean) args[0];
+                Log.i("benachrichtigt", "hallo");
                 if(receiverbenachrichtigt){
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            Toast.makeText(getApplicationContext(), R.string.notify_server_true, Toast.LENGTH_SHORT).show();
+                            AlertDialog.Builder ad = new AlertDialog.Builder(MainActivity.this);
+                            ad.setMessage(R.string.upload_successful);
+                            ad.setNeutralButton("OK", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    dialog.dismiss();
+                                    socket.off();
+                                    socket.disconnect();
+                                    imageFile.delete();
+                                    Toast.makeText(getApplication(),R.string.notify_server_true, Toast.LENGTH_SHORT).show();
+                                    finish();
+                                }
+                            });
+                            ad.show();
                         }
                     });
 
@@ -418,12 +424,24 @@ public class MainActivity extends Activity implements DeviceSelectedListener {
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            Toast.makeText(getApplicationContext(), R.string.notify_server_false, Toast.LENGTH_SHORT).show();
+                            AlertDialog.Builder ad = new AlertDialog.Builder(MainActivity.this);
+                            ad.setMessage(R.string.uploading_error);
+                            ad.setNeutralButton("OK", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    dialog.dismiss();
+                                    socket.off();
+                                    socket.disconnect();
+                                    imageFile.delete();
+                                    Toast.makeText(getApplication(),R.string.notify_server_false, Toast.LENGTH_SHORT).show();
+                                }
+                            });
+                            ad.show();
                         }
                     });
                 }
             }
-        });*/
+        });
     }
 
     public void connectToServer() {
@@ -434,15 +452,6 @@ public class MainActivity extends Activity implements DeviceSelectedListener {
                 public void call(Object... args) {
                     Log.i("hallo", "connected");
                     socket.emit("client", "MainClient");
-                }
-            });
-            socket.on("receiverBenachrichtigt", new Emitter.Listener() {
-                @Override
-                public void call(Object... args) {
-                    socket.off();
-                    socket.disconnect();
-                    imageFile.delete();
-                    finish();
                 }
             });
             socket.connect();
