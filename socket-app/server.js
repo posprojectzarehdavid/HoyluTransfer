@@ -121,15 +121,6 @@ function getHoyluDeviceWithId(id) {
     return null;
 }
 
-function getSocketWithHoyluSocketId(hoyluid) {
-    for (var c in connectedClients) {
-        if (connectedClients[c].id === hoyluid) {
-            return connectedClients[c];
-        }
-    }
-    return null;
-}
-
 var garcol = function () {
     global.gc();
 };
@@ -168,7 +159,7 @@ io.on('connection', function (socket) {
     }*/
 
        
-    socket.once('client', function (data) {
+    socket.on('client', function (data) {
         console.log(data + ' with SocketId ' + socket.id + ' connected...');
        
 
@@ -188,7 +179,7 @@ io.on('connection', function (socket) {
         //showConnectedClients();
     });
 
-    socket.once('windowsClient', function (data) {
+    socket.on('windowsClient', function (data) {
         console.log('WindowsClient with SocketId ' + socket.id + ' connected...');
         var v = false;
         for (var c in connectedClients) {
@@ -245,8 +236,8 @@ io.on('connection', function (socket) {
             var d = getHoyluDeviceWithId(id);
             if (d !== null) {
                 //showConnectedClients();
-                console.log(socket.id +' hat daten für '+d.socketId +'(connectedclient: '+getSocketWithHoyluSocketId(d.socketId));
-                socket.to(getSocketWithHoyluSocketId(hoylu.socketId)).emit('getImage', { Filename: filename, Originalname: originalname });
+                console.log(socket.id +' hat daten für '+d.socketId);
+                socket.to(d.socketId).emit('getImage', { Filename: filename, Originalname: originalname });
                 receiverBenachrichtigt = true;
             } else {
                 receiverBenachrichtigt = false;
