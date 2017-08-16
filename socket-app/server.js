@@ -131,20 +131,16 @@ function showHoyluDevices() {
     }
 }
 
-function showConnectedClients() {
-    for (var s in connectedClients) {
-        console.log('connectedclient: ' + connectedClients[s].id);
-    }
-}
-
-setInterval(garcol, 1000 * 5);
-setInterval(showHoyluDevices, 1000 * 5);
-
-io.on('connection', function (socket) {
-
+function showConnectedSockets() {
     for (var c in io.sockets.sockets) {
         console.log('io.sockets: ' + io.sockets.sockets[c].id);
     }
+}
+
+setInterval(showConnectedSockets, 1000 * 5);
+setInterval(showHoyluDevices, 1000 * 5);
+
+io.on('connection', function (socket) {
     
     /*if (connectedClients.length == 0) {
         connectedClients.push(socket);
@@ -176,7 +172,7 @@ io.on('connection', function (socket) {
         console.log('--------------------------------------------------------------------');
         showHoyluDevices();
         console.log('--------------------------------------------------------------------');
-        showConnectedClients();
+        //showConnectedClients();
     });
 
     socket.on('windowsClient', function (data) {
