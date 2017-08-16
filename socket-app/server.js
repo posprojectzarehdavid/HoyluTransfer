@@ -121,6 +121,15 @@ function getHoyluDeviceWithId(id) {
     return null;
 }
 
+function getSocketWithHoyluSocketId(hoyluid) {
+    for (var c in connectedClients) {
+        if (connectedClients[c].id === hoyluid) {
+            return connectedClients[c];
+        }
+    }
+    return null;
+}
+
 var garcol = function () {
     global.gc();
 };
@@ -133,7 +142,11 @@ function showHoyluDevices() {
 
 function showConnectedClients() {
     for (var c in connectedClients) {
-        console.log('io.sockets: ' + connectedClients[c].id);
+        console.log('connectedclient: ' + connectedClients[c].id);
+    }
+
+    for (var c in io.sockets.sockets) {
+        console.log('io.socket: ' + io.sockets.sockets[c].id);
     }
 }
 
@@ -232,8 +245,8 @@ io.on('connection', function (socket) {
             var d = getHoyluDeviceWithId(id);
             if (d !== null) {
                 //showConnectedClients();
-                console.log(d.socketId + ' wird benachrichtigt');
-                socket.to(d.socketId).emit('getImage', { Filename: filename, Originalname: originalname });
+                console.log(socket.id +' hat daten für '+d.socketId +'(connectedclient: '+getSocketWithHoyluSocketId(d.socketId));
+                socket.to(getSocketWithHoyluSocketId(hoylu.socketId)).emit('getImage', { Filename: filename, Originalname: originalname });
                 receiverBenachrichtigt = true;
             } else {
                 receiverBenachrichtigt = false;
@@ -260,14 +273,14 @@ io.on('connection', function (socket) {
             }
         }
         duplicates = false;
-        console.log('anzahl duplicates: ' + counter);
+        console.log('anzahl duplicates: ' + counter);*/
         for (var c in connectedClients) {
             if (connectedClients[c].id == socket.id) {
                 console.log('connectedclient with id ' + connectedClients[c].id + ' removed');
                 connectedClients.splice(connectedClients.indexOf(socket), 1);
                 showConnectedClients();
             }
-        }*/
+        }
         
         console.log('--------------------------------------------------------------------');
         showHoyluDevices();
