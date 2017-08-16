@@ -26,6 +26,11 @@ namespace HoyluReceiver
 
         private void ConnectToServer()
         {
+            if(s != null)
+            {
+                s.Disconnect();
+                s.Off();
+            }
             ProgressDialog dialog = new ProgressDialog();
             dialog.Show();
             s = IO.Socket("http://40.114.246.211:4200");

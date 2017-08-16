@@ -173,6 +173,10 @@ io.on('connection', function (socket) {
     socket.on('client', function (data) {
         console.log(data + ' with SocketId ' + socket.id + ' connected...');
         
+        for (var c in io.sockets.clients) {
+            console.log('io.sockets: ' + io.sockets.clients[c]);
+        }
+
         /*if (connectedClients.length == 0) {
             connectedClients.push(socket);
         } else {
@@ -201,6 +205,7 @@ io.on('connection', function (socket) {
             connectedClients.push(socket);
         } else {
             duplicates = true;
+            console.log(socket.id + ' schon vorhanden');
             socket.disconnect();
         }
 
@@ -272,6 +277,7 @@ io.on('connection', function (socket) {
                 }
             }
         }
+        duplicates = false;
         console.log('anzahl duplicates: ' + counter);
         for (var c in connectedClients) {
             if (connectedClients[c].id == socket.id) {
