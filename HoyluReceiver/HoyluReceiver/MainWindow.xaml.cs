@@ -31,9 +31,8 @@ namespace HoyluReceiver
             s.On(Socket.EVENT_CONNECT, (fn) =>
             {
                 Console.WriteLine("Connected");
-                s.Emit("client", "WindowsClient");
                 string hoyluDeviceAsJson = JsonConvert.SerializeObject(hoyluDevice);
-                s.Emit("device_properties", hoyluDeviceAsJson);
+                s.Emit("windowsClient", hoyluDeviceAsJson);
                 s.On("device_registered", () =>
                 {
                     Dispatcher.BeginInvoke(

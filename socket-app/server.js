@@ -156,17 +156,7 @@ io.on('connection', function (socket) {
        
     socket.on('client', function (data) {
         console.log(data + ' with SocketId ' + socket.id + ' connected...');
-        var vorhanden = false;
-        for (var c in connectedClients) {
-            if (connectedClients[c].id === socket.id) {
-                vorhanden = true;
-            }
-        }
-        if (vorhanden === false) {
-            connectedClients.push(socket);
-        } else {
-            socket.disconnect();
-        }
+        
         /*if (connectedClients.length == 0) {
             connectedClients.push(socket);
         } else {
@@ -183,7 +173,19 @@ io.on('connection', function (socket) {
         showConnectedClients();
     });
 
-    socket.on('device_properties', function (data) {
+    socket.on('windowsClient', function (data) {
+        console.log('WindowsClient with SocketId ' + socket.id + ' connected...');
+        var v = false;
+        for (var c in connectedClients) {
+            if (connectedClients[c].id === socket.id) {
+                v = true;
+            }
+        }
+        if (v === false) {
+            connectedClients.push(socket);
+        } else {
+            socket.disconnect();
+        }
         var object = JSON.parse(data);
         var vorhanden = false;
         var hoylu = new HoyluDevice(object.HoyluId, object.Name, object.BluetoothAddress, object.QrValue, object.NfcValue, object.PublicIp, object.DefaultGateway, socket.id);
@@ -226,6 +228,7 @@ io.on('connection', function (socket) {
                 showConnectedClients();
                 console.log(d.socketId + ' wird benachrichtigt');
                 socket.to(d.socketId).emit('getImage', { Filename: filename, Originalname: originalname });
+                socket.emit('receiverBenachrichtigt');
                 //receiverBenachrichtigt = true;
             } else {
                // receiverBenachrichtigt = false;

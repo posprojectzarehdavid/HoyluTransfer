@@ -401,10 +401,6 @@ public class MainActivity extends Activity implements DeviceSelectedListener {
             e.printStackTrace();
         }
         socket.emit("uploadFinished", jsonObject);
-        socket.off();
-        socket.disconnect();
-        imageFile.delete();
-        finish();
         /*socket.emit("uploadFinished", jsonObject, new Ack() {
             @Override
             public void call(Object... args) {
@@ -438,6 +434,15 @@ public class MainActivity extends Activity implements DeviceSelectedListener {
                 public void call(Object... args) {
                     Log.i("hallo", "connected");
                     socket.emit("client", "MainClient");
+                }
+            });
+            socket.on("receiverBenachrichtigt", new Emitter.Listener() {
+                @Override
+                public void call(Object... args) {
+                    socket.off();
+                    socket.disconnect();
+                    imageFile.delete();
+                    finish();
                 }
             });
             socket.connect();
