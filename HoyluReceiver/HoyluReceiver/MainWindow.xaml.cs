@@ -38,7 +38,7 @@ namespace HoyluReceiver
             {
                 Console.WriteLine("Connected");
                 string hoyluDeviceAsJson = JsonConvert.SerializeObject(hoyluDevice);
-                s.Emit("windowsClient", hoyluDeviceAsJson);
+                s.Emit("receiverClient", hoyluDeviceAsJson);
                 s.On("device_registered", () =>
                 {
                     Dispatcher.BeginInvoke(
@@ -49,7 +49,7 @@ namespace HoyluReceiver
                     );
                 });
 
-                s.On("getImage", (data) =>
+                s.On("getFile", (data) =>
                 {
                     ServerFile file = JsonConvert.DeserializeObject<ServerFile>(data.ToString());
                     string url = @"http://40.114.246.211:4200/file_for_download/:" + file.Filename;
@@ -81,11 +81,12 @@ namespace HoyluReceiver
                            {
                                image.Source = bitmapImage;
                                SaveOnDesktop(bitmapImage, desktoppath, s);
-                               s.Emit("imageReceived");
+                               
                                Console.WriteLine("Hallo");
                            }
                        })
                     );
+                    s.Emit("fileReceived");
                 });
             });
             s.Connect();

@@ -179,8 +179,8 @@ io.on('connection', function (socket) {
         //showConnectedClients();
     });
 
-    socket.once('windowsClient', function (data) {
-        console.log('WindowsClient with SocketId ' + socket.id + ' connected...');
+    socket.once('receiverClient', function (data) {
+        console.log('ReceiverClient with SocketId ' + socket.id + ' connected...');
         var v = false;
         for (var c in connectedClients) {
             if (connectedClients[c].id === socket.id) {
@@ -237,7 +237,7 @@ io.on('connection', function (socket) {
             if (d !== null) {
                 //showConnectedClients();
                 console.log(socket.id +' hat daten für '+d.socketId);
-                socket.to(d.socketId).emit('getImage', { Filename: filename, Originalname: originalname });
+                socket.to(d.socketId).emit('getFile', { Filename: filename, Originalname: originalname });
                 receiverBenachrichtigt = true;
             } else {
                 receiverBenachrichtigt = false;
@@ -246,10 +246,14 @@ io.on('connection', function (socket) {
         return cb(receiverBenachrichtigt);
     });
 
-    socket.once("imageReceived", function () {
-        fs.unlinkSync(file);
-        console.log(file + ' gelöscht');
-        //file = null;
+    socket.on("fileReceived", function () {
+        if (file != null) {
+            console.log("file received");
+            fs.unlinkSync(file);
+            console.log(file + ' gelöscht');
+            file = null;
+        }
+        
     });
 
     socket.on('disconnect', function () {
