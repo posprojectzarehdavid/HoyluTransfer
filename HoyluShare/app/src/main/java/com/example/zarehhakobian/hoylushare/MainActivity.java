@@ -3,6 +3,7 @@ package com.example.zarehhakobian.hoylushare;
 import android.Manifest;
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.PendingIntent;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -16,6 +17,11 @@ import android.graphics.BitmapFactory;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
+import android.nfc.NdefMessage;
+import android.nfc.NdefRecord;
+import android.nfc.NfcAdapter;
+import android.nfc.Tag;
+import android.nfc.tech.Ndef;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
@@ -68,6 +74,9 @@ public class MainActivity extends Activity implements DeviceSelectedListener {
     public static boolean isWifiConn, isMobileConn;
     boolean receiverBenachrichtigt;
 
+    private NfcAdapter nfcAdapter;
+    PendingIntent mPendingIntent;
+
     Resources res;
     DisplayMetrics dm;
     Configuration conf;
@@ -116,9 +125,50 @@ public class MainActivity extends Activity implements DeviceSelectedListener {
         if (isWifiConn) {
             startMethod();
         }
+        mPendingIntent = PendingIntent.getActivity(this, 0, new Intent(this,
+                getClass()).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP), 0);
+        nfcAdapter = NfcAdapter.getDefaultAdapter(this);
+        if (nfcAdapter == null) {
+            Toast.makeText(this, "This device doesn't support NFC.", Toast.LENGTH_LONG).show();
+            finish();
+            return;
+        }
+        if (!nfcAdapter.isEnabled()) {
+            Toast.makeText(this, "NFC is disabled.", Toast.LENGTH_LONG).show();
+        }
+
     }
 
-    private void setLanguage() {
+    @Override
+    protected void onResume() {
+        super.onResume();
+        nfcAdapter.enableForegroundDispatch(this, mPendingIntent, null, null);
+
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        if (nfcAdapter != null) {
+            nfcAdapter.disableForegroundDispatch(this);
+        }
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent){
+        getTagInfo(intent);
+    }
+
+    private void getTagInfo(Intent intent) {
+        Tag tag = intent.getParcelableExtra(NfcAdapter.EXTRA_TAG);
+        Ndef ndefTag = Ndef.get(tag);
+        NdefMessage ndefMesg = ndefTag.getCachedNdefMessage();
+        NdefRecord record = ndefMesg.getRecords()[0];
+        Log.i("NFC TAG SCANNED", new String(record.getPayload()) + " || Size: "+ndefTag.getMaxSize());
+
+    }
+
+        private void setLanguage() {
         String systemlanguage = Locale.getDefault().getDisplayLanguage();
         res = getResources();
         dm = res.getDisplayMetrics();

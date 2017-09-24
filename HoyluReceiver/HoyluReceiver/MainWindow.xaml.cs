@@ -8,6 +8,7 @@ using System.Net;
 using System.Net.NetworkInformation;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using System.Windows.Media.Imaging;
 
 namespace HoyluReceiver
@@ -18,6 +19,7 @@ namespace HoyluReceiver
         string name, hoyluId, bluetoothAddress, qrValue, nfcValue, publicIp, defaultGateway;
         HoyluDevice hoyluDevice;
         BitmapImage bitmapImage;
+        bool copyClipboard = false;
 
         public MainWindow()
         {
@@ -101,6 +103,17 @@ namespace HoyluReceiver
             }
         }
 
+        private void Window_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (copyClipboard)
+            {
+                if (e.Key == Key.C && Keyboard.IsKeyDown(Key.LeftCtrl))
+                {
+                    Clipboard.SetText(hoyluId);
+                }
+            }
+        }
+
         public static void SaveOnDesktop(BitmapImage image, string filePath, Socket s)
         {
             BitmapEncoder encoder = new PngBitmapEncoder();
@@ -163,7 +176,12 @@ namespace HoyluReceiver
             Bitmap qrCodeImage = qrCode.GetGraphic(20);
             qrCodeView.Source = BitmapToImageSource(qrCodeImage);
 
-            if (registerNFC.IsChecked == true) nfcValue = hoyluId;
+            if (registerNFC.IsChecked == true)
+            {
+                nfcValue = hoyluId;
+                copyClipboard = true;
+                MessageBox.Show("Please make sure you add the following ID to your NFC Tag (Press Ctrl + C to copy the ID to the Clipboard): "+hoyluId);
+            }
             if (registerNetwork.IsChecked == true)
             {
                 publicIp = new WebClient().DownloadString(@"http://icanhazip.com").Trim();
