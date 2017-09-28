@@ -133,8 +133,11 @@ public class MainActivity extends Activity implements DeviceSelectedListener {
             finish();
             return;
         }
-        if (!nfcAdapter.isEnabled()) {
+        else if (!nfcAdapter.isEnabled()) {
             Toast.makeText(this, "NFC is disabled.", Toast.LENGTH_LONG).show();
+        }
+        else{
+            Toast.makeText(this, "NFC is ready to be used!", Toast.LENGTH_LONG).show();
         }
 
     }
@@ -164,8 +167,11 @@ public class MainActivity extends Activity implements DeviceSelectedListener {
         Ndef ndefTag = Ndef.get(tag);
         NdefMessage ndefMesg = ndefTag.getCachedNdefMessage();
         NdefRecord record = ndefMesg.getRecords()[0];
-        Log.i("NFC TAG SCANNED", new String(record.getPayload()) + " || Size: "+ndefTag.getMaxSize());
+        String value = new String(record.getPayload());
+        Log.i("NFC TAG SCANNED", value + " || Size: "+ndefTag.getMaxSize());
+        Log.i("NFC TAG SCANNED fixed", value.substring(3) + " || Size: "+ndefTag.getMaxSize());
 
+        uploadImageToServer(value.substring(3), "NFCClient");
     }
 
         private void setLanguage() {
