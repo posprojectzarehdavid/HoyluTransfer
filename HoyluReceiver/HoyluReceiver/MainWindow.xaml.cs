@@ -179,6 +179,7 @@ namespace HoyluReceiver
             if (registerNFC.IsChecked == true)
             {
                 nfcValue = hoyluId;
+                Console.WriteLine(nfcValue);
                 copyClipboard = true;
                 MessageBox.Show("Please make sure you add the following ID to your NFC Tag (Press Ctrl + C to copy the ID to the Clipboard): "+hoyluId);
             }
