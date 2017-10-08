@@ -11,6 +11,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media.Imaging;
 
+
 namespace HoyluReceiver
 {
     public partial class MainWindow : Window
@@ -20,6 +21,9 @@ namespace HoyluReceiver
         HoyluDevice hoyluDevice;
         BitmapImage bitmapImage;
         bool copyClipboard = false;
+        private System.Windows.Point mousePosition;
+        private System.Windows.Controls.Image draggedQrCode;
+        bool qrUsed = false;
 
         public MainWindow()
         {
@@ -81,7 +85,14 @@ namespace HoyluReceiver
                            bitmapImage = ToImage(lnByte);
                            if (bitmapImage != null)
                            {
-                               image.Source = bitmapImage;
+                               if (qrUsed)
+                               {
+                                   qrCodeView.Source = bitmapImage;
+                               }
+                               else
+                               {
+                                   image.Source = bitmapImage;
+                               }
                                SaveOnDesktop(bitmapImage, desktoppath, s);
                                
                                Console.WriteLine("Hallo");
@@ -111,6 +122,44 @@ namespace HoyluReceiver
                 {
                     Clipboard.SetText(hoyluId);
                 }
+            }
+        }
+
+        private void Grid_MouseRightButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            var image = e.Source as System.Windows.Controls.Image;
+
+            if(image != null && MainViewGrid.CaptureMouse() && image.Name == "qrCodeView")
+            {
+                Console.WriteLine("Dragging");
+                mousePosition = e.GetPosition(MainViewGrid);
+                draggedQrCode = image;
+            }
+        }
+
+        private void MainViewGrid_MouseRightButtonUp(object sender, MouseButtonEventArgs e)
+        {
+            if(draggedQrCode != null)
+            {
+                MainViewGrid.ReleaseMouseCapture();
+                Panel.SetZIndex(draggedQrCode, 0);
+                draggedQrCode = null;
+            }
+        }
+
+        private void MainViewGrid_MouseMove(object sender, MouseEventArgs e)
+        {
+            if (draggedQrCode != null)
+            {
+                var position = e.GetPosition(MainViewGrid);
+                var offset = position - mousePosition;
+                mousePosition = position;
+                Canvas.SetTop(draggedQrCode, mousePosition.Y);
+                Canvas.SetLeft(draggedQrCode, mousePosition.X);
+
+                //Canvas.SetLeft(draggedQrCode, Canvas.GetLeft(draggedQrCode) + offset.X);
+                //Canvas.SetTop(draggedQrCode, Canvas.GetTop(draggedQrCode) + offset.Y);
+
             }
         }
 
@@ -169,12 +218,17 @@ namespace HoyluReceiver
             hoyluId = Guid.NewGuid().ToString();
             if (registerBluetooth.IsChecked == true) bluetoothAddress = GetBTMacAddress();
 
-            qrValue = hoyluId;
-            QRCodeGenerator qrGenerator = new QRCodeGenerator();
-            QRCodeData qrCodeData = qrGenerator.CreateQrCode(qrValue, QRCodeGenerator.ECCLevel.L);
-            QRCode qrCode = new QRCode(qrCodeData);
-            Bitmap qrCodeImage = qrCode.GetGraphic(20);
-            qrCodeView.Source = BitmapToImageSource(qrCodeImage);
+            if(registerQRCode.IsChecked == true)
+            {
+                qrValue = hoyluId;
+                QRCodeGenerator qrGenerator = new QRCodeGenerator();
+                QRCodeData qrCodeData = qrGenerator.CreateQrCode(qrValue, QRCodeGenerator.ECCLevel.L);
+                QRCode qrCode = new QRCode(qrCodeData);
+                Bitmap qrCodeImage = qrCode.GetGraphic(20);
+                qrCodeView.Source = BitmapToImageSource(qrCodeImage);
+                qrUsed = true;
+            }
+            
 
             if (registerNFC.IsChecked == true)
             {
