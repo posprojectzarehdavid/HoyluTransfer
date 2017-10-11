@@ -152,13 +152,11 @@ namespace HoyluReceiver
             if (draggedQrCode != null)
             {
                 var position = e.GetPosition(MainViewGrid);
-                var offset = position - mousePosition;
+                var offset = mousePosition - position;
                 mousePosition = position;
-                Canvas.SetTop(draggedQrCode, mousePosition.Y);
-                Canvas.SetLeft(draggedQrCode, mousePosition.X);
+                Canvas.SetTop(draggedQrCode, mousePosition.Y - 300);
+                Canvas.SetLeft(draggedQrCode, mousePosition.X - 80);
 
-                //Canvas.SetLeft(draggedQrCode, Canvas.GetLeft(draggedQrCode) + offset.X);
-                //Canvas.SetTop(draggedQrCode, Canvas.GetTop(draggedQrCode) + offset.Y);
 
             }
         }
