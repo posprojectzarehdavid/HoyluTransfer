@@ -213,6 +213,8 @@ namespace HoyluReceiver
 
         private void register_Click(object sender, RoutedEventArgs e)
         {
+            //hoyluId = "f67317b7-5823-474b-b8e2-aa36e5564942";
+
             hoyluId = Guid.NewGuid().ToString();
             if (registerBluetooth.IsChecked == true) bluetoothAddress = GetBTMacAddress();
 
