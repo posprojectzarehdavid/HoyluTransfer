@@ -59,7 +59,6 @@ C:\Users\David\Desktop\HoyluTransfer\HoyluReceiver\HoyluReceiver\bin\Debug\WebSo
 C:\Users\David\Desktop\HoyluTransfer\HoyluReceiver\HoyluReceiver\bin\Debug\Newtonsoft.Json.xml
 C:\Users\David\Desktop\HoyluTransfer\HoyluReceiver\HoyluReceiver\bin\Debug\SocketIOClient.pdb
 C:\Users\David\Desktop\HoyluTransfer\HoyluReceiver\HoyluReceiver\bin\Debug\SocketIOClient.xml
-C:\Users\David\Desktop\HoyluTransfer\HoyluReceiver\HoyluReceiver\obj\Debug\HoyluReceiver.csprojResolveAssemblyReference.cache
 C:\Users\David\Desktop\HoyluTransfer\HoyluReceiver\HoyluReceiver\obj\Debug\MainWindow.g.cs
 C:\Users\David\Desktop\HoyluTransfer\HoyluReceiver\HoyluReceiver\obj\Debug\ProgressDialog.g.cs
 C:\Users\David\Desktop\HoyluTransfer\HoyluReceiver\HoyluReceiver\obj\Debug\App.g.cs

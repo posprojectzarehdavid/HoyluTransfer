@@ -9,7 +9,7 @@
         WindowStartupLocation="CenterScreen"
         Closing="Window_Closing" KeyDown="Window_KeyDown">
     <Grid >
-        <Canvas MouseRightButtonDown="Grid_MouseRightButtonDown" MouseRightButtonUp="MainViewGrid_MouseRightButtonUp" MouseMove="MainViewGrid_MouseMove" Name="MainViewGrid" Width="668" Margin="0,0,-8,10">
+        <Canvas MouseRightButtonDown="Grid_MouseRightButtonDown" MouseRightButtonUp="MainViewGrid_MouseRightButtonUp" MouseMove="MainViewGrid_MouseMove" Name="MainViewGrid" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
             <Label x:Name="label" Content="Register Options:" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top"/>
             <CheckBox x:Name="registerBluetooth" Content="Bluetooth" HorizontalAlignment="Left" Margin="22,70,0,0" VerticalAlignment="Top" RenderTransformOrigin="0.261,0.251"/>
             <CheckBox x:Name="registerQRCode" Content="QRCode" HorizontalAlignment="Left" Margin="22,90,0,0" VerticalAlignment="Top" RenderTransformOrigin="0.261,0.251"/>

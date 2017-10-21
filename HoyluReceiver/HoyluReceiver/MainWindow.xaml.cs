@@ -22,7 +22,7 @@ namespace HoyluReceiver
         BitmapImage bitmapImage;
         bool copyClipboard = false;
         private System.Windows.Point mousePosition;
-        private System.Windows.Controls.Image draggedQrCode;
+        private System.Windows.Controls.Image draggedImage;
         bool qrUsed = false;
 
         public MainWindow()
@@ -129,33 +129,36 @@ namespace HoyluReceiver
         {
             var image = e.Source as System.Windows.Controls.Image;
 
-            if(image != null && MainViewGrid.CaptureMouse() && image.Name == "qrCodeView")
+            if(image != null && MainViewGrid.CaptureMouse() && (image.Name == "qrCodeView" || image.Name == "image"))
             {
                 Console.WriteLine("Dragging");
-                mousePosition = e.GetPosition(MainViewGrid);
-                draggedQrCode = image;
+                mousePosition = e.GetPosition(this);
+                Console.WriteLine("ButtonDown Position: X"+mousePosition.X + "| Y" +mousePosition.Y);
+                draggedImage = image;
             }
         }
 
         private void MainViewGrid_MouseRightButtonUp(object sender, MouseButtonEventArgs e)
         {
-            if(draggedQrCode != null)
+            if(draggedImage != null)
             {
                 MainViewGrid.ReleaseMouseCapture();
-                Panel.SetZIndex(draggedQrCode, 0);
-                draggedQrCode = null;
+                Console.WriteLine("ButtonUp Position: X" + mousePosition.X + "| Y" + mousePosition.Y);
+                Panel.SetZIndex(draggedImage, 0);
+                draggedImage = null;
             }
         }
 
         private void MainViewGrid_MouseMove(object sender, MouseEventArgs e)
         {
-            if (draggedQrCode != null)
+            if (draggedImage != null)
             {
-                var position = e.GetPosition(MainViewGrid);
-                var offset = mousePosition - position;
-                mousePosition = position;
-                Canvas.SetTop(draggedQrCode, mousePosition.Y - 300);
-                Canvas.SetLeft(draggedQrCode, mousePosition.X - 80);
+                var position = e.GetPosition(this.Parent as UIElement);
+                var offset = position - mousePosition;
+                
+                //Console.WriteLine("ButtonUp Position: X" + mousePosition.X + "| Y" + mousePosition.Y);
+                Canvas.SetTop(draggedImage, offset.Y);
+                Canvas.SetLeft(draggedImage, offset.X);
 
 
             }
@@ -213,9 +216,9 @@ namespace HoyluReceiver
 
         private void register_Click(object sender, RoutedEventArgs e)
         {
-            //hoyluId = "f67317b7-5823-474b-b8e2-aa36e5564942";
+            hoyluId = "f67317b7-5823-474b-b8e2-aa36e5564942";
 
-            hoyluId = Guid.NewGuid().ToString();
+            //hoyluId = Guid.NewGuid().ToString();
             if (registerBluetooth.IsChecked == true) bluetoothAddress = GetBTMacAddress();
 
             if(registerQRCode.IsChecked == true)
