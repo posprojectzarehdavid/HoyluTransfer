@@ -82,6 +82,15 @@ public class MainActivity extends Activity implements DeviceSelectedListener {
     Configuration conf;
     File imageFile = null;
 
+    long fileSize;
+    public static long startTime;
+    public static long endTimeBeforeUpload;
+    public static String selectedMethod;
+
+    Statistic afterUpload;
+    Statistic beforeUpload;
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -159,6 +168,8 @@ public class MainActivity extends Activity implements DeviceSelectedListener {
 
     @Override
     protected void onNewIntent(Intent intent){
+        startTime = System.currentTimeMillis();
+        selectedMethod = "NFC";
         getTagInfo(intent);
     }
 
@@ -305,6 +316,8 @@ public class MainActivity extends Activity implements DeviceSelectedListener {
         } catch (IOException e) {
             e.printStackTrace();
         }
+        fileSize = imageFile.length() / 1024;
+
         return imageFile;
     }
 
@@ -385,6 +398,8 @@ public class MainActivity extends Activity implements DeviceSelectedListener {
 
     @Override
     public void uploadImageToServer(final String id, final String client) {
+        endTimeBeforeUpload = System.currentTimeMillis();
+        beforeUpload = CalculateStatisticsFromSelectionToUploadStart();
         MetricsManager.trackEvent("Uploading image");
         progressDialog = new ProgressDialog(MainActivity.this);
         progressDialog.setMessage(getResources().getString(R.string.uploading_message));
@@ -413,6 +428,7 @@ public class MainActivity extends Activity implements DeviceSelectedListener {
                         }
                         if (uploaded) {
                             end = System.currentTimeMillis();
+                            afterUpload = CalculateStatisticsFromSelectionToUpload();
                             Map<String, String> time = new HashMap<>();
                             time.put("Zeit bis Bildupload", "" + (end - start));
                             MetricsManager.trackEvent(client, time);
@@ -435,6 +451,23 @@ public class MainActivity extends Activity implements DeviceSelectedListener {
                         }
                     }
                 });
+    }
+
+    private Statistic CalculateStatisticsFromSelectionToUpload() { //Berechnet ab einscannen eines Tags, bzw. klicken auf einen Eintrag bis Upload abgeschlossen ist.
+        long takenTime = startTime - end;
+        long sec = takenTime/1000;
+        long ms = sec/1000;
+        double uploadSpeedInKBPS = fileSize / sec;
+
+        return new Statistic(selectedMethod, sec, ms, uploadSpeedInKBPS);
+    }
+
+    private Statistic CalculateStatisticsFromSelectionToUploadStart() { //Berechnet ab einscannen eines Tags, bzw. klicken auf einen Eintrag bis Upload beginnt ist.
+        long takenTime = startTime - endTimeBeforeUpload;
+        long sec = takenTime/1000;
+        long ms = sec/1000;
+
+        return new Statistic(selectedMethod, sec, ms, 0);
     }
 
     private void notifyServer(String filename, String id, String originalName) {

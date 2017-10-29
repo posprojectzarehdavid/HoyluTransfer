@@ -223,6 +223,8 @@ public class CameraFragment extends Fragment implements BarcodeGraphic.BoundingB
                     public void call(Object... args) {
                         Log.i("hallo", "connected");
                         cameraSocket.emit("client", "CameraClient");
+                        MainActivity.startTime = System.currentTimeMillis();
+                        MainActivity.selectedMethod = "QR";
                         cameraSocket.emit("qr_code", barcode.displayValue, new Ack() {
                             @Override
                             public void call(Object... args) {
