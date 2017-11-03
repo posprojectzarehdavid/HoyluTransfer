@@ -31,6 +31,8 @@ import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.util.DisplayMetrics;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.widget.Toast;
 
 import com.github.nkzawa.emitter.Emitter;
@@ -87,8 +89,8 @@ public class MainActivity extends Activity implements DeviceSelectedListener {
     public static long endTimeBeforeUpload;
     public static String selectedMethod;
 
-    Statistic afterUpload;
-    Statistic beforeUpload;
+    Statistic afterUpload = null;
+    Statistic beforeUpload = null;
 
 
     @Override
@@ -165,6 +167,8 @@ public class MainActivity extends Activity implements DeviceSelectedListener {
             nfcAdapter.disableForegroundDispatch(this);
         }
     }
+
+
 
     @Override
     protected void onNewIntent(Intent intent){
@@ -454,20 +458,19 @@ public class MainActivity extends Activity implements DeviceSelectedListener {
     }
 
     private Statistic CalculateStatisticsFromSelectionToUpload() { //Berechnet ab einscannen eines Tags, bzw. klicken auf einen Eintrag bis Upload abgeschlossen ist.
-        long takenTime = startTime - end;
-        long sec = takenTime/1000;
-        long ms = sec/1000;
+        double takenTime = end - startTime;
+        double sec = takenTime/1000;
         double uploadSpeedInKBPS = fileSize / sec;
 
-        return new Statistic(selectedMethod, sec, ms, uploadSpeedInKBPS);
+        return new Statistic(selectedMethod, sec, takenTime, uploadSpeedInKBPS);
+
     }
 
-    private Statistic CalculateStatisticsFromSelectionToUploadStart() { //Berechnet ab einscannen eines Tags, bzw. klicken auf einen Eintrag bis Upload beginnt ist.
-        long takenTime = startTime - endTimeBeforeUpload;
-        long sec = takenTime/1000;
-        long ms = sec/1000;
+    private Statistic CalculateStatisticsFromSelectionToUploadStart() { //Berechnet ab einscannen eines Tags, bzw. klicken auf einen Eintrag bis Upload begonnen hat.
+        double takenTime = endTimeBeforeUpload - startTime;
+        double sec = takenTime/1000;
 
-        return new Statistic(selectedMethod, sec, ms, 0);
+        return new Statistic(selectedMethod, sec, takenTime, 0);
     }
 
     private void notifyServer(String filename, String id, String originalName) {
@@ -501,7 +504,8 @@ public class MainActivity extends Activity implements DeviceSelectedListener {
                                     socket.disconnect();
                                     imageFile.delete();
                                     Toast.makeText(getApplication(),R.string.notify_server_true, Toast.LENGTH_SHORT).show();
-                                    finish();
+                                    startStatisticIntent(beforeUpload, afterUpload);
+                                    //finish();
                                 }
                             });
                             ad.show();
@@ -549,4 +553,33 @@ public class MainActivity extends Activity implements DeviceSelectedListener {
             Toast.makeText(getApplicationContext(), R.string.server_off, Toast.LENGTH_SHORT).show();
         }
     }
+
+    public boolean onCreateOptionsMenu(Menu menu){
+        getMenuInflater().inflate(R.menu.menu, menu);
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    public boolean onOptionsItemSelected(MenuItem item){
+        if(item.getItemId() == R.id.showStatistics){
+            if(beforeUpload == null || afterUpload == null){
+                Toast.makeText(getApplicationContext(), "You have to upload first in order to see statistics", Toast.LENGTH_LONG);
+                return true;
+            }
+            else{
+                startStatisticIntent(beforeUpload, afterUpload);
+                return true;
+            }
+
+        }
+        return super.onOptionsItemSelected(item);
+    }
+    private void startStatisticIntent(Statistic beforeUpload, Statistic afterUpload){
+        Intent intent = new Intent(getApplicationContext(), ShowStatistic.class);
+        Bundle bundle = new Bundle();
+        bundle.putSerializable("beforeUpload", beforeUpload);
+        bundle.putSerializable("afterUpload", afterUpload);
+        intent.putExtras(bundle);
+        startActivity(intent);
+    }
+
 }

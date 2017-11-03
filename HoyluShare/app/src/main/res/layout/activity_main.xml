@@ -7,14 +7,15 @@
     android:orientation="vertical"
     tools:context="com.example.zarehhakobian.hoylushare.MainActivity">
 
+
 <ScrollView
     android:layout_width="match_parent"
     android:layout_height="match_parent">
-
 <LinearLayout
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical">
+
 
         <fragment
             android:id="@+id/camera_fragment"
