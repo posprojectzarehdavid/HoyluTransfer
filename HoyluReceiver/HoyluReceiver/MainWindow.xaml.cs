@@ -9,6 +9,7 @@ using System.Net.NetworkInformation;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Media.Animation;
 using System.Windows.Media.Imaging;
 
 
@@ -24,7 +25,7 @@ namespace HoyluReceiver
         private System.Windows.Point mousePosition;
         private System.Windows.Controls.Image draggedImage;
         bool qrUsed = false;
-
+        string storyboard;
         public MainWindow()
         {
             InitializeComponent();
@@ -57,6 +58,7 @@ namespace HoyluReceiver
 
                 s.On("getFile", (data) =>
                 {
+                    System.Diagnostics.Debugger.NotifyOfCrossThreadDependency();
                     ServerFile file = JsonConvert.DeserializeObject<ServerFile>(data.ToString());
                     string url = @"http://40.114.246.211:4200/file_for_download/:" + file.Filename;
                     byte[] lnByte;
@@ -132,9 +134,14 @@ namespace HoyluReceiver
             if(image != null && MainViewGrid.CaptureMouse() && (image.Name == "qrCodeView" || image.Name == "image"))
             {
                 Console.WriteLine("Dragging");
+                
                 mousePosition = e.GetPosition(this);
-                Console.WriteLine("ButtonDown Position: X"+mousePosition.X + "| Y" +mousePosition.Y);
+                Console.WriteLine("ButtonDown Position: X"+ mousePosition.X + "| Y" + mousePosition.Y);
+
                 draggedImage = image;
+                Canvas.SetTop(draggedImage, mousePosition.Y);
+                Canvas.SetLeft(draggedImage, mousePosition.X);
+                Console.WriteLine("Image start: X" + Canvas.GetLeft(draggedImage) + " | Y" + Canvas.GetTop(draggedImage));
             }
         }
 
@@ -142,10 +149,18 @@ namespace HoyluReceiver
         {
             if(draggedImage != null)
             {
+                
+                var position = e.GetPosition(this);
+                //Console.WriteLine("ButtonUp Position: X" + mousePosition.X + "| Y" + mousePosition.Y);
+                //Panel.SetZIndex(draggedImage, 0);
+                Canvas.SetTop(draggedImage, position.Y);
+                Canvas.SetLeft(draggedImage, position.X);
+                Console.WriteLine("ButtonUp Position Image: X" + Canvas.GetLeft(draggedImage) + "| Y" + Canvas.GetTop(draggedImage));
+                
+                //draggedImage.Margin = new Thickness(mousePosition.X, mousePosition.Y, draggedImage.Margin.Right, draggedImage.Margin.Bottom);
                 MainViewGrid.ReleaseMouseCapture();
-                Console.WriteLine("ButtonUp Position: X" + mousePosition.X + "| Y" + mousePosition.Y);
-                Panel.SetZIndex(draggedImage, 0);
                 draggedImage = null;
+           
             }
         }
 
@@ -153,15 +168,58 @@ namespace HoyluReceiver
         {
             if (draggedImage != null)
             {
-                var position = e.GetPosition(this.Parent as UIElement);
-                var offset = position - mousePosition;
                 
-                //Console.WriteLine("ButtonUp Position: X" + mousePosition.X + "| Y" + mousePosition.Y);
-                Canvas.SetTop(draggedImage, offset.Y);
-                Canvas.SetLeft(draggedImage, offset.X);
+                var position = e.GetPosition(this);
+                //var xVal = position.X - mousePosition.X;
+                //var yVal = position.Y - mousePosition.Y;
+                //offset.X = xVal;
+                //offset.Y = yVal;
 
+                //var currX = mousePosition.X + offset.X;
+                //var currY = mousePosition.Y + offset.Y;
+                //Console.WriteLine("ButtonMove Position: X" + currX + "| Y" + currY);
+                Canvas.SetTop(draggedImage, position.Y);
+                Canvas.SetLeft(draggedImage, position.X);
+                
+                //draggedImage.Margin = new Thickness(currX, currY, 0, 0);
+                //Console.WriteLine("ButtonMove Position Image: X" + draggedImage.Margin.Left+ "| Y" + draggedImage.Margin.Top);
 
             }
+        }
+
+        private void btnLeftMenuHide_Click(object sender, RoutedEventArgs e)
+        {
+            ShowHideMenu("sbHideLeftMenu", btnLeftMenuHide, btnLeftMenuShow, pnlLeftMenu);
+        }
+
+        private void btnLeftMenuShow_Click(object sender, RoutedEventArgs e)
+        {
+            ShowHideMenu("sbShowLeftMenu", btnLeftMenuHide, btnLeftMenuShow, pnlLeftMenu);
+        }
+
+        private void ShowHideMenu(string storyboard, Button btnLeftMenuHide, Button btnLeftMenuShow, StackPanel pnlLeftMenu)
+        {
+            Storyboard sb = Resources[storyboard] as Storyboard;
+            this.storyboard = storyboard;
+            if (storyboard.Contains("Show"))
+            {
+                ColumnRegister.Width = new GridLength(15, GridUnitType.Star);
+                btnLeftMenuHide.Visibility = System.Windows.Visibility.Visible;
+                btnLeftMenuShow.Visibility = System.Windows.Visibility.Hidden;
+            }
+            else if (storyboard.Contains("Hide"))
+            {
+                sb.Completed += Sb_Completed;
+                btnLeftMenuHide.Visibility = System.Windows.Visibility.Hidden;
+                btnLeftMenuShow.Visibility = System.Windows.Visibility.Visible;
+            }
+            sb.Begin(pnlLeftMenu);
+            
+        }
+
+        private void Sb_Completed(object sender, EventArgs e)
+        {
+            ColumnRegister.Width = new GridLength(2.5, GridUnitType.Star);
         }
 
         public static void SaveOnDesktop(BitmapImage image, string filePath, Socket s)

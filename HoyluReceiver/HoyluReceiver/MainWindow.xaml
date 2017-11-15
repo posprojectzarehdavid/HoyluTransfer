@@ -5,23 +5,52 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:HoyluReceiver"
         mc:Ignorable="d"
-        Title="MainWindow" Height="461.153" Width="668.325"
+        Title="MainWindow" Height="683.727" Width="668.325"
         WindowStartupLocation="CenterScreen"
         Closing="Window_Closing" KeyDown="Window_KeyDown">
-    <Grid >
-        <Canvas MouseRightButtonDown="Grid_MouseRightButtonDown" MouseRightButtonUp="MainViewGrid_MouseRightButtonUp" MouseMove="MainViewGrid_MouseMove" Name="MainViewGrid" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-            <Label x:Name="label" Content="Register Options:" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top"/>
-            <CheckBox x:Name="registerBluetooth" Content="Bluetooth" HorizontalAlignment="Left" Margin="22,70,0,0" VerticalAlignment="Top" RenderTransformOrigin="0.261,0.251"/>
-            <CheckBox x:Name="registerQRCode" Content="QRCode" HorizontalAlignment="Left" Margin="22,90,0,0" VerticalAlignment="Top" RenderTransformOrigin="0.261,0.251"/>
-            <CheckBox x:Name="registerNFC" Content="NFC" HorizontalAlignment="Left" Margin="22,110,0,0" VerticalAlignment="Top" RenderTransformOrigin="0.261,0.251"/>
-            <CheckBox x:Name="registerNetwork" Content="Network(IP Address)" HorizontalAlignment="Left" Margin="22,130,0,0" VerticalAlignment="Top" RenderTransformOrigin="0.261,0.251"/>
-            <Label x:Name="label1" Content="Name for your Device:" HorizontalAlignment="Left" Margin="14,41,0,0" VerticalAlignment="Top" RenderTransformOrigin="-0.343,0.372" Height="27"/>
-            <TextBox x:Name="deviceName" HorizontalAlignment="Left" Height="23" Margin="147,45,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="120"/>
-            <Button x:Name="register" Content="Register your Device" HorizontalAlignment="Left" Margin="22,189,0,0" VerticalAlignment="Top" Width="120" Click="register_Click"/>
+    <Window.Resources>
+        <Storyboard x:Key="sbShowLeftMenu" >
+            <ThicknessAnimation Storyboard.TargetProperty="Margin" From="-270,0,0,0" To="0,0,0,0" DecelerationRatio=".9" Duration="0:0:1" />
+        </Storyboard>
+        <Storyboard x:Key="sbHideLeftMenu">
+            <ThicknessAnimation Storyboard.TargetProperty="Margin" From="0,0,0,0" To="-270,0,0,0" AccelerationRatio=".9" Duration="0:0:1" />
+        </Storyboard>
+    </Window.Resources>
+    <Grid>
 
-            <Image x:Name="image" HorizontalAlignment="Left" Height="156" Margin="197,110,0,0" VerticalAlignment="Top" Width="165" RenderTransformOrigin="0.515,0.494"/>
-            <Image x:Name="qrCodeView" HorizontalAlignment="Left" Height="156" Margin="22,237,0,0" VerticalAlignment="Top" Width="165"/>
-            <Label x:Name="ips" Content="" HorizontalAlignment="Left" Margin="48,145,0,0" VerticalAlignment="Top"/>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Name="ColumnRegister" Width="2.5*"></ColumnDefinition>
+            <ColumnDefinition Name="ColumnPictures" Width="9*"></ColumnDefinition>
+        </Grid.ColumnDefinitions>
+        <Grid Grid.Column="0" VerticalAlignment="Stretch">
+            <StackPanel Panel.ZIndex="2" Name="pnlLeftMenu" Orientation="Horizontal"  HorizontalAlignment="Left" Margin="-270,0,0,0" >
+                <Border BorderBrush="#AF1719" BorderThickness="1"  Background="#4C808080">
+                    <Grid>
+                        <Label x:Name="label" Content="Register Options:" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top"/>
+                        <CheckBox x:Name="registerBluetooth" Content="Bluetooth" HorizontalAlignment="Left" Margin="22,70,0,0" VerticalAlignment="Top" RenderTransformOrigin="0.261,0.251"/>
+                        <CheckBox x:Name="registerQRCode" Content="QRCode" HorizontalAlignment="Left" Margin="22,90,0,0" VerticalAlignment="Top" RenderTransformOrigin="0.261,0.251"/>
+                        <CheckBox x:Name="registerNFC" Content="NFC" HorizontalAlignment="Left" Margin="22,110,0,0" VerticalAlignment="Top" RenderTransformOrigin="0.261,0.251"/>
+                        <CheckBox x:Name="registerNetwork" Content="Network(IP Address)" HorizontalAlignment="Left" Margin="22,130,0,0" VerticalAlignment="Top" RenderTransformOrigin="0.261,0.251"/>
+                        <Label x:Name="label1" Content="Name for your Device:" HorizontalAlignment="Left" Margin="14,41,0,0" VerticalAlignment="Top" RenderTransformOrigin="-0.343,0.372" Height="27"/>
+                        <TextBox x:Name="deviceName" HorizontalAlignment="Left" Height="23" Margin="147,45,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="120"/>
+                        <Label x:Name="ips" Content="" HorizontalAlignment="Left" Margin="48,145,0,0" VerticalAlignment="Top"/>
+                        <Button x:Name="register" Content="Register your Device" HorizontalAlignment="Left" Margin="22,189,0,0" VerticalAlignment="Top" Width="120" Click="register_Click"/>
+                    </Grid>
+                </Border>
+                <Grid>
+                    <Button Name="btnLeftMenuHide" Click="btnLeftMenuHide_Click" Content="Hide register options" Height="25" Visibility="Hidden" Margin="10,10,90,618"/>
+                    <Button Name="btnLeftMenuShow" Click="btnLeftMenuShow_Click" Content="Show register options" Height="25" Margin="10,10,90,618"/>
+                </Grid>
+            </StackPanel>
+
+
+        </Grid>
+        <Canvas MouseRightButtonDown="Grid_MouseRightButtonDown" MouseRightButtonUp="MainViewGrid_MouseRightButtonUp" MouseMove="MainViewGrid_MouseMove" Name="MainViewGrid" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+            <!--HorizontalAlignment="Left" Height="156" Margin="22,237,0,0"-->
+            <Image x:Name="image" VerticalAlignment="Top" Width="165" />
+            <Image x:Name="qrCodeView" VerticalAlignment="Top" Width="165"/>
+
         </Canvas>
+
     </Grid>
 </Window>
