@@ -6,6 +6,7 @@
         xmlns:local="clr-namespace:HoyluReceiver"
         mc:Ignorable="d"
         Title="MainWindow" Height="683.727" Width="668.325"
+       
         WindowStartupLocation="CenterScreen"
         Closing="Window_Closing" KeyDown="Window_KeyDown">
     <Window.Resources>
@@ -23,10 +24,14 @@
             <ColumnDefinition Name="ColumnPictures" Width="9*"></ColumnDefinition>
         </Grid.ColumnDefinitions>
         <Grid Grid.Column="0" VerticalAlignment="Stretch">
-            <StackPanel Panel.ZIndex="2" Name="pnlLeftMenu" Orientation="Horizontal"  HorizontalAlignment="Left" Margin="-270,0,0,0" >
-                <Border BorderBrush="#AF1719" BorderThickness="1"  Background="#4C808080">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="88*"/>
+                <RowDefinition Height="565*"/>
+            </Grid.RowDefinitions>
+            <StackPanel Panel.ZIndex="2" Name="pnlLeftMenu" Orientation="Horizontal"  HorizontalAlignment="Left" Margin="-270,0,-65,0" Grid.RowSpan="2" >
+                <Border BorderBrush="Gray" BorderThickness="1"  Background="#c1c2c9">
                     <Grid>
-                        <Label x:Name="label" Content="Register Options:" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top"/>
+                        <Label x:Name="label" FontWeight="Bold" Content="Register Options:" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top"/>
                         <CheckBox x:Name="registerBluetooth" Content="Bluetooth" HorizontalAlignment="Left" Margin="22,70,0,0" VerticalAlignment="Top" RenderTransformOrigin="0.261,0.251"/>
                         <CheckBox x:Name="registerQRCode" Content="QRCode" HorizontalAlignment="Left" Margin="22,90,0,0" VerticalAlignment="Top" RenderTransformOrigin="0.261,0.251"/>
                         <CheckBox x:Name="registerNFC" Content="NFC" HorizontalAlignment="Left" Margin="22,110,0,0" VerticalAlignment="Top" RenderTransformOrigin="0.261,0.251"/>
@@ -38,14 +43,14 @@
                     </Grid>
                 </Border>
                 <Grid>
-                    <Button Name="btnLeftMenuHide" Click="btnLeftMenuHide_Click" Content="Hide register options" Height="25" Visibility="Hidden" Margin="10,10,90,618"/>
-                    <Button Name="btnLeftMenuShow" Click="btnLeftMenuShow_Click" Content="Show register options" Height="25" Margin="10,10,90,618"/>
+                    <Button Name="btnLeftMenuHide" Background="#ededef" FontWeight="Bold" Click="btnLeftMenuHide_Click" Content="Hide register options" Height="25" Visibility="Hidden" Margin="0,0,90,616"/>
+                    <Button Name="btnLeftMenuShow" Background="#ededef" FontWeight="Bold" Click="btnLeftMenuShow_Click" Content="Show register options" Height="25" Margin="0,0,90,616"/>
                 </Grid>
             </StackPanel>
 
 
         </Grid>
-        <Canvas MouseRightButtonDown="Grid_MouseRightButtonDown" MouseRightButtonUp="MainViewGrid_MouseRightButtonUp" MouseMove="MainViewGrid_MouseMove" Name="MainViewGrid" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+        <Canvas MouseRightButtonDown="Grid_MouseRightButtonDown" MouseRightButtonUp="MainViewGrid_MouseRightButtonUp" MouseMove="MainViewGrid_MouseMove" Name="MainViewGrid" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Grid.ColumnSpan="1">
             <!--HorizontalAlignment="Left" Height="156" Margin="22,237,0,0"-->
             <Image x:Name="image" VerticalAlignment="Top" Width="165" />
             <Image x:Name="qrCodeView" VerticalAlignment="Top" Width="165"/>

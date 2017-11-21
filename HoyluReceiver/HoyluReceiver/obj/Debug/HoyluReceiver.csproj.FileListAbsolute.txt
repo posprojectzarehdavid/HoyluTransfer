@@ -73,3 +73,5 @@ C:\Users\David\Desktop\HoyluTransfer\HoyluReceiver\HoyluReceiver\obj\Debug\Hoylu
 C:\Users\David\Desktop\HoyluTransfer\HoyluReceiver\HoyluReceiver\obj\Debug\HoyluReceiver.exe
 C:\Users\David\Desktop\HoyluTransfer\HoyluReceiver\HoyluReceiver\obj\Debug\HoyluReceiver.pdb
 C:\Users\David\Desktop\HoyluTransfer\HoyluReceiver\HoyluReceiver\obj\Debug\HoyluReceiver.csprojResolveAssemblyReference.cache
+C:\Users\David\Desktop\HoyluTransfer\HoyluReceiver\HoyluReceiver\obj\Debug\MessageBoxEditText.g.cs
+C:\Users\David\Desktop\HoyluTransfer\HoyluReceiver\HoyluReceiver\obj\Debug\MessageBoxEditText.baml

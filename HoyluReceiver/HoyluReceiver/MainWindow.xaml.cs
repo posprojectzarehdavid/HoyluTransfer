@@ -33,7 +33,7 @@ namespace HoyluReceiver
 
         private void ConnectToServer()
         {
-            if(s != null)
+            if (s != null)
             {
                 s.Disconnect();
                 s.Off();
@@ -94,9 +94,11 @@ namespace HoyluReceiver
                                else
                                {
                                    image.Source = bitmapImage;
+                                   Canvas.SetTop(image, 50);
+                                   Canvas.SetLeft(image, 280);
                                }
                                SaveOnDesktop(bitmapImage, desktoppath, s);
-                               
+
                                Console.WriteLine("Hallo");
                            }
                        })
@@ -109,7 +111,7 @@ namespace HoyluReceiver
 
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
-            if(s != null)
+            if (s != null)
             {
                 s.Disconnect();
                 s.Off();
@@ -131,12 +133,12 @@ namespace HoyluReceiver
         {
             var image = e.Source as System.Windows.Controls.Image;
 
-            if(image != null && MainViewGrid.CaptureMouse() && (image.Name == "qrCodeView" || image.Name == "image"))
+            if (image != null && MainViewGrid.CaptureMouse() && (image.Name == "qrCodeView" || image.Name == "image"))
             {
                 Console.WriteLine("Dragging");
-                
+
                 mousePosition = e.GetPosition(this);
-                Console.WriteLine("ButtonDown Position: X"+ mousePosition.X + "| Y" + mousePosition.Y);
+                Console.WriteLine("ButtonDown Position: X" + mousePosition.X + "| Y" + mousePosition.Y);
 
                 draggedImage = image;
                 Canvas.SetTop(draggedImage, mousePosition.Y);
@@ -147,20 +149,34 @@ namespace HoyluReceiver
 
         private void MainViewGrid_MouseRightButtonUp(object sender, MouseButtonEventArgs e)
         {
-            if(draggedImage != null)
+            if (draggedImage != null)
             {
-                
+
                 var position = e.GetPosition(this);
                 //Console.WriteLine("ButtonUp Position: X" + mousePosition.X + "| Y" + mousePosition.Y);
                 //Panel.SetZIndex(draggedImage, 0);
-                Canvas.SetTop(draggedImage, position.Y);
-                Canvas.SetLeft(draggedImage, position.X);
-                Console.WriteLine("ButtonUp Position Image: X" + Canvas.GetLeft(draggedImage) + "| Y" + Canvas.GetTop(draggedImage));
                 
+                if (position.X < 0
+                    || position.X > this.Width
+                         || position.Y < 0
+                              || position.Y > this.Height-10)
+                {
+                    Canvas.SetTop(draggedImage, 50);
+                    Canvas.SetLeft(draggedImage, 280);
+                }
+                else
+                {
+                    Canvas.SetTop(draggedImage, position.Y);
+                    Canvas.SetLeft(draggedImage, position.X);
+                }
+
+
+                Console.WriteLine("ButtonU Position Image: X" + Canvas.GetLeft(draggedImage) + "| Y" + Canvas.GetTop(draggedImage));
+
                 //draggedImage.Margin = new Thickness(mousePosition.X, mousePosition.Y, draggedImage.Margin.Right, draggedImage.Margin.Bottom);
                 MainViewGrid.ReleaseMouseCapture();
                 draggedImage = null;
-           
+
             }
         }
 
@@ -168,7 +184,7 @@ namespace HoyluReceiver
         {
             if (draggedImage != null)
             {
-                
+
                 var position = e.GetPosition(this);
                 //var xVal = position.X - mousePosition.X;
                 //var yVal = position.Y - mousePosition.Y;
@@ -180,7 +196,7 @@ namespace HoyluReceiver
                 //Console.WriteLine("ButtonMove Position: X" + currX + "| Y" + currY);
                 Canvas.SetTop(draggedImage, position.Y);
                 Canvas.SetLeft(draggedImage, position.X);
-                
+
                 //draggedImage.Margin = new Thickness(currX, currY, 0, 0);
                 //Console.WriteLine("ButtonMove Position Image: X" + draggedImage.Margin.Left+ "| Y" + draggedImage.Margin.Top);
 
@@ -214,7 +230,7 @@ namespace HoyluReceiver
                 btnLeftMenuShow.Visibility = System.Windows.Visibility.Visible;
             }
             sb.Begin(pnlLeftMenu);
-            
+
         }
 
         private void Sb_Completed(object sender, EventArgs e)
@@ -279,7 +295,7 @@ namespace HoyluReceiver
             //hoyluId = Guid.NewGuid().ToString();
             if (registerBluetooth.IsChecked == true) bluetoothAddress = GetBTMacAddress();
 
-            if(registerQRCode.IsChecked == true)
+            if (registerQRCode.IsChecked == true)
             {
                 qrValue = hoyluId;
                 QRCodeGenerator qrGenerator = new QRCodeGenerator();
@@ -287,16 +303,22 @@ namespace HoyluReceiver
                 QRCode qrCode = new QRCode(qrCodeData);
                 Bitmap qrCodeImage = qrCode.GetGraphic(20);
                 qrCodeView.Source = BitmapToImageSource(qrCodeImage);
+                Canvas.SetTop(qrCodeView, 50);
+                Canvas.SetLeft(qrCodeView, 280);
                 qrUsed = true;
             }
-            
+
 
             if (registerNFC.IsChecked == true)
             {
                 nfcValue = hoyluId;
                 Console.WriteLine(nfcValue);
                 copyClipboard = true;
-                MessageBox.Show("Please make sure you add the following ID to your NFC Tag (Press Ctrl + C to copy the ID to the Clipboard): "+hoyluId);
+                MessageBoxEditText msg = new MessageBoxEditText();
+                msg.HoyluId.Text = nfcValue;
+                msg.ShowDialog();
+
+                //MessageBox.Show("Please make sure you add the following ID to your NFC Tag (Press Ctrl + C to copy the ID to the Clipboard): "+hoyluId);
             }
             if (registerNetwork.IsChecked == true)
             {
