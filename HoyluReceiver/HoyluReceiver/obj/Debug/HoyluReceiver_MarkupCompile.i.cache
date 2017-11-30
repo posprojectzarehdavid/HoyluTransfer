@@ -4,17 +4,17 @@
 winexe
 C#
 .cs
-C:\Users\David\Desktop\HoyluTransfer\HoyluReceiver\HoyluReceiver\obj\Debug\
+C:\Diplomarbeit\HoyluTransfer\HoyluReceiver\HoyluReceiver\obj\Debug\
 HoyluReceiver
 none
 false
 DEBUG;TRACE
-C:\Users\David\Desktop\HoyluTransfer\HoyluReceiver\HoyluReceiver\App.xaml
+C:\Diplomarbeit\HoyluTransfer\HoyluReceiver\HoyluReceiver\App.xaml
 31200604298
 
-13-1056728231
-221799070227
+131915104184
+22-1500957185
 MainWindow.xaml;MessageBoxEditText.xaml;ProgressDialog.xaml;
 
-False
+True
 
