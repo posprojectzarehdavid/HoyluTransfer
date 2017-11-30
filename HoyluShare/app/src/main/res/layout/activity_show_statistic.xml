@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context="com.example.zarehhakobian.hoylushare.ShowStatistic"
+    android:baselineAligned="false">
+
+
+    <TextView
+        android:id="@+id/uploadMethod"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="uploadMethod"
+        android:layout_marginBottom="15px"
+        android:textSize="12pt"/>
+
+    <TextView
+        android:id="@+id/selBeforeUpload"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="From Selection Before Upload"
+        android:layout_marginBottom="15px"
+        android:textSize="8pt"
+        android:textStyle="bold"/>
+
+    <TextView
+        android:id="@+id/secondsTakenBU"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Seconds taken"
+        android:layout_marginBottom="15px"
+        android:textSize="7pt"/>
+
+    <TextView
+        android:id="@+id/milliSecondsTakenBU"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Milliseconds taken"
+        android:layout_marginBottom="15px"
+        android:textSize="7pt"/>
+
+    <TextView
+        android:id="@+id/selAfterUpload"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="From Selection After Upload"
+        android:layout_marginBottom="15px"
+        android:textSize="8pt"
+        android:textStyle="bold"/>
+
+    <TextView
+        android:id="@+id/secondsTakenAU"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Seconds taken"
+        android:layout_marginBottom="15px"
+        android:textSize="7pt"/>
+
+    <TextView
+        android:id="@+id/milliSecondsTakenAU"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Milliseconds taken"
+        android:layout_marginBottom="15px"
+        android:textSize="7pt"/>
+
+    <TextView
+        android:id="@+id/uploadSpeedAU"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Uploadspeed in KBPS"
+        android:layout_marginBottom="15px"
+        android:textSize="7pt"/>
+
+</LinearLayout>

@@ -3,6 +3,7 @@ package com.example.zarehhakobian.hoylushare;
 import android.Manifest;
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.PendingIntent;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -16,6 +17,11 @@ import android.graphics.BitmapFactory;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
+import android.nfc.NdefMessage;
+import android.nfc.NdefRecord;
+import android.nfc.NfcAdapter;
+import android.nfc.Tag;
+import android.nfc.tech.Ndef;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
@@ -25,6 +31,8 @@ import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.util.DisplayMetrics;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.widget.Toast;
 
 import com.github.nkzawa.emitter.Emitter;
@@ -68,10 +76,22 @@ public class MainActivity extends Activity implements DeviceSelectedListener {
     public static boolean isWifiConn, isMobileConn;
     boolean receiverBenachrichtigt;
 
+    private NfcAdapter nfcAdapter;
+    PendingIntent mPendingIntent;
+
     Resources res;
     DisplayMetrics dm;
     Configuration conf;
     File imageFile = null;
+
+    long fileSize;
+    public static long startTime;
+    public static long endTimeBeforeUpload;
+    public static String selectedMethod;
+
+    Statistic afterUpload = null;
+    Statistic beforeUpload = null;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -116,9 +136,60 @@ public class MainActivity extends Activity implements DeviceSelectedListener {
         if (isWifiConn) {
             startMethod();
         }
+        mPendingIntent = PendingIntent.getActivity(this, 0, new Intent(this,
+                getClass()).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP), 0);
+        nfcAdapter = NfcAdapter.getDefaultAdapter(this);
+        if (nfcAdapter == null) {
+            Toast.makeText(this, "This device doesn't support NFC.", Toast.LENGTH_LONG).show();
+            finish();
+            return;
+        }
+        else if (!nfcAdapter.isEnabled()) {
+            Toast.makeText(this, "NFC is disabled.", Toast.LENGTH_LONG).show();
+        }
+        else{
+            Toast.makeText(this, "NFC is ready to be used!", Toast.LENGTH_LONG).show();
+        }
+
     }
 
-    private void setLanguage() {
+    @Override
+    protected void onResume() {
+        super.onResume();
+        nfcAdapter.enableForegroundDispatch(this, mPendingIntent, null, null);
+
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        if (nfcAdapter != null) {
+            nfcAdapter.disableForegroundDispatch(this);
+        }
+    }
+
+
+
+    @Override
+    protected void onNewIntent(Intent intent){
+        startTime = System.currentTimeMillis();
+        selectedMethod = "NFC";
+        getTagInfo(intent);
+    }
+
+    private void getTagInfo(Intent intent) {
+        Tag tag = intent.getParcelableExtra(NfcAdapter.EXTRA_TAG);
+        Ndef ndefTag = Ndef.get(tag);
+        NdefMessage ndefMesg = ndefTag.getCachedNdefMessage();
+        NdefRecord record = ndefMesg.getRecords()[0];
+        String value = new String(record.getPayload());
+        Log.i("NFC TAG SCANNED", value + " || Size: "+ndefTag.getMaxSize());
+        Log.i("NFC TAG SCANNED fixed", value.substring(3) + " || Size: "+ndefTag.getMaxSize());
+
+        uploadImageToServer(value.substring(3), "NFCClient");
+    }
+
+        private void setLanguage() {
         String systemlanguage = Locale.getDefault().getDisplayLanguage();
         res = getResources();
         dm = res.getDisplayMetrics();
@@ -249,6 +320,8 @@ public class MainActivity extends Activity implements DeviceSelectedListener {
         } catch (IOException e) {
             e.printStackTrace();
         }
+        fileSize = imageFile.length() / 1024;
+
         return imageFile;
     }
 
@@ -329,6 +402,8 @@ public class MainActivity extends Activity implements DeviceSelectedListener {
 
     @Override
     public void uploadImageToServer(final String id, final String client) {
+        endTimeBeforeUpload = System.currentTimeMillis();
+        beforeUpload = CalculateStatisticsFromSelectionToUploadStart();
         MetricsManager.trackEvent("Uploading image");
         progressDialog = new ProgressDialog(MainActivity.this);
         progressDialog.setMessage(getResources().getString(R.string.uploading_message));
@@ -357,6 +432,7 @@ public class MainActivity extends Activity implements DeviceSelectedListener {
                         }
                         if (uploaded) {
                             end = System.currentTimeMillis();
+                            afterUpload = CalculateStatisticsFromSelectionToUpload();
                             Map<String, String> time = new HashMap<>();
                             time.put("Zeit bis Bildupload", "" + (end - start));
                             MetricsManager.trackEvent(client, time);
@@ -379,6 +455,22 @@ public class MainActivity extends Activity implements DeviceSelectedListener {
                         }
                     }
                 });
+    }
+
+    private Statistic CalculateStatisticsFromSelectionToUpload() { //Berechnet ab einscannen eines Tags, bzw. klicken auf einen Eintrag bis Upload abgeschlossen ist.
+        double takenTime = end - startTime;
+        double sec = takenTime/1000;
+        double uploadSpeedInKBPS = fileSize / sec;
+
+        return new Statistic(selectedMethod, sec, takenTime, uploadSpeedInKBPS);
+
+    }
+
+    private Statistic CalculateStatisticsFromSelectionToUploadStart() { //Berechnet ab einscannen eines Tags, bzw. klicken auf einen Eintrag bis Upload begonnen hat.
+        double takenTime = endTimeBeforeUpload - startTime;
+        double sec = takenTime/1000;
+
+        return new Statistic(selectedMethod, sec, takenTime, 0);
     }
 
     private void notifyServer(String filename, String id, String originalName) {
@@ -412,7 +504,8 @@ public class MainActivity extends Activity implements DeviceSelectedListener {
                                     socket.disconnect();
                                     imageFile.delete();
                                     Toast.makeText(getApplication(),R.string.notify_server_true, Toast.LENGTH_SHORT).show();
-                                    finish();
+                                    startStatisticIntent(beforeUpload, afterUpload);
+                                    //finish();
                                 }
                             });
                             ad.show();
@@ -460,4 +553,33 @@ public class MainActivity extends Activity implements DeviceSelectedListener {
             Toast.makeText(getApplicationContext(), R.string.server_off, Toast.LENGTH_SHORT).show();
         }
     }
+
+    public boolean onCreateOptionsMenu(Menu menu){
+        getMenuInflater().inflate(R.menu.menu, menu);
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    public boolean onOptionsItemSelected(MenuItem item){
+        if(item.getItemId() == R.id.showStatistics){
+            if(beforeUpload == null || afterUpload == null){
+                Toast.makeText(getApplicationContext(), "You have to upload first in order to see statistics", Toast.LENGTH_LONG);
+                return true;
+            }
+            else{
+                startStatisticIntent(beforeUpload, afterUpload);
+                return true;
+            }
+
+        }
+        return super.onOptionsItemSelected(item);
+    }
+    private void startStatisticIntent(Statistic beforeUpload, Statistic afterUpload){
+        Intent intent = new Intent(getApplicationContext(), ShowStatistic.class);
+        Bundle bundle = new Bundle();
+        bundle.putSerializable("beforeUpload", beforeUpload);
+        bundle.putSerializable("afterUpload", afterUpload);
+        intent.putExtras(bundle);
+        startActivity(intent);
+    }
+
 }
