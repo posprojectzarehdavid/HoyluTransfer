@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Hoylu</string>
+    <string name="no_inet_connection">No internet connection!</string>
+    <string name="want_connection">Do you want to connect?</string>
+    <string name="destroy_message">Unfortunately you need internet connection for this app!</string>
+    <string name="no">No</string>
+    <string name="yes">Yes</string>
+    <string name="attention">Attention!</string>
+    <string name="identify_message">To identify devices in same network, turn on Wi-Fi!</string>
+    <string name="no_camera_permission">No permission for camera</string>
+    <string name="upload_successful">File uploaded successfully!</string>
+    <string name="uploading_error">Error while uploading file!</string>
+    <string name="uploading_message">File is being uploaded on server...</string>
+    <string name="dev_in_network">Devices in network</string>
+    <string name="focus_on_qr">Bring QR-code into focus</string>
+    <string name="invalid">No valid ID</string>
+    <string name="no_devices">No devices in network</string>
+    <string name="turn_on_wifi">Turn on Wi-Fi</string>
+    <string name="valid">Valid ID</string>
+    <string name="notify_server_true">Server notified</string>
+    <string name="notify_server_false">Did not notify server</string>
+    <string name="server_off">Server is offline</string>
+    <string name="cancel">Cancel</string>
+    <string name="share">Share</string>
+    <string name="save">Save</string>
+    <string name="save_or_close">What would you like to do?</string>
+    <string name="discard">Discard</string>
+    <string name="receiving_data">Receiving data...</string>
+    <string name="receive_message">Following file received: </string>
+</resources>

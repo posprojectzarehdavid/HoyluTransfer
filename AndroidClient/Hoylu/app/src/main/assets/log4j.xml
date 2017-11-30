@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE log4j:configuration PUBLIC "-//APACHE//DTD LOG4J 1.2//EN" "log4j.dtd">
+<log4j:configuration debug="true">
+
+    <appender name="LFS" class="com.moonlit.logfaces.appenders.AsyncSocketAppender">
+        <param name="application" value="HoyluShare" />
+        <param name="remoteHost" value="192.168.42.85" />
+        <param name="port" value="55200" />
+        <param name="nofRetries" value="0" />
+        <param name="reconnectionDelay" value="5000" />
+        <param name="offerTimeout" value="0" />
+        <param name="queueSize" value="2000" />
+        <param name="locationInfo" value="true" />
+        <param name="threshold" value="ALL" />
+    </appender>
+
+    <root>
+        <priority value="trace" />
+        <appender-ref ref="LFS" />
+    </root>
+
+</log4j:configuration>

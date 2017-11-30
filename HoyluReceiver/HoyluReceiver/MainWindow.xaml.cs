@@ -26,7 +26,7 @@ namespace HoyluReceiver
 
         private void ConnectToServer()
         {
-            if(s != null)
+            if (s != null)
             {
                 s.Disconnect();
                 s.Off();
@@ -53,37 +53,47 @@ namespace HoyluReceiver
                 {
                     ServerFile file = JsonConvert.DeserializeObject<ServerFile>(data.ToString());
                     string url = @"http://40.114.246.211:4200/file_for_download/:" + file.Filename;
+                    string desktoppath = Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory) + "\\" + file.Originalname;
                     byte[] lnByte;
 
                     HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
                     string lsResponse = string.Empty;
+                    FileStream stream;
 
                     using (HttpWebResponse response = (HttpWebResponse)request.GetResponse())
                     {
                         using (BinaryReader reader = new BinaryReader(response.GetResponseStream()))
                         {
                             lnByte = reader.ReadBytes(1 * 1024 * 1024 * 10);
-                            using (FileStream stream = new FileStream(file.Filename, FileMode.Create))
+                            using (stream = new FileStream(file.Filename, FileMode.Create))
                             {
                                 stream.Write(lnByte, 0, lnByte.Length);
+                                stream.CopyTo(new FileStream(desktoppath, FileMode.Create));
                             }
                         }
                         response.Close();
                     }
 
-                    string desktoppath = Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory) + "\\" + file.Originalname;
+                    
 
                     Dispatcher.BeginInvoke(
                        new Action(() =>
                        {
-                           bitmapImage = ToImage(lnByte);
-                           if (bitmapImage != null)
+                           if (file.Originalname.EndsWith("jpg") || file.Originalname.EndsWith("png") ||
+                            file.Originalname.EndsWith("jpeg") || file.Originalname.EndsWith("bmp")
+                            || file.Originalname.EndsWith("JPG") || file.Originalname.EndsWith("PNG") ||
+                            file.Originalname.EndsWith("JPEG") || file.Originalname.EndsWith("BMP"))
                            {
-                               image.Source = bitmapImage;
-                               SaveOnDesktop(bitmapImage, desktoppath, s);
-                               
-                               Console.WriteLine("Hallo");
+                               bitmapImage = ToImage(lnByte);
+                               if (bitmapImage != null)
+                               {
+                                   image.Source = bitmapImage;
+                                   SaveOnDesktop(bitmapImage, desktoppath, s);
+
+                                   Console.WriteLine("Hallo");
+                               }
                            }
+                           
                        })
                     );
                     s.Emit("fileReceived");
@@ -94,7 +104,7 @@ namespace HoyluReceiver
 
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
-            if(s != null)
+            if (s != null)
             {
                 s.Disconnect();
                 s.Off();
