@@ -6,6 +6,7 @@ using System.Drawing;
 using System.IO;
 using System.Net;
 using System.Net.NetworkInformation;
+using System.Text;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -26,6 +27,8 @@ namespace HoyluReceiver
         private System.Windows.Controls.Image draggedImage;
         bool qrUsed = false;
         string storyboard;
+        Config config;
+
         public MainWindow()
         {
             InitializeComponent();
@@ -79,7 +82,7 @@ namespace HoyluReceiver
                         response.Close();
                     }
 
-                    string desktoppath = Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory) + "\\" + file.Originalname;
+                    string desktoppath = config.Path + "\\" + file.Originalname;
 
                     Dispatcher.BeginInvoke(
                        new Action(() =>
@@ -236,6 +239,38 @@ namespace HoyluReceiver
         private void Sb_Completed(object sender, EventArgs e)
         {
             ColumnRegister.Width = new GridLength(2.5, GridUnitType.Star);
+        }
+
+        private void Window_Loaded(object sender, RoutedEventArgs e)
+        {
+            config = new Config();
+            InitConfiguration();
+        }
+
+        private void InitConfiguration()
+        {
+            string configDirectory = System.Environment.GetEnvironmentVariable("USERPROFILE") + @"\Documents\config.csv";
+            if (File.Exists(configDirectory))
+            {
+                string[] lines = File.ReadAllLines(configDirectory);
+                foreach (string line in lines)
+                {
+                    config.Path = line.Split(';')[1];
+                }
+            }
+            else
+            {
+                CreateInitFile(configDirectory);
+            }
+        }
+
+        private void CreateInitFile(string configDirectory)
+        {
+            var csv = new StringBuilder();
+            var receivedFileDirectory = string.Format("{0};{1}", "saveFilePath", "C:\\USERS\\DAVID\\DESKTOP");
+            csv.AppendLine(receivedFileDirectory);
+            Console.WriteLine(configDirectory, csv.ToString());
+            File.WriteAllText(configDirectory, csv.ToString());
         }
 
         public static void SaveOnDesktop(BitmapImage image, string filePath, Socket s)

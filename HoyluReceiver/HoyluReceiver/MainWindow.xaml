@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:HoyluReceiver"
         mc:Ignorable="d"
         Title="MainWindow" Height="683.727" Width="668.325"
-       
+        Loaded="Window_Loaded"
         WindowStartupLocation="CenterScreen"
         Closing="Window_Closing" KeyDown="Window_KeyDown">
     <Window.Resources>
