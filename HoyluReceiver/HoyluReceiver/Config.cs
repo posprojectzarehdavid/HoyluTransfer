@@ -8,6 +8,6 @@ namespace HoyluReceiver
 {
     public class Config
     {
-        public string Path { get; set; }
+        public string SaveFileToPath { get; set; }
     }
 }

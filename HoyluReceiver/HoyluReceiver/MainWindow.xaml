@@ -39,7 +39,8 @@
                         <Label x:Name="label1" Content="Name for your Device:" HorizontalAlignment="Left" Margin="14,41,0,0" VerticalAlignment="Top" RenderTransformOrigin="-0.343,0.372" Height="27"/>
                         <TextBox x:Name="deviceName" HorizontalAlignment="Left" Height="23" Margin="147,45,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="120"/>
                         <Label x:Name="ips" Content="" HorizontalAlignment="Left" Margin="48,145,0,0" VerticalAlignment="Top"/>
-                        <Button x:Name="register" Content="Register your Device" HorizontalAlignment="Left" Margin="22,189,0,0" VerticalAlignment="Top" Width="120" Click="register_Click"/>
+                        <Button x:Name="register" Content="Register your Device" HorizontalAlignment="Left" Margin="22,189,0,0" VerticalAlignment="Top" Width="148" Click="register_Click"/>
+                        <Button x:Name="changeDirectory" Content="Change Downloaddirectory" HorizontalAlignment="Left" Margin="22,214,0,0" VerticalAlignment="Top" Width="148" Click="changeDirectory_Click"/>
                     </Grid>
                 </Border>
                 <Grid>
@@ -56,6 +57,7 @@
             <Image x:Name="qrCodeView" VerticalAlignment="Top" Width="165"/>
 
         </Canvas>
+        
 
     </Grid>
 </Window>

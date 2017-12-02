@@ -14,6 +14,8 @@ using System.Windows.Media.Animation;
 using System.Windows.Media.Imaging;
 
 
+
+
 namespace HoyluReceiver
 {
     public partial class MainWindow : Window
@@ -28,7 +30,8 @@ namespace HoyluReceiver
         bool qrUsed = false;
         string storyboard;
         Config config;
-
+        private string configDirectory;
+        
         public MainWindow()
         {
             InitializeComponent();
@@ -82,7 +85,7 @@ namespace HoyluReceiver
                         response.Close();
                     }
 
-                    string desktoppath = config.Path + "\\" + file.Originalname;
+                    string desktoppath = config.SaveFileToPath + "\\" + file.Originalname;
 
                     Dispatcher.BeginInvoke(
                        new Action(() =>
@@ -158,11 +161,11 @@ namespace HoyluReceiver
                 var position = e.GetPosition(this);
                 //Console.WriteLine("ButtonUp Position: X" + mousePosition.X + "| Y" + mousePosition.Y);
                 //Panel.SetZIndex(draggedImage, 0);
-                
+
                 if (position.X < 0
                     || position.X > this.Width
                          || position.Y < 0
-                              || position.Y > this.Height-10)
+                              || position.Y > this.Height - 10)
                 {
                     Canvas.SetTop(draggedImage, 50);
                     Canvas.SetLeft(draggedImage, 280);
@@ -249,28 +252,46 @@ namespace HoyluReceiver
 
         private void InitConfiguration()
         {
-            string configDirectory = System.Environment.GetEnvironmentVariable("USERPROFILE") + @"\Documents\config.csv";
+            configDirectory = System.Environment.GetEnvironmentVariable("USERPROFILE") + @"\Documents\config.csv"; //Standort von config File
             if (File.Exists(configDirectory))
             {
                 string[] lines = File.ReadAllLines(configDirectory);
                 foreach (string line in lines)
                 {
-                    config.Path = line.Split(';')[1];
+                    config.SaveFileToPath = line.Split(';')[1];
                 }
             }
             else
             {
                 CreateInitFile(configDirectory);
+                InitConfiguration(); //Erneuter Aufruf sodass Config Objekt befüllt wird
             }
         }
 
         private void CreateInitFile(string configDirectory)
         {
             var csv = new StringBuilder();
-            var receivedFileDirectory = string.Format("{0};{1}", "saveFilePath", "C:\\USERS\\DAVID\\DESKTOP");
+            var receivedFileDirectory = string.Format("{0};{1}", "saveFilePath", "C:\\USERS\\DAVID\\DESKTOP"); //Pfad wo Bild gespeichert wird
             csv.AppendLine(receivedFileDirectory);
             Console.WriteLine(configDirectory, csv.ToString());
             File.WriteAllText(configDirectory, csv.ToString());
+        }
+
+        private void changeDirectory_Click(object sender, RoutedEventArgs e)
+        {
+            using (var fbd = new System.Windows.Forms.FolderBrowserDialog())
+            {
+                System.Windows.Forms.DialogResult result = fbd.ShowDialog();
+
+                if (result == System.Windows.Forms.DialogResult.OK && !string.IsNullOrWhiteSpace(fbd.SelectedPath))
+                {
+                    string path = fbd.SelectedPath;
+                    string text = File.ReadAllText(configDirectory);
+                    text = text.Replace(config.SaveFileToPath, path);
+                    File.WriteAllText(configDirectory, text);
+                }
+            }
+
         }
 
         public static void SaveOnDesktop(BitmapImage image, string filePath, Socket s)
