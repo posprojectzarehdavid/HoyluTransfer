@@ -44,7 +44,7 @@ namespace HoyluReceiver
 
         private void ConnectToServer()
         {
-            Regex getFileExtension = new Regex(@"\w*\.(?<extension>.)+");
+            Regex getFileExtension = new Regex(@"\w*\.(?<extension>.+)");
             int threadCounter = 1;
             if (socket != null)
             {
@@ -112,7 +112,7 @@ namespace HoyluReceiver
 
                     }
 
-                    Match match = getFileExtension.Match(file.Filename);
+                    Match match = getFileExtension.Match(file.Originalname);
                     if (match.Success)
                     {
                         string savePath = config.SaveFileToPath + "\\" + file.Originalname;
@@ -120,7 +120,8 @@ namespace HoyluReceiver
                         Dispatcher.BeginInvoke(
                            new Action(() =>
                            {
-                               if (match.Groups["extension"].Value == "jpg" || match.Groups["extension"].Value == "bmp" || match.Groups["extension"].Value == "png") //Ist Bild
+                               
+                               if (match.Groups["extension"].Value == "ff" || match.Groups["extension"].Value == "bmp" || match.Groups["extension"].Value == "png") //Ist Bild
                                {
                                    bitmapImage = ToImage(lnByte);
                                    if (bitmapImage != null)
@@ -135,20 +136,20 @@ namespace HoyluReceiver
                                            Canvas.SetTop(image, 50);
                                            Canvas.SetLeft(image, 280);
                                        }
-                                       SaveToDirectory(bitmapImage, savePath, socket);
 
                                    }
                                }
                                else
                                {
                                    MessageBox.Show("The received filetype couldn't be shown, you can find the file at: " + savePath);
-                                   if (qrUsed) qrCodeView.Source = new BitmapImage(new Uri(@"\Resources\error-icon.png"));
+                                   if (qrUsed) qrCodeView.Source = new BitmapImage(new Uri(@"/HoyluReceiver; Resources\error-icon.png", UriKind.Relative));
                                    else
                                    {
-                                       image.Source = new BitmapImage(new Uri(@"\Resources\error-icon.png"));
+                                       image.Source = new BitmapImage(new Uri(@"/HoyluReceiver; Resources\error-icon.png", UriKind.Relative));
                                        Canvas.SetTop(image, 50);
                                        Canvas.SetLeft(image, 280);
                                    }
+                                   File.WriteAllBytes(savePath, lnByte);
                                }
                            })
                          );
