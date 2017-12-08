@@ -9,6 +9,6 @@
         WindowStartupLocation="CenterScreen">
     <Grid>
         <ProgressBar Minimum="0" Maximum="100" Name="pbStatus" IsIndeterminate="true" Margin="30,65,30,35"/>
-        <Label x:Name="label" Content="Gerät wird am Server registriert" HorizontalAlignment="Left" Margin="30,34,0,0" VerticalAlignment="Top"/>
+        <Label x:Name="label" Content="Device is being registered" HorizontalAlignment="Left" Margin="30,34,0,0" VerticalAlignment="Top"/>
     </Grid>
 </Window>

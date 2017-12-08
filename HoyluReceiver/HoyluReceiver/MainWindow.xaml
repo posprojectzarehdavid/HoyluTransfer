@@ -8,7 +8,7 @@
         Title="MainWindow" Height="683.727" Width="668.325"
         Loaded="Window_Loaded"
         WindowStartupLocation="CenterScreen"
-        Closing="Window_Closing" KeyDown="Window_KeyDown">
+        Closing="Window_Closing">
     <Window.Resources>
         <Storyboard x:Key="sbShowLeftMenu" >
             <ThicknessAnimation Storyboard.TargetProperty="Margin" From="-270,0,0,0" To="0,0,0,0" DecelerationRatio=".9" Duration="0:0:1" />
@@ -38,9 +38,10 @@
                         <CheckBox x:Name="registerNetwork" Content="Network(IP Address)" HorizontalAlignment="Left" Margin="22,130,0,0" VerticalAlignment="Top" RenderTransformOrigin="0.261,0.251"/>
                         <Label x:Name="label1" Content="Name for your Device:" HorizontalAlignment="Left" Margin="14,41,0,0" VerticalAlignment="Top" RenderTransformOrigin="-0.343,0.372" Height="27"/>
                         <TextBox x:Name="deviceName" HorizontalAlignment="Left" Height="23" Margin="147,45,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="120"/>
-                        <Label x:Name="ips" Content="" HorizontalAlignment="Left" Margin="48,145,0,0" VerticalAlignment="Top"/>
-                        <Button x:Name="register" Content="Register your Device" HorizontalAlignment="Left" Margin="22,189,0,0" VerticalAlignment="Top" Width="148" Click="register_Click"/>
-                        <Button x:Name="changeDirectory" Content="Change Downloaddirectory" HorizontalAlignment="Left" Margin="22,214,0,0" VerticalAlignment="Top" Width="148" Click="changeDirectory_Click"/>
+                        <Label x:Name="ipaddress" Content="" HorizontalAlignment="Left" Margin="22,158,0,0" VerticalAlignment="Top"/>
+                        <Label x:Name="default_gateway" Content="" HorizontalAlignment="Left" Margin="22,189,0,0" VerticalAlignment="Top"/>
+                        <Button x:Name="register" Content="Register your Device" HorizontalAlignment="Left" Margin="22,226,0,0" VerticalAlignment="Top" Width="148" Click="register_Click"/>
+                        <Button x:Name="changeDirectory" Content="Change Downloaddirectory" HorizontalAlignment="Left" Margin="22,251,0,0" VerticalAlignment="Top" Width="148" Click="changeDirectory_Click"/>
                     </Grid>
                 </Border>
                 <Grid>
@@ -57,7 +58,7 @@
             <Image x:Name="qrCodeView" VerticalAlignment="Top" Width="165"/>
 
         </Canvas>
-        
+
 
     </Grid>
 </Window>

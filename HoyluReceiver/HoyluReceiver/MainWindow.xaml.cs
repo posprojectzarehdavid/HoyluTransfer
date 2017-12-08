@@ -7,6 +7,8 @@ using System.IO;
 using System.Net;
 using System.Net.NetworkInformation;
 using System.Text;
+using System.Text.RegularExpressions;
+using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -20,18 +22,21 @@ namespace HoyluReceiver
 {
     public partial class MainWindow : Window
     {
-        Socket s;
+        Socket socket;
         string name, hoyluId, bluetoothAddress, qrValue, nfcValue, publicIp, defaultGateway;
+        private bool networkUsed = false;
         HoyluDevice hoyluDevice;
         BitmapImage bitmapImage;
-        bool copyClipboard = false;
         private System.Windows.Point mousePosition;
         private System.Windows.Controls.Image draggedImage;
         bool qrUsed = false;
         string storyboard;
         Config config;
         private string configDirectory;
-        
+        private Bitmap qrCodeImage;
+        private bool nfcUsed = false;
+        private bool deviceRegistered = false;
+
         public MainWindow()
         {
             InitializeComponent();
@@ -39,30 +44,51 @@ namespace HoyluReceiver
 
         private void ConnectToServer()
         {
-            if (s != null)
+            Regex getFileExtension = new Regex(@"\w*\.(?<extension>.)+");
+            int threadCounter = 1;
+            if (socket != null)
             {
-                s.Disconnect();
-                s.Off();
+                socket.Disconnect();
+                socket.Off();
             }
-            ProgressDialog dialog = new ProgressDialog();
-            dialog.Show();
-            s = IO.Socket("http://40.114.246.211:4200");
-            s.On(Socket.EVENT_CONNECT, (fn) =>
+            ProgressDialog connectionDialog = new ProgressDialog();
+            connectionDialog.Show();
+            socket = IO.Socket("http://40.114.246.211:4200");
+            socket.On(Socket.EVENT_CONNECT, (fn) =>
             {
                 Console.WriteLine("Connected");
                 string hoyluDeviceAsJson = JsonConvert.SerializeObject(hoyluDevice);
-                s.Emit("receiverClient", hoyluDeviceAsJson);
-                s.On("device_registered", () =>
+                socket.Emit("receiverClient", hoyluDeviceAsJson);
+                socket.On("device_registered", () =>
                 {
                     Dispatcher.BeginInvoke(
                        new Action(() =>
                        {
-                           dialog.Close();
+                           connectionDialog.Close();
+
+                           deviceRegistered = true;
+
+                           if (qrUsed && deviceRegistered && threadCounter == 1)
+                           {
+                               qrCodeView.Source = BitmapToImageSource(qrCodeImage);
+                               Canvas.SetTop(qrCodeView, 50);
+                               Canvas.SetLeft(qrCodeView, 280);
+                           }
+                           if (nfcUsed && deviceRegistered && threadCounter == 1)
+                           {
+                               Console.WriteLine("NFC Value:" + nfcValue);
+                               MessageBoxEditText msg = new MessageBoxEditText();
+                               msg.HoyluId.Text = nfcValue;
+                               msg.ShowDialog();
+                           }
+                           if (networkUsed && deviceRegistered && threadCounter == 1) ipaddress.Content = "Public IP: " + publicIp; default_gateway.Content = "Defaultgateway: " + defaultGateway;
+                           threadCounter++;
                        })
                     );
                 });
 
-                s.On("getFile", (data) =>
+
+                socket.On("getFile", (data) =>
                 {
                     System.Diagnostics.Debugger.NotifyOfCrossThreadDependency();
                     ServerFile file = JsonConvert.DeserializeObject<ServerFile>(data.ToString());
@@ -83,57 +109,69 @@ namespace HoyluReceiver
                             }
                         }
                         response.Close();
+
                     }
 
-                    string desktoppath = config.SaveFileToPath + "\\" + file.Originalname;
+                    Match match = getFileExtension.Match(file.Filename);
+                    if (match.Success)
+                    {
+                        string savePath = config.SaveFileToPath + "\\" + file.Originalname;
 
-                    Dispatcher.BeginInvoke(
-                       new Action(() =>
-                       {
-                           bitmapImage = ToImage(lnByte);
-                           if (bitmapImage != null)
+                        Dispatcher.BeginInvoke(
+                           new Action(() =>
                            {
-                               if (qrUsed)
+                               if (match.Groups["extension"].Value == "jpg" || match.Groups["extension"].Value == "bmp" || match.Groups["extension"].Value == "png") //Ist Bild
                                {
-                                   qrCodeView.Source = bitmapImage;
+                                   bitmapImage = ToImage(lnByte);
+                                   if (bitmapImage != null)
+                                   {
+                                       if (qrUsed)
+                                       {
+                                           qrCodeView.Source = bitmapImage;
+                                       }
+                                       else
+                                       {
+                                           image.Source = bitmapImage;
+                                           Canvas.SetTop(image, 50);
+                                           Canvas.SetLeft(image, 280);
+                                       }
+                                       SaveToDirectory(bitmapImage, savePath, socket);
+
+                                   }
                                }
                                else
                                {
-                                   image.Source = bitmapImage;
-                                   Canvas.SetTop(image, 50);
-                                   Canvas.SetLeft(image, 280);
+                                   MessageBox.Show("The received filetype couldn't be shown, you can find the file at: " + savePath);
+                                   if (qrUsed) qrCodeView.Source = new BitmapImage(new Uri(@"\Resources\error-icon.png"));
+                                   else
+                                   {
+                                       image.Source = new BitmapImage(new Uri(@"\Resources\error-icon.png"));
+                                       Canvas.SetTop(image, 50);
+                                       Canvas.SetLeft(image, 280);
+                                   }
                                }
-                               SaveOnDesktop(bitmapImage, desktoppath, s);
+                           })
+                         );
+                        socket.Emit("fileReceived");
+                    }
 
-                               Console.WriteLine("Hallo");
-                           }
-                       })
-                    );
-                    s.Emit("fileReceived");
+
+
                 });
             });
-            s.Connect();
+            socket.Connect();
         }
 
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
-            if (s != null)
+            if (socket != null)
             {
-                s.Disconnect();
-                s.Off();
+                socket.Disconnect();
+                socket.Off();
             }
         }
 
-        private void Window_KeyDown(object sender, KeyEventArgs e)
-        {
-            if (copyClipboard)
-            {
-                if (e.Key == Key.C && Keyboard.IsKeyDown(Key.LeftCtrl))
-                {
-                    Clipboard.SetText(hoyluId);
-                }
-            }
-        }
+
 
         private void Grid_MouseRightButtonDown(object sender, MouseButtonEventArgs e)
         {
@@ -294,7 +332,7 @@ namespace HoyluReceiver
 
         }
 
-        public static void SaveOnDesktop(BitmapImage image, string filePath, Socket s)
+        public static void SaveToDirectory(BitmapImage image, string filePath, Socket s)
         {
             BitmapEncoder encoder = new PngBitmapEncoder();
             encoder.Frames.Add(BitmapFrame.Create(image));
@@ -357,10 +395,7 @@ namespace HoyluReceiver
                 QRCodeGenerator qrGenerator = new QRCodeGenerator();
                 QRCodeData qrCodeData = qrGenerator.CreateQrCode(qrValue, QRCodeGenerator.ECCLevel.L);
                 QRCode qrCode = new QRCode(qrCodeData);
-                Bitmap qrCodeImage = qrCode.GetGraphic(20);
-                qrCodeView.Source = BitmapToImageSource(qrCodeImage);
-                Canvas.SetTop(qrCodeView, 50);
-                Canvas.SetLeft(qrCodeView, 280);
+                qrCodeImage = qrCode.GetGraphic(20);
                 qrUsed = true;
             }
 
@@ -368,19 +403,14 @@ namespace HoyluReceiver
             if (registerNFC.IsChecked == true)
             {
                 nfcValue = hoyluId;
-                Console.WriteLine(nfcValue);
-                copyClipboard = true;
-                MessageBoxEditText msg = new MessageBoxEditText();
-                msg.HoyluId.Text = nfcValue;
-                msg.ShowDialog();
-
-                //MessageBox.Show("Please make sure you add the following ID to your NFC Tag (Press Ctrl + C to copy the ID to the Clipboard): "+hoyluId);
+                Console.WriteLine("NFC enabled");
+                nfcUsed = true;
             }
             if (registerNetwork.IsChecked == true)
             {
                 publicIp = new WebClient().DownloadString(@"http://icanhazip.com").Trim();
                 defaultGateway = GetDefaultGatewayAddress();
-                ips.Content = "public IP: " + publicIp + "   defaultgateway: " + defaultGateway;
+                networkUsed = true;
             }
 
             name = deviceName.Text;

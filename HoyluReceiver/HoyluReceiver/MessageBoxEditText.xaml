@@ -8,7 +8,7 @@
         Title="MessageBoxEditText" Height="300" Width="323.529">
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="*"></RowDefinition>
+            <RowDefinition Height="1.1*"></RowDefinition>
             <RowDefinition Height="4*"></RowDefinition>
             <RowDefinition Height="*"></RowDefinition>
 
@@ -19,7 +19,7 @@
         <Label Grid.Row="0" BorderThickness="1.2" Grid.ColumnSpan="2">
             <TextBlock Width="297" >Please make sure you add the following ID to your <LineBreak></LineBreak> NFC Tag (Press Ctrl + C to copy the ID to the Clipboard):</TextBlock>
         </Label>
-        <TextBox Name="HoyluId" Grid.Row="1" BorderThickness="0" Margin="10,0">Sample Hoylu ID</TextBox>
+        <TextBox Name="HoyluId" Grid.Row="1" BorderThickness="0" Margin="10,10,10,0">Sample Hoylu ID</TextBox>
         <Button Grid.Row="2" Grid.Column="0" Content="Continue" BorderBrush="Black" BorderThickness="1.5" Click="Button_Click"></Button>
 
     </Grid>

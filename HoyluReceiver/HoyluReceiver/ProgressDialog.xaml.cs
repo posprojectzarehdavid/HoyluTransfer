@@ -23,5 +23,6 @@ namespace HoyluReceiver
         {
             InitializeComponent();
         }
+        
     }
 }
