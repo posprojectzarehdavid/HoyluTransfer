@@ -121,7 +121,7 @@ namespace HoyluReceiver
                            new Action(() =>
                            {
                                
-                               if (match.Groups["extension"].Value == "ff" || match.Groups["extension"].Value == "bmp" || match.Groups["extension"].Value == "png") //Ist Bild
+                               if (match.Groups["extension"].Value == "jpg" || match.Groups["extension"].Value == "bmp" || match.Groups["extension"].Value == "png") //Ist Bild
                                {
                                    bitmapImage = ToImage(lnByte);
                                    if (bitmapImage != null)

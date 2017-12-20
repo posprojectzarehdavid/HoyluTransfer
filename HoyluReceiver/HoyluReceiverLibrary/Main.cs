@@ -22,6 +22,22 @@ namespace HoyluReceiverLibrary
         private bool deviceRegistered = false;
         private HoyluDevice hoyluDevice;
         private BitmapImage bitmapImage;
+        private string ipAddress;
+        private string port;
+
+        public string Port
+        {
+            get { return port; }
+            set { port = value; }
+        }
+
+
+        public string IpAddress
+        {
+            get { return ipAddress; }
+            set { ipAddress = value; }
+        }
+
 
         private void ConnectToServer()
         {
@@ -31,7 +47,7 @@ namespace HoyluReceiverLibrary
                 socket.Disconnect();
                 socket.Off();
             }
-            socket = IO.Socket("http://40.114.246.211:4200");
+            socket = IO.Socket($"http://40.114.246.211:4200");
             socket.On(Socket.EVENT_CONNECT, (fn) =>
             {
                 Console.WriteLine("Connected");
@@ -48,7 +64,7 @@ namespace HoyluReceiverLibrary
                     Console.WriteLine("File received");
                     System.Diagnostics.Debugger.NotifyOfCrossThreadDependency();
                     ServerFile file = JsonConvert.DeserializeObject<ServerFile>(data.ToString());
-                    string url = @"http://40.114.246.211:4200/file_for_download/:" + file.Filename;
+                    string url = @"http://"+IpAddress+":"+Port+"/file_for_download/:" + file.Filename;
                     byte[] lnByte;
 
                     HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);

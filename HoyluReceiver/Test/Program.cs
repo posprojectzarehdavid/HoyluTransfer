@@ -12,6 +12,8 @@ namespace Test
         static void Main(string[] args)
         {
             Main seas = new Main();
+            seas.IpAddress = "40.114.246.211:4200";
+            seas.Port = "4200";
             seas.Register("TestUser");
             Console.ReadKey();
         }
