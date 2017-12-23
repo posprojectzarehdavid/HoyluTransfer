@@ -2,7 +2,9 @@
 using QRCoder;
 using Quobject.SocketIoClientDotNet.Client;
 using System;
+using System.Collections.Generic;
 using System.Drawing;
+using System.Globalization;
 using System.IO;
 using System.Net;
 using System.Net.NetworkInformation;
@@ -36,6 +38,10 @@ namespace HoyluReceiver
         private Bitmap qrCodeImage;
         private bool nfcUsed = false;
         private bool deviceRegistered = false;
+        private List<HoyluDevice> hoyluDevices;
+        private StringBuilder csv = new StringBuilder();
+        CultureInfo provider = CultureInfo.InvariantCulture;
+        private static string datePattern = "dd.MM.yyyy hh:mm:ss";
 
         public MainWindow()
         {
@@ -165,6 +171,13 @@ namespace HoyluReceiver
 
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
+            foreach (var hoyluDevice in hoyluDevices)
+            {
+                WriteToFile($"{hoyluDevice.Name};{hoyluDevice.HoyluId};{hoyluDevice.BluetoothAddress};{hoyluDevice.QrValue};" +
+                    $"{hoyluDevice.NfcValue};{hoyluDevice.PublicIp};{hoyluDevice.DefaultGateway};" +
+                    $"{hoyluDevice.TimestampLastUsed}", configDirectory);
+            }
+            WriteToFile($"saveFilePath;{config.SaveFileToPath}", configDirectory);
             if (socket != null)
             {
                 socket.Disconnect();
@@ -285,6 +298,7 @@ namespace HoyluReceiver
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
+            hoyluDevices = new List<HoyluDevice>();
             config = new Config();
             InitConfiguration();
         }
@@ -297,8 +311,22 @@ namespace HoyluReceiver
                 string[] lines = File.ReadAllLines(configDirectory);
                 foreach (string line in lines)
                 {
-                    config.SaveFileToPath = line.Split(';')[1];
+                    string[] splitted = line.Split(';');
+                    if (splitted.Length == 2)config.SaveFileToPath = splitted[1];
+                    else if(splitted.Length != 0)
+                    {
+                        HoyluDevice device = new HoyluDevice(splitted[0], splitted[1], splitted[2], splitted[3], splitted[4], splitted[5], splitted[6]);
+                        device.TimestampLastUsed = DateTime.ParseExact(splitted[7], datePattern, provider);
+                        var dateDifference = (DateTime.Today - device.TimestampLastUsed).TotalDays;
+                        if(dateDifference <= 7)
+                        {
+                            hoyluDevices.Add(device);
+                            registeredDevices.Items.Add(device);
+                        }
+                       
+                    }
                 }
+                
             }
             else
             {
@@ -309,9 +337,13 @@ namespace HoyluReceiver
 
         private void CreateInitFile(string configDirectory)
         {
-            var csv = new StringBuilder();
             var receivedFileDirectory = string.Format("{0};{1}", "saveFilePath", "C:\\USERS\\DAVID\\DESKTOP"); //Pfad wo Bild gespeichert wird
-            csv.AppendLine(receivedFileDirectory);
+            WriteToFile(receivedFileDirectory, configDirectory);
+        }
+
+        private void WriteToFile(string text, string configDirectory)
+        {          
+            csv.AppendLine(text);
             Console.WriteLine(configDirectory, csv.ToString());
             File.WriteAllText(configDirectory, csv.ToString());
         }
@@ -326,11 +358,27 @@ namespace HoyluReceiver
                 {
                     string path = fbd.SelectedPath;
                     string text = File.ReadAllText(configDirectory);
+                    config.SaveFileToPath = path;
                     text = text.Replace(config.SaveFileToPath, path);
                     File.WriteAllText(configDirectory, text);
                 }
             }
 
+        }
+
+        private void registeredDevices_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            HoyluDevice device = (HoyluDevice)registeredDevices.SelectedItem;
+            hoyluDevices.Remove(device);
+            device.TimestampLastUsed = DateTime.Now;
+            hoyluDevices.Add(device);
+
+            deviceName.Text = device.Name;
+            
+            if (device.BluetoothAddress != null && device.BluetoothAddress != "") registerBluetooth.IsChecked = true;
+            if (device.NfcValue != null && device.NfcValue != "") registerNFC.IsChecked = true;
+            if (device.QrValue != null && device.QrValue != "") registerQRCode.IsChecked = true;
+            if (device.PublicIp != null && device.PublicIp != "") registerNetwork.IsChecked = true;
         }
 
         public static void SaveToDirectory(BitmapImage image, string filePath, Socket s)
@@ -416,6 +464,9 @@ namespace HoyluReceiver
 
             name = deviceName.Text;
             hoyluDevice = new HoyluDevice(name, hoyluId, bluetoothAddress, qrValue, nfcValue, publicIp, defaultGateway);
+            hoyluDevice.TimestampLastUsed = DateTime.Now;
+            hoyluDevices.Add(hoyluDevice);
+            registeredDevices.Items.Add(hoyluDevice);
             ConnectToServer();
             Button x = sender as Button;
             x.IsEnabled = false;

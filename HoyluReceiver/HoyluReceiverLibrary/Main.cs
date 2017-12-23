@@ -47,7 +47,7 @@ namespace HoyluReceiverLibrary
                 socket.Disconnect();
                 socket.Off();
             }
-            socket = IO.Socket($"http://40.114.246.211:4200");
+            socket = IO.Socket($"http://{ipAddress}:{port}");
             socket.On(Socket.EVENT_CONNECT, (fn) =>
             {
                 Console.WriteLine("Connected");
@@ -153,7 +153,7 @@ namespace HoyluReceiverLibrary
             QRCodeData qrCodeData = qrGenerator.CreateQrCode(qrValue, QRCodeGenerator.ECCLevel.L);
             QRCode qrCode = new QRCode(qrCodeData);
             System.Drawing.Bitmap qrCodeImage = qrCode.GetGraphic(20);
-            qrCodeImage.Save(System.Environment.GetEnvironmentVariable("USERPROFILE") + @"\Desktop\Seas.jpg", System.Drawing.Imaging.ImageFormat.Jpeg);
+            qrCodeImage.Save(System.Environment.GetEnvironmentVariable("USERPROFILE") + @"\Desktop\QRCode.jpg", System.Drawing.Imaging.ImageFormat.Jpeg);
 
 
             string nfcValue = hoyluId;

@@ -1,4 +1,6 @@
-﻿namespace HoyluReceiver
+﻿using System;
+
+namespace HoyluReceiver
 {
     public class HoyluDevice
     {
@@ -20,5 +22,12 @@
         public string NfcValue { get; set; }
         public string PublicIp { get; set; }
         public string DefaultGateway { get; set; }
+
+        public DateTime TimestampLastUsed { get; set; } = new DateTime();
+
+        public override string ToString()
+        {
+            return $"{Name}, am {TimestampLastUsed.ToShortDateString()}";
+        }
     }
 }
