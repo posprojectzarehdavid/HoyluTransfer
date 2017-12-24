@@ -149,6 +149,7 @@ public class ShareFragment extends Fragment implements BarcodeGraphic.BoundingBo
             scaleGestureDetector = new ScaleGestureDetector(getActivity(), new ScaleListener());
         }
 
+        adapter = BluetoothAdapter.getDefaultAdapter();
         deviceList = new ArrayList<BluetoothDevice>();
         filteredDeviceList = new ArrayList<HoyluDevice>();
         serverAquiredDeviceList = new ArrayList<HoyluDevice>();
@@ -264,7 +265,7 @@ public class ShareFragment extends Fragment implements BarcodeGraphic.BoundingBo
                                     }
 
                                     for (HoyluDevice d : hoyluDevices) {
-                                        Log.i("hallo", d.toString());
+                                        Log.i("NetworkDevicesServer", d.toString());
                                     }
                                 } else{
                                     if(getActivity() != null){
@@ -289,12 +290,15 @@ public class ShareFragment extends Fragment implements BarcodeGraphic.BoundingBo
                     networkSocket.emit("client", "BluetoothClient");
 
                     networkSocket.emit("bluetoothAddresses", "", new Ack() {
+
                         @Override
                         public void call(Object... args) {
+                            Log.d("BTAddressesCalled", "BTAddressesCall to Server");
                             serverAquiredDeviceList.clear();
                             try {
                                 JSONObject j = (JSONObject) args[0];
                                 JSONArray dev = j.getJSONArray("list");
+                                Log.d("BTLIST", dev.toString());
                                 for (int i = 0; i < dev.length(); i++) {
                                     JSONObject jsonObject = dev.getJSONObject(i);
                                     String id = jsonObject.getString("HoyluId");
@@ -307,10 +311,10 @@ public class ShareFragment extends Fragment implements BarcodeGraphic.BoundingBo
                                     String socketId = jsonObject.getString("SocketId");
                                     HoyluDevice hd = new HoyluDevice(id, name,btAddress,qrValue,nfcValue, pubIp, defGate,socketId);
                                     serverAquiredDeviceList.add(hd);
-                                    getActivity().runOnUiThread(new Runnable() {
-                                        @Override
-                                        public void run() {
-                                            matchAddresses();
+                                            getActivity().runOnUiThread(new Runnable() {
+                                                @Override
+                                                public void run() {
+                                                    matchAddresses();
                                         }
                                     });
                                     networkSocket.disconnect();
@@ -453,7 +457,7 @@ public class ShareFragment extends Fragment implements BarcodeGraphic.BoundingBo
     }
 
     private void matchAddresses() {
-        filteredDeviceList.clear();
+       // filteredDeviceList.clear();
         for (BluetoothDevice d:
                 deviceList) {
             for (HoyluDevice dc:
@@ -461,7 +465,7 @@ public class ShareFragment extends Fragment implements BarcodeGraphic.BoundingBo
                 String dAdd = d.getAddress();
                 if(d.getAddress().equals(dc.BluetoothAddress))
                 {
-                    filteredDeviceList.add(dc);
+                    hoyluDevices.add(dc);
                     Log.i("MATCHED", "Device " +d.getName()+" matched");
                 }
             }
