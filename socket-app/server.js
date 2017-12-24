@@ -105,7 +105,7 @@ var sendNetworkMatchesToClient = function (data, cb) {
 var sendBluetoothMatchesToClient = function(data, cb) {
     var d = new Array();
     for (var device in hoyluDevices) {
-        if (hoyluDevices[d].btAddress !== null) {
+        if (hoyluDevices[device].btAddress !== null) {
             d.push(hoyluDevices[device]);
         }
     }

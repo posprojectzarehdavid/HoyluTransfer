@@ -3,7 +3,12 @@ package com.example.zarehhakobian.hoylu;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.Dialog;
+import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothDevice;
+import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.hardware.Camera;
 import android.net.DhcpInfo;
 import android.net.wifi.WifiManager;
@@ -77,6 +82,12 @@ public class ShareFragment extends Fragment implements BarcodeGraphic.BoundingBo
     final public ArrayList<HoyluDevice> hoyluDevices = new ArrayList<>();
     ArrayAdapter aa;
 
+    BluetoothAdapter adapter;
+
+    ArrayList<BluetoothDevice> deviceList;      //Own detected addresses
+    ArrayList<HoyluDevice> filteredDeviceList;  //Matching addresses
+    ArrayList<HoyluDevice> serverAquiredDeviceList; // Bluetoothaddresses from Server
+
     DhcpInfo d;
     WifiManager wifi;
     String publicIP, defaultGateway;
@@ -92,6 +103,25 @@ public class ShareFragment extends Fragment implements BarcodeGraphic.BoundingBo
     boolean isGueltigeID;
 
     DeviceSelectedListener listener;
+
+    private final BroadcastReceiver mReceiver = new BroadcastReceiver() {
+        public void onReceive(Context context, Intent intent) {
+            String action = intent.getAction();
+
+
+            if (BluetoothAdapter.ACTION_DISCOVERY_STARTED.equals(action)) {                             //Startes searching for Devices
+                Toast.makeText(getActivity(), "Bluetoothdiscovery has been started", Toast.LENGTH_LONG);
+            } else if (BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(action)) {                      //Ends searching for Devices
+                Toast.makeText(getActivity(), "Bluetoothdiscovery has finished", Toast.LENGTH_LONG);
+            } else if (BluetoothDevice.ACTION_FOUND.equals(action)) {                                    //Found a Device, now compare its adress with the registered ones on the server
+                BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+                Log.i("DEVICE FOUND", "Name: "+device.getName()+ ", Address: " +device.getAddress());
+                deviceList.add(device);
+                matchAddresses();
+            }
+
+        }
+    };
 
     public ShareFragment() {
     }
@@ -119,6 +149,10 @@ public class ShareFragment extends Fragment implements BarcodeGraphic.BoundingBo
             scaleGestureDetector = new ScaleGestureDetector(getActivity(), new ScaleListener());
         }
 
+        deviceList = new ArrayList<BluetoothDevice>();
+        filteredDeviceList = new ArrayList<HoyluDevice>();
+        serverAquiredDeviceList = new ArrayList<HoyluDevice>();
+
         tv = (TextView) view.findViewById(R.id.textView);
         lv = (ListView) view.findViewById(R.id.listview);
         lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -131,7 +165,7 @@ public class ShareFragment extends Fragment implements BarcodeGraphic.BoundingBo
                     time.put("Zeit bis uploadImage Aufruf", ""+(ShareActivity.end- ShareActivity.start));
                     MetricsManager.trackEvent("NetworkClient", time);
                     ShareActivity.start = System.currentTimeMillis();
-                    listener.uploadImageToServer(hd.getHoyluId(), "NetworkClient");
+                    listener.uploadImageToServer(hd.getHoyluId(), "NetworkOrBluetoothClient");
                     if (networkSocket != null) {
                         networkSocket.disconnect();
                         networkSocket.off();
@@ -251,6 +285,51 @@ public class ShareFragment extends Fragment implements BarcodeGraphic.BoundingBo
                             networkSocket.off();
                         }
                     });
+
+                    networkSocket.emit("client", "BluetoothClient");
+
+                    networkSocket.emit("bluetoothAddresses", "", new Ack() {
+                        @Override
+                        public void call(Object... args) {
+                            serverAquiredDeviceList.clear();
+                            try {
+                                JSONObject j = (JSONObject) args[0];
+                                JSONArray dev = j.getJSONArray("list");
+                                for (int i = 0; i < dev.length(); i++) {
+                                    JSONObject jsonObject = dev.getJSONObject(i);
+                                    String id = jsonObject.getString("HoyluId");
+                                    String name = jsonObject.getString("Name");
+                                    String btAddress = jsonObject.getString("BluetoothAddress");
+                                    String qrValue = jsonObject.getString("QrValue");
+                                    String nfcValue = jsonObject.getString("NfcValue");
+                                    String pubIp = jsonObject.getString("PublicIp");
+                                    String defGate = jsonObject.getString("DefaultGateway");
+                                    String socketId = jsonObject.getString("SocketId");
+                                    HoyluDevice hd = new HoyluDevice(id, name,btAddress,qrValue,nfcValue, pubIp, defGate,socketId);
+                                    serverAquiredDeviceList.add(hd);
+                                    getActivity().runOnUiThread(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            matchAddresses();
+                                        }
+                                    });
+                                    networkSocket.disconnect();
+                                    networkSocket.off();
+                                    getActivity().runOnUiThread(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            aa.notifyDataSetChanged();
+                                        }
+                                    });
+                                }
+                                for (HoyluDevice d : serverAquiredDeviceList) {
+                                    Log.i("ServerBluetoothDevices", d.toString() + " " + d.BluetoothAddress);
+                                }
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    });
                 }
             });
             networkSocket.connect();
@@ -275,6 +354,18 @@ public class ShareFragment extends Fragment implements BarcodeGraphic.BoundingBo
     public void onStart() {
         super.onStart();
         startCameraSource();
+        InitializeBluetoothDiscovery();
+    }
+
+    private void InitializeBluetoothDiscovery() {
+        IntentFilter filter = new IntentFilter();
+
+        filter.addAction(BluetoothDevice.ACTION_FOUND);
+        filter.addAction(BluetoothAdapter.ACTION_DISCOVERY_STARTED);
+        filter.addAction(BluetoothAdapter.ACTION_DISCOVERY_FINISHED);
+
+        getActivity().registerReceiver(mReceiver, filter);
+        adapter.startDiscovery();
     }
 
     @Override
@@ -299,6 +390,12 @@ public class ShareFragment extends Fragment implements BarcodeGraphic.BoundingBo
     public void onResume() {
         super.onResume();
         startCameraSource();
+    }
+
+    public void onDestroy() {
+        getActivity().unregisterReceiver(mReceiver);
+
+        super.onDestroy();
     }
 
     @SuppressLint("InlinedApi")
@@ -353,6 +450,23 @@ public class ShareFragment extends Fragment implements BarcodeGraphic.BoundingBo
                 mCameraSource = null;
             }
         }
+    }
+
+    private void matchAddresses() {
+        filteredDeviceList.clear();
+        for (BluetoothDevice d:
+                deviceList) {
+            for (HoyluDevice dc:
+                    serverAquiredDeviceList) {
+                String dAdd = d.getAddress();
+                if(d.getAddress().equals(dc.BluetoothAddress))
+                {
+                    filteredDeviceList.add(dc);
+                    Log.i("MATCHED", "Device " +d.getName()+" matched");
+                }
+            }
+        }
+        aa.notifyDataSetChanged();
     }
 
     public void bestCodeCaptured(Barcode best) {
@@ -482,5 +596,7 @@ public class ShareFragment extends Fragment implements BarcodeGraphic.BoundingBo
         public void onScaleEnd(ScaleGestureDetector detector) {
             mCameraSource.doZoom(detector.getScaleFactor());
         }
+
+
     }
 }
