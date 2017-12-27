@@ -244,16 +244,7 @@ public class ShareFragment extends Fragment implements BarcodeGraphic.BoundingBo
                                 if(dev.length() > 0){
                                     for (int i = 0; i < dev.length(); i++) {
                                         JSONObject jsonObject = dev.getJSONObject(i);
-                                        String id = jsonObject.getString("HoyluId");
-                                        String name = jsonObject.getString("Name");
-                                        String btAddress = jsonObject.getString("BluetoothAddress");
-                                        String qrValue = jsonObject.getString("QrValue");
-                                        String nfcValue = jsonObject.getString("NfcValue");
-                                        String pubIp = jsonObject.getString("PublicIp");
-                                        String defGate = jsonObject.getString("DefaultGateway");
-                                        String socketId = jsonObject.getString("SocketId");
-                                        HoyluDevice hd = new HoyluDevice(id, name,btAddress,qrValue,nfcValue, pubIp, defGate,socketId);
-                                        hoyluDevices.add(hd);
+                                        hoyluDevices.add(JSONToHoyluDevice(jsonObject));
                                     }
                                     if(getActivity() != null){
                                         getActivity().runOnUiThread(new Runnable() {
@@ -301,30 +292,25 @@ public class ShareFragment extends Fragment implements BarcodeGraphic.BoundingBo
                                 Log.d("BTLIST", dev.toString());
                                 for (int i = 0; i < dev.length(); i++) {
                                     JSONObject jsonObject = dev.getJSONObject(i);
-                                    String id = jsonObject.getString("HoyluId");
-                                    String name = jsonObject.getString("Name");
-                                    String btAddress = jsonObject.getString("BluetoothAddress");
-                                    String qrValue = jsonObject.getString("QrValue");
-                                    String nfcValue = jsonObject.getString("NfcValue");
-                                    String pubIp = jsonObject.getString("PublicIp");
-                                    String defGate = jsonObject.getString("DefaultGateway");
-                                    String socketId = jsonObject.getString("SocketId");
-                                    HoyluDevice hd = new HoyluDevice(id, name,btAddress,qrValue,nfcValue, pubIp, defGate,socketId);
-                                    serverAquiredDeviceList.add(hd);
-                                            getActivity().runOnUiThread(new Runnable() {
-                                                @Override
-                                                public void run() {
-                                                    matchAddresses();
-                                        }
-                                    });
+                                    serverAquiredDeviceList.add(JSONToHoyluDevice(jsonObject));
+                                    if(getActivity() != null) {
+                                        getActivity().runOnUiThread(new Runnable() {
+                                            @Override
+                                            public void run() {
+                                                matchAddresses();
+                                            }
+                                        });
+                                    }
                                     networkSocket.disconnect();
                                     networkSocket.off();
-                                    getActivity().runOnUiThread(new Runnable() {
-                                        @Override
-                                        public void run() {
-                                            aa.notifyDataSetChanged();
-                                        }
-                                    });
+                                    if(getActivity() != null) {
+                                        getActivity().runOnUiThread(new Runnable() {
+                                            @Override
+                                            public void run() {
+                                                aa.notifyDataSetChanged();
+                                            }
+                                        });
+                                    }
                                 }
                                 for (HoyluDevice d : serverAquiredDeviceList) {
                                     Log.i("ServerBluetoothDevices", d.toString() + " " + d.BluetoothAddress);
@@ -344,6 +330,19 @@ public class ShareFragment extends Fragment implements BarcodeGraphic.BoundingBo
         if(networkSocket.connected()==false){
             Toast.makeText(getActivity(), R.string.server_off, Toast.LENGTH_SHORT).show();
         }
+    }
+
+    private HoyluDevice JSONToHoyluDevice(JSONObject jsonObject) throws JSONException {
+        String id = jsonObject.getString("HoyluId");
+        String name = jsonObject.getString("Name");
+        String btAddress = jsonObject.getString("BluetoothAddress");
+        String qrValue = jsonObject.getString("QrValue");
+        String nfcValue = jsonObject.getString("NfcValue");
+        String pubIp = jsonObject.getString("PublicIp");
+        String defGate = jsonObject.getString("DefaultGateway");
+        String socketId = jsonObject.getString("SocketId");
+        HoyluDevice hd = new HoyluDevice(id, name,btAddress,qrValue,nfcValue, pubIp, defGate,socketId);
+        return hd;
     }
 
     @Override
