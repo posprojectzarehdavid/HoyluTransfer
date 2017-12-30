@@ -277,9 +277,9 @@ public class ShareFragment extends Fragment implements BarcodeGraphic.BoundingBo
                             networkSocket.off();
                         }
                     });
-
+                    Log.d("Before BT emit", "Emitting BTClient now");
                     networkSocket.emit("client", "BluetoothClient");
-
+                    Log.d("Before BT address emit", "Emitting BTAddresses now");
                     networkSocket.emit("bluetoothAddresses", "", new Ack() {
 
                         @Override
@@ -333,14 +333,14 @@ public class ShareFragment extends Fragment implements BarcodeGraphic.BoundingBo
     }
 
     private HoyluDevice JSONToHoyluDevice(JSONObject jsonObject) throws JSONException {
-        String id = jsonObject.getString("HoyluId");
-        String name = jsonObject.getString("Name");
-        String btAddress = jsonObject.getString("BluetoothAddress");
-        String qrValue = jsonObject.getString("QrValue");
-        String nfcValue = jsonObject.getString("NfcValue");
-        String pubIp = jsonObject.getString("PublicIp");
-        String defGate = jsonObject.getString("DefaultGateway");
-        String socketId = jsonObject.getString("SocketId");
+        String id = jsonObject.getString("hoyluId");
+        String name = jsonObject.getString("name");
+        String btAddress = jsonObject.getString("btAddress");
+        String qrValue = jsonObject.getString("qrValue");
+        String nfcValue = jsonObject.getString("nfcValue");
+        String pubIp = jsonObject.getString("publicIp");
+        String defGate = jsonObject.getString("defaultGateway");
+        String socketId = jsonObject.getString("socketId");
         HoyluDevice hd = new HoyluDevice(id, name,btAddress,qrValue,nfcValue, pubIp, defGate,socketId);
         return hd;
     }
