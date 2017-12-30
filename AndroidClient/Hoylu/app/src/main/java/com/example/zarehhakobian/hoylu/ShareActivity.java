@@ -4,6 +4,9 @@ import android.Manifest;
 import android.app.AlertDialog;
 import android.app.PendingIntent;
 import android.app.ProgressDialog;
+import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothDevice;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -53,6 +56,7 @@ import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.text.NumberFormat;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -77,6 +81,29 @@ public class ShareActivity extends AppCompatActivity implements DeviceSelectedLi
 
     private NfcAdapter nfcAdapter;
     PendingIntent mPendingIntent;
+
+    public static ArrayList<BluetoothDevice> deviceList = new ArrayList<BluetoothDevice>();      //Own detected addresses
+
+
+    public static final BroadcastReceiver mReceiver = new BroadcastReceiver() {
+        public void onReceive(Context context, Intent intent) {
+
+            String action = intent.getAction();
+
+
+            if (BluetoothAdapter.ACTION_DISCOVERY_STARTED.equals(action)) {                             //Startes searching for Devices
+               // Toast.makeText(ShareActivity.Context, "Bluetoothdiscovery has been started", Toast.LENGTH_LONG).show();
+            } else if (BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(action)) {                      //Ends searching for Devices
+               // Toast.makeText(getApplicationContext(), "Bluetoothdiscovery has finished", Toast.LENGTH_LONG).show();
+            } else if (BluetoothDevice.ACTION_FOUND.equals(action)) {                                    //Found a Device, now compare its adress with the registered ones on the server
+                BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+                Log.i("DEVICE FOUND", "Name: "+device.getName()+ ", Address: " +device.getAddress());
+                deviceList.add(device);
+                //matchAddresses();
+            }
+
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

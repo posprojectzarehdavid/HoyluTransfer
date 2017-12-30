@@ -84,7 +84,6 @@ public class ShareFragment extends Fragment implements BarcodeGraphic.BoundingBo
 
     BluetoothAdapter adapter;
 
-    ArrayList<BluetoothDevice> deviceList;      //Own detected addresses
     ArrayList<HoyluDevice> filteredDeviceList;  //Matching addresses
     ArrayList<HoyluDevice> serverAquiredDeviceList; // Bluetoothaddresses from Server
 
@@ -104,24 +103,7 @@ public class ShareFragment extends Fragment implements BarcodeGraphic.BoundingBo
 
     DeviceSelectedListener listener;
 
-    private final BroadcastReceiver mReceiver = new BroadcastReceiver() {
-        public void onReceive(Context context, Intent intent) {
-            String action = intent.getAction();
 
-
-            if (BluetoothAdapter.ACTION_DISCOVERY_STARTED.equals(action)) {                             //Startes searching for Devices
-                Toast.makeText(getActivity(), "Bluetoothdiscovery has been started", Toast.LENGTH_LONG);
-            } else if (BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(action)) {                      //Ends searching for Devices
-                Toast.makeText(getActivity(), "Bluetoothdiscovery has finished", Toast.LENGTH_LONG);
-            } else if (BluetoothDevice.ACTION_FOUND.equals(action)) {                                    //Found a Device, now compare its adress with the registered ones on the server
-                BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-                Log.i("DEVICE FOUND", "Name: "+device.getName()+ ", Address: " +device.getAddress());
-                deviceList.add(device);
-                matchAddresses();
-            }
-
-        }
-    };
 
     public ShareFragment() {
     }
@@ -150,7 +132,6 @@ public class ShareFragment extends Fragment implements BarcodeGraphic.BoundingBo
         }
 
         adapter = BluetoothAdapter.getDefaultAdapter();
-        deviceList = new ArrayList<BluetoothDevice>();
         filteredDeviceList = new ArrayList<HoyluDevice>();
         serverAquiredDeviceList = new ArrayList<HoyluDevice>();
 
@@ -367,7 +348,7 @@ public class ShareFragment extends Fragment implements BarcodeGraphic.BoundingBo
         filter.addAction(BluetoothAdapter.ACTION_DISCOVERY_STARTED);
         filter.addAction(BluetoothAdapter.ACTION_DISCOVERY_FINISHED);
 
-        getActivity().registerReceiver(mReceiver, filter);
+        getActivity().registerReceiver(ShareActivity.mReceiver, filter);
         adapter.startDiscovery();
     }
 
@@ -396,7 +377,7 @@ public class ShareFragment extends Fragment implements BarcodeGraphic.BoundingBo
     }
 
     public void onDestroy() {
-        getActivity().unregisterReceiver(mReceiver);
+        getActivity().unregisterReceiver(ShareActivity.mReceiver);
 
         super.onDestroy();
     }
@@ -457,8 +438,9 @@ public class ShareFragment extends Fragment implements BarcodeGraphic.BoundingBo
 
     private void matchAddresses() {
        // filteredDeviceList.clear();
+        if(ShareActivity.deviceList.size() == 0 || serverAquiredDeviceList.size() == 0) return;
         for (BluetoothDevice d:
-                deviceList) {
+                ShareActivity.deviceList) {
             for (HoyluDevice dc:
                     serverAquiredDeviceList) {
                 String dAdd = d.getAddress();
