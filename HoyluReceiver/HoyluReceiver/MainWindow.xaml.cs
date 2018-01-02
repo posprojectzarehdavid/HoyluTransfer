@@ -41,7 +41,7 @@ namespace HoyluReceiver
         private List<HoyluDevice> hoyluDevices;
         private StringBuilder csv = new StringBuilder();
         CultureInfo provider = CultureInfo.InvariantCulture;
-        private static string datePattern = "dd.MM.yyyy hh:mm:ss";
+        private static string datePattern = "dd.MM.yyyy HH:mm:ss";
 
         public MainWindow()
         {
@@ -305,25 +305,29 @@ namespace HoyluReceiver
 
         private void InitConfiguration()
         {
-            configDirectory = System.Environment.GetEnvironmentVariable("USERPROFILE") + @"\Documents\config.csv"; //Standort von config File
+            configDirectory = System.Environment.GetEnvironmentVariable("USERPROFILE") + @"\Documents\config.csv"; 
             if (File.Exists(configDirectory))
             {
                 string[] lines = File.ReadAllLines(configDirectory);
                 foreach (string line in lines)
                 {
                     string[] splitted = line.Split(';');
-                    if (splitted.Length == 2)config.SaveFileToPath = splitted[1];
-                    else if(splitted.Length != 0)
+                    if (splitted.Length == 2)
+                    {
+                        config.SaveFileToPath = splitted[1];
+                        path.Content = config.SaveFileToPath;
+                    }
+                    else if (splitted.Length != 0)
                     {
                         HoyluDevice device = new HoyluDevice(splitted[0], splitted[1], splitted[2], splitted[3], splitted[4], splitted[5], splitted[6]);
                         device.TimestampLastUsed = DateTime.ParseExact(splitted[7], datePattern, provider);
                         var dateDifference = (DateTime.Today - device.TimestampLastUsed).TotalDays;
-                        if(dateDifference <= 7)
+                        if (dateDifference <= 7)
                         {
                             hoyluDevices.Add(device);
                             registeredDevices.Items.Add(device);
                         }
-                       
+
                     }
                 }
                 
@@ -356,11 +360,12 @@ namespace HoyluReceiver
 
                 if (result == System.Windows.Forms.DialogResult.OK && !string.IsNullOrWhiteSpace(fbd.SelectedPath))
                 {
-                    string path = fbd.SelectedPath;
+                    string selPath = fbd.SelectedPath;
                     string text = File.ReadAllText(configDirectory);
-                    config.SaveFileToPath = path;
-                    text = text.Replace(config.SaveFileToPath, path);
+                    config.SaveFileToPath = selPath;
+                    text = text.Replace(config.SaveFileToPath, selPath);
                     File.WriteAllText(configDirectory, text);
+                    path.Content = config.SaveFileToPath;
                 }
             }
 
@@ -374,11 +379,11 @@ namespace HoyluReceiver
             hoyluDevices.Add(device);
 
             deviceName.Text = device.Name;
-            
-            if (device.BluetoothAddress != null && device.BluetoothAddress != "") registerBluetooth.IsChecked = true;
-            if (device.NfcValue != null && device.NfcValue != "") registerNFC.IsChecked = true;
-            if (device.QrValue != null && device.QrValue != "") registerQRCode.IsChecked = true;
-            if (device.PublicIp != null && device.PublicIp != "") registerNetwork.IsChecked = true;
+
+            registerBluetooth.IsChecked = (device.BluetoothAddress != null && device.BluetoothAddress != "") ? true : false;
+            registerNFC.IsChecked = (device.NfcValue != null && device.NfcValue != "") ? true : false;
+            registerQRCode.IsChecked = (device.QrValue != null && device.QrValue != "") ? true : false;
+            registerNetwork.IsChecked = (device.PublicIp != null && device.PublicIp != "") ? true : false;
         }
 
         public static void SaveToDirectory(BitmapImage image, string filePath, Socket s)
@@ -436,7 +441,11 @@ namespace HoyluReceiver
             hoyluId = "f67317b7-5823-474b-b8e2-aa36e5564942";
 
             //hoyluId = Guid.NewGuid().ToString();
-            if (registerBluetooth.IsChecked == true) bluetoothAddress = GetBTMacAddress();
+            if (registerBluetooth.IsChecked == true)
+            {
+                bluetoothAddress = GetBTMacAddress();
+                if (bluetoothAddress == null) MessageBox.Show("Bluetooth not available or supported on this device!");
+            }
 
             if (registerQRCode.IsChecked == true)
             {

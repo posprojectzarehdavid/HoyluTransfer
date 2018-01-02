@@ -43,6 +43,8 @@
                         <Button x:Name="register" Content="Register your Device" HorizontalAlignment="Left" Margin="22,226,0,0" VerticalAlignment="Top" Width="148" Click="register_Click"/>
                         <Button x:Name="changeDirectory" Content="Change Downloaddirectory" HorizontalAlignment="Left" Margin="22,251,0,0" VerticalAlignment="Top" Width="148" Click="changeDirectory_Click"/>
                         <ListBox Name="registeredDevices" Margin="10,306,10,10" SelectionChanged="registeredDevices_SelectionChanged"/>
+                        <Label Content="Current Path:" HorizontalAlignment="Left" Margin="22,276,0,0" VerticalAlignment="Top" RenderTransformOrigin="-0.888,3.757"/>
+                        <Label Name="path" Content="Label" HorizontalAlignment="Left" Margin="103,275,0,0" VerticalAlignment="Top"/>
                     </Grid>
                 </Border>
                 <Grid>
