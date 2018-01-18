@@ -1,15 +1,25 @@
 package com.example.zarehhakobian.hoylu;
 
+import android.Manifest;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
+import android.bluetooth.BluetoothAdapter;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.net.ConnectivityManager;
+import android.net.DhcpInfo;
+import android.net.NetworkInfo;
+import android.net.wifi.WifiManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.StrictMode;
 import android.support.v4.app.Fragment;
+import android.text.format.Formatter;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -32,10 +42,10 @@ import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
-import org.codehaus.jackson.map.ObjectMapper;
-import org.codehaus.jackson.map.ObjectWriter;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -56,20 +66,81 @@ public class ReceiverFragment extends Fragment {
     HoyluDevice hoyluDevice;
     ProgressDialog progressDialog;
     ImageView iv;
+    DhcpInfo d;
+    WifiManager wifi;
+    String publicIP, defaultGateway, btAddres;
+    Document doc = null;
+    public boolean isWifiConn, isMobileConn;
 
     public ReceiverFragment() {
     }
 
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        Log.i("RecieverView","viewDestroyed");
+        if (socket != null) {
+            socket.disconnect();
+            socket.off();
+        }
+    }
+
     public void initializeDevice() {
+        StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
+        StrictMode.setThreadPolicy(policy);
         String name = android.os.Build.MODEL;
         UUID uuid = UUID.randomUUID();
         String id = uuid.toString();
-        hoyluDevice = new HoyluDevice(id, name, null, id, id, null, null, null);
+        checkConnectivity();
+        if (isWifiConn || isMobileConn) {
+            try {
+                doc = Jsoup.connect("http://icanhazip.com").get();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            wifi = (WifiManager) getActivity().getSystemService(Context.WIFI_SERVICE);
+            d = wifi.getDhcpInfo();
+            defaultGateway = String.valueOf(Formatter.formatIpAddress(d.gateway));
+            publicIP = doc.body().getAllElements().first().text();
+        }
+        btAddres = getBluetoothMac();
+        Log.i("addresses", "bluetoothaddress: " + btAddres);
+        Log.i("addresses", "publicip: " + publicIP);
+        Log.i("addresses", "defaultgateway: " + defaultGateway);
+        hoyluDevice = new HoyluDevice(id, name, btAddres, id, id, publicIP, defaultGateway, null);
+    }
+
+    private String getBluetoothMac() {
+        String result = null;
+        if (getActivity().checkCallingOrSelfPermission(Manifest.permission.BLUETOOTH)
+                == PackageManager.PERMISSION_GRANTED) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                // Hardware ID are restricted in Android 6+
+                // https://developer.android.com/about/versions/marshmallow/android-6.0-changes.html#behavior-hardware-id
+                // Getting bluetooth mac via reflection for devices with Android 6+
+                result = android.provider.Settings.Secure.getString(getActivity().getContentResolver(),
+                        "bluetooth_address");
+            } else {
+                BluetoothAdapter bta = BluetoothAdapter.getDefaultAdapter();
+                result = bta != null ? bta.getAddress() : "";
+            }
+        }
+        return result;
+    }
+
+    public void checkConnectivity() {
+        ConnectivityManager connMgr = (ConnectivityManager) getActivity().getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo networkInfo = connMgr.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
+        isWifiConn = networkInfo.isConnected();
+        networkInfo = connMgr.getNetworkInfo(ConnectivityManager.TYPE_MOBILE);
+        isMobileConn = networkInfo.isConnected();
     }
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        View v = inflater.inflate(R.layout.hoylureceive_view, container, false);
+        iv = (ImageView) v.findViewById(R.id.imageView);
         initializeDevice();
         if (socket != null && socket.connected()) {
             socket.disconnect();
@@ -80,13 +151,8 @@ public class ReceiverFragment extends Fragment {
                 @Override
                 public void call(Object... args) {
                     Log.i("hallo", "connected");
-                    ObjectWriter ow = new ObjectMapper().writer().withDefaultPrettyPrinter();
-                    try {
-                        String deviceAsJson = ow.writeValueAsString(hoyluDevice);
-                        socket.emit("receiverClient", deviceAsJson);
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
+                    Log.i("deviceasjson", hoyluDevice.toJson());
+                    socket.emit("receiverClient", hoyluDevice.toJson());
                     socket.on("device_registered", new Emitter.Listener() {
                         @Override
                         public void call(Object... args) {
@@ -126,18 +192,13 @@ public class ReceiverFragment extends Fragment {
                 }
             });
             socket.connect();
+            if(socket.connected() == false){
+                Toast.makeText(getActivity(), R.string.server_off, Toast.LENGTH_LONG).show();
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
-        if(socket.connected()== false){
-            Toast.makeText(getActivity(), R.string.server_off, Toast.LENGTH_LONG).show();
-        }
-    }
 
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View v = inflater.inflate(R.layout.hoylureceive_view, container, false);
-        iv = (ImageView) v.findViewById(R.id.imageView);
         return v;
     }
 
@@ -174,7 +235,7 @@ public class ReceiverFragment extends Fragment {
         return bmp;
     }
 
-    public void showAskingDialog(byte[]bytes, final String originalname) {
+    public void showAskingDialog(byte[] bytes, final String originalname) {
         progressDialog.dismiss();
         AlertDialog.Builder ab = new AlertDialog.Builder(getActivity());
         ab.setCancelable(false);

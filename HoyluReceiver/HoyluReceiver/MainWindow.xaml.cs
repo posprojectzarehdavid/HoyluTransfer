@@ -497,29 +497,6 @@ namespace HoyluReceiver
             }
         }
 
-        public static string GetDefaultGatewayAddress()
-        {
-            NetworkInterface[] adapters = NetworkInterface.GetAllNetworkInterfaces();
-            foreach (NetworkInterface adapter in adapters)
-            {
-                IPInterfaceProperties adapterProperties = adapter.GetIPProperties();
-                GatewayIPAddressInformationCollection addresses = adapterProperties.GatewayAddresses;
-                if (addresses.Count > 0)
-                {
-                    Console.WriteLine(adapter.Description);
-                    foreach (GatewayIPAddressInformation address in addresses)
-                    {
-                        Console.WriteLine(address.Address);
-                        if (address.Address.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork)
-                        {
-                            return address.Address.ToString();
-                        }
-                    }
-                }
-            }
-            return null;
-        }
-
         public static string GetDefaultGateway()
         {
             var gateway_address = NetworkInterface.GetAllNetworkInterfaces()

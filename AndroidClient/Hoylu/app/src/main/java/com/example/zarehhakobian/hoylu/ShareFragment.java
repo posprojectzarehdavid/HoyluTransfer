@@ -126,8 +126,8 @@ public class ShareFragment extends Fragment implements BarcodeGraphic.BoundingBo
         }
 
 
-        filteredDeviceList = new ArrayList<HoyluDevice>();
-        serverAquiredDeviceList = new ArrayList<HoyluDevice>();
+        filteredDeviceList = new ArrayList<>();
+        serverAquiredDeviceList = new ArrayList<>();
 
         tv = (TextView) view.findViewById(R.id.textView);
         lv = (ListView) view.findViewById(R.id.listview);

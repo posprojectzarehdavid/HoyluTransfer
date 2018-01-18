@@ -1,5 +1,8 @@
 package com.example.zarehhakobian.hoylu;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 /**
  * Created by Zareh Hakobian on 01.08.2017.
  */
@@ -23,8 +26,49 @@ public class HoyluDevice {
         return HoyluId;
     }
 
+    public String getName() {
+        return Name;
+    }
+
+    public String getBluetoothAddress() {
+        return BluetoothAddress;
+    }
+
+    public String getQrValue() {
+        return QrValue;
+    }
+
+    public String getNfcValue() {
+        return NfcValue;
+    }
+
+    public String getPublicIp() {
+        return PublicIp;
+    }
+
+    public String getDefaultGateway() {
+        return DefaultGateway;
+    }
+
     @Override
     public String toString() {
         return this.Name;
+    }
+
+    public String toJson(){
+        JSONObject jsonObject = new JSONObject();
+        try{
+            jsonObject.put("Name", getName());
+            jsonObject.put("HoyluId", getHoyluId());
+            jsonObject.put("BluetoothAddress", getBluetoothAddress());
+            jsonObject.put("QrValue", getQrValue());
+            jsonObject.put("NfcValue",getNfcValue());
+            jsonObject.put("PublicIp", getPublicIp());
+            jsonObject.put("DefaultGateway", getDefaultGateway());
+            return jsonObject.toString();
+        } catch (JSONException e) {
+            e.printStackTrace();
+            return "";
+        }
     }
 }

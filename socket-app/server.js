@@ -21,7 +21,6 @@ var app = express();
 var server = require('http').createServer(app);
 var io = require('socket.io')(server);
 var file;
-var duplicates;
 app.use(express.static(__dirname + '/node_modules'));
 
 app.get('/file_for_download/:filename', function (request, response) {
@@ -154,21 +153,12 @@ io.on('connection', function (socket) {
        
     socket.once('client', function (data) {
         console.log(data + ' with SocketId ' + socket.id + ' connected...');
-
-        /*if (connectedClients.length == 0) {
-            connectedClients.push(socket);
-        } else {
-            if (connectedClients.indexOf(socket) != -1) {
-                socket.disconnect();
-            } else {
-                connectedClients.push(socket);
-            }
-        }*/
-        //console.log(data + ' with SocketId ' + socket.id + ' connected...');
         console.log('--------------------------------------------------------------------');
         showHoyluDevices();
         console.log('--------------------------------------------------------------------');
         showConnectedClients();
+        console.log('--------------------------------------------------------------------');
+        console.log('hoyludevices: ' + hoyluDevices.length + ' connectedClients: ' + connectedClients.length);
     });
 
     socket.once('receiverClient', function (data) {
@@ -182,15 +172,14 @@ io.on('connection', function (socket) {
         if (v === false) {
             connectedClients.push(socket);
         } else {
-            duplicates = true;
             console.log(socket.id + ' schon vorhanden');
             socket.disconnect();
         }
 
         var object = JSON.parse(data);
-        console.log('----------------');
+        console.log('--------------------------------------------------------------------');
         console.log(data);
-        console.log('----------------');
+        console.log('--------------------------------------------------------------------');
         var vorhanden = false;
         var hoylu = new HoyluDevice(object.HoyluId, object.Name, object.BluetoothAddress, object.QrValue, object.NfcValue, object.PublicIp, object.DefaultGateway, socket.id);
         for (var h in hoyluDevices) {
@@ -253,34 +242,22 @@ io.on('connection', function (socket) {
 
     socket.on('disconnect', function () {
         console.info('Client with SocketId ' + socket.id + ' disconnected.');
-        var counter = 0;
-        showConnectedClients();
-        /*if (duplicates) {
-            for (var c in connectedClients) {
-                if (connectedClients[c].id == socket.id) {
-                    counter++;
-                }
-            }
-        }
-        duplicates = false;
-        console.log('anzahl duplicates: ' + counter);*/
         for (var c in connectedClients) {
             if (connectedClients[c].id == socket.id) {
                 console.log('connectedclient with id ' + connectedClients[c].id + ' removed');
                 connectedClients.splice(connectedClients.indexOf(socket), 1);
-                showConnectedClients();
             }
         }
-        
+        showConnectedClients();
         console.log('--------------------------------------------------------------------');
-        showHoyluDevices();
+        
         for (var d in hoyluDevices) {
             if (hoyluDevices[d].socketId == socket.id) {
                 console.log('hoyludevice with socketid ' + hoyluDevices[d].socketId + ' removed');
                 hoyluDevices.splice(hoyluDevices.indexOf(hoyluDevices[d]), 1);
-                showHoyluDevices();
             }
         }
+        showHoyluDevices();
         console.log('--------------------------------------------------------------------');
         console.log('hoyludevices: ' + hoyluDevices.length +' connectedClients: '+connectedClients.length);
     });
