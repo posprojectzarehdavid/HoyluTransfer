@@ -162,7 +162,6 @@ public class ShareActivity extends AppCompatActivity implements DeviceSelectedLi
         else{
             Toast.makeText(this, "NFC is ready to be used!", Toast.LENGTH_LONG).show();
         }
-
     }
 
     @Override

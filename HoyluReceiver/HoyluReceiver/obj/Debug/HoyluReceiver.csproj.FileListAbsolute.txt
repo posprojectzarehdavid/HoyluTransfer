@@ -108,3 +108,8 @@ C:\Diplomarbeit\HoyluTransfer\HoyluReceiver\HoyluReceiver\obj\Debug\HoyluReceive
 C:\Diplomarbeit\HoyluTransfer\HoyluReceiver\HoyluReceiver\obj\Debug\HoyluReceiver.csproj.CoreCompileInputs.cache
 C:\Diplomarbeit\HoyluTransfer\HoyluReceiver\HoyluReceiver\obj\Debug\HoyluReceiver.exe
 C:\Diplomarbeit\HoyluTransfer\HoyluReceiver\HoyluReceiver\obj\Debug\HoyluReceiver.pdb
+C:\MyFiles\Schule\Diplomarbeit\HoyluTransfer\HoyluReceiver\HoyluReceiver\obj\Debug\MessageBoxEditText.g.cs
+C:\MyFiles\Schule\Diplomarbeit\HoyluTransfer\HoyluReceiver\HoyluReceiver\obj\Debug\DownloadDialog.g.cs
+C:\MyFiles\Schule\Diplomarbeit\HoyluTransfer\HoyluReceiver\HoyluReceiver\obj\Debug\MessageBoxEditText.baml
+C:\MyFiles\Schule\Diplomarbeit\HoyluTransfer\HoyluReceiver\HoyluReceiver\obj\Debug\DownloadDialog.baml
+C:\MyFiles\Schule\Diplomarbeit\HoyluTransfer\HoyluReceiver\HoyluReceiver\obj\Debug\HoyluReceiver.csproj.CoreCompileInputs.cache

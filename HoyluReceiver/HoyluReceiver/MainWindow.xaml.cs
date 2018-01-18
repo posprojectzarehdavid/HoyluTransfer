@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Net.NetworkInformation;
 using System.Text;
@@ -467,7 +468,7 @@ namespace HoyluReceiver
             if (registerNetwork.IsChecked == true)
             {
                 publicIp = new WebClient().DownloadString(@"http://icanhazip.com").Trim();
-                defaultGateway = GetDefaultGatewayAddress();
+                defaultGateway = GetDefaultGateway();
                 networkUsed = true;
             }
 
@@ -508,6 +509,7 @@ namespace HoyluReceiver
                     Console.WriteLine(adapter.Description);
                     foreach (GatewayIPAddressInformation address in addresses)
                     {
+                        Console.WriteLine(address.Address);
                         if (address.Address.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork)
                         {
                             return address.Address.ToString();
@@ -516,6 +518,17 @@ namespace HoyluReceiver
                 }
             }
             return null;
+        }
+
+        public static string GetDefaultGateway()
+        {
+            var gateway_address = NetworkInterface.GetAllNetworkInterfaces()
+                .Where(e => e.OperationalStatus == OperationalStatus.Up)
+                .SelectMany(e => e.GetIPProperties().GatewayAddresses)
+                .FirstOrDefault();
+            if (gateway_address == null) return null;
+            Console.WriteLine(gateway_address.Address);
+            return gateway_address.Address.ToString();
         }
     }
 }

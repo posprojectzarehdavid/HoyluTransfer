@@ -121,10 +121,6 @@ function getHoyluDeviceWithId(id) {
     return null;
 }
 
-var garcol = function () {
-    global.gc();
-};
-
 function showHoyluDevices() {
     for (var d in hoyluDevices) {
         console.log(hoyluDevices[d].name + ', ' + hoyluDevices[d].socketId + ', hoyluid: ' + hoyluDevices[d].hoyluId);
@@ -140,9 +136,6 @@ function showConnectedClients() {
         console.log('io.socket: ' + io.sockets.sockets[c].id);
     }
 }
-
-setInterval(showConnectedClients, 1000 * 5);
-setInterval(showHoyluDevices, 1000 * 5);
 
 io.on('connection', function (socket) {
     
@@ -161,7 +154,6 @@ io.on('connection', function (socket) {
        
     socket.once('client', function (data) {
         console.log(data + ' with SocketId ' + socket.id + ' connected...');
-       
 
         /*if (connectedClients.length == 0) {
             connectedClients.push(socket);
@@ -176,7 +168,7 @@ io.on('connection', function (socket) {
         console.log('--------------------------------------------------------------------');
         showHoyluDevices();
         console.log('--------------------------------------------------------------------');
-        //showConnectedClients();
+        showConnectedClients();
     });
 
     socket.once('receiverClient', function (data) {
@@ -196,6 +188,9 @@ io.on('connection', function (socket) {
         }
 
         var object = JSON.parse(data);
+        console.log('----------------');
+        console.log(data);
+        console.log('----------------');
         var vorhanden = false;
         var hoylu = new HoyluDevice(object.HoyluId, object.Name, object.BluetoothAddress, object.QrValue, object.NfcValue, object.PublicIp, object.DefaultGateway, socket.id);
         for (var h in hoyluDevices) {
