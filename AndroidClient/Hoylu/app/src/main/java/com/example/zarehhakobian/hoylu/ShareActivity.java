@@ -10,6 +10,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.content.res.Resources;
@@ -82,14 +83,14 @@ public class ShareActivity extends AppCompatActivity implements DeviceSelectedLi
     private NfcAdapter nfcAdapter;
     PendingIntent mPendingIntent;
 
+    BluetoothAdapter adapter;
     public static ArrayList<BluetoothDevice> deviceList = new ArrayList<BluetoothDevice>();      //Own detected addresses
 
 
-    public static final BroadcastReceiver mReceiver = new BroadcastReceiver() {
+    public final BroadcastReceiver mReceiver = new BroadcastReceiver() {
         public void onReceive(Context context, Intent intent) {
 
             String action = intent.getAction();
-
 
             if (BluetoothAdapter.ACTION_DISCOVERY_STARTED.equals(action)) {                             //Startes searching for Devices
                // Toast.makeText(ShareActivity.Context, "Bluetoothdiscovery has been started", Toast.LENGTH_LONG).show();
@@ -176,6 +177,9 @@ public class ShareActivity extends AppCompatActivity implements DeviceSelectedLi
         if (nfcAdapter != null) {
             nfcAdapter.disableForegroundDispatch(this);
         }
+        if(mReceiver!=null){
+            unregisterReceiver(mReceiver);
+        }
     }
 
     @Override
@@ -235,9 +239,22 @@ public class ShareActivity extends AppCompatActivity implements DeviceSelectedLi
 
             Analytics.trackEvent("App started", properties);
             Log.i("App", "AppStarted");
+            adapter = BluetoothAdapter.getDefaultAdapter();
+            InitializeBluetoothDiscovery();
         } else {
             requestPermissions();
         }
+    }
+
+    private void InitializeBluetoothDiscovery() {
+        IntentFilter filter = new IntentFilter();
+
+        filter.addAction(BluetoothDevice.ACTION_FOUND);
+        filter.addAction(BluetoothAdapter.ACTION_DISCOVERY_STARTED);
+        filter.addAction(BluetoothAdapter.ACTION_DISCOVERY_FINISHED);
+
+        registerReceiver(mReceiver, filter);
+        adapter.startDiscovery();
     }
 
     @Override

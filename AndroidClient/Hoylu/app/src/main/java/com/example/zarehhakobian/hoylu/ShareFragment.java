@@ -3,12 +3,8 @@ package com.example.zarehhakobian.hoylu;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.Dialog;
-import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
-import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.content.Intent;
-import android.content.IntentFilter;
 import android.hardware.Camera;
 import android.net.DhcpInfo;
 import android.net.wifi.WifiManager;
@@ -82,7 +78,7 @@ public class ShareFragment extends Fragment implements BarcodeGraphic.BoundingBo
     final public ArrayList<HoyluDevice> hoyluDevices = new ArrayList<>();
     ArrayAdapter aa;
 
-    BluetoothAdapter adapter;
+
 
     ArrayList<HoyluDevice> filteredDeviceList;  //Matching addresses
     ArrayList<HoyluDevice> serverAquiredDeviceList; // Bluetoothaddresses from Server
@@ -102,8 +98,6 @@ public class ShareFragment extends Fragment implements BarcodeGraphic.BoundingBo
     boolean isGueltigeID;
 
     DeviceSelectedListener listener;
-
-
 
     public ShareFragment() {
     }
@@ -131,7 +125,7 @@ public class ShareFragment extends Fragment implements BarcodeGraphic.BoundingBo
             scaleGestureDetector = new ScaleGestureDetector(getActivity(), new ScaleListener());
         }
 
-        adapter = BluetoothAdapter.getDefaultAdapter();
+
         filteredDeviceList = new ArrayList<HoyluDevice>();
         serverAquiredDeviceList = new ArrayList<HoyluDevice>();
 
@@ -338,19 +332,9 @@ public class ShareFragment extends Fragment implements BarcodeGraphic.BoundingBo
     public void onStart() {
         super.onStart();
         startCameraSource();
-        InitializeBluetoothDiscovery();
+
     }
 
-    private void InitializeBluetoothDiscovery() {
-        IntentFilter filter = new IntentFilter();
-
-        filter.addAction(BluetoothDevice.ACTION_FOUND);
-        filter.addAction(BluetoothAdapter.ACTION_DISCOVERY_STARTED);
-        filter.addAction(BluetoothAdapter.ACTION_DISCOVERY_FINISHED);
-
-        getActivity().registerReceiver(ShareActivity.mReceiver, filter);
-        adapter.startDiscovery();
-    }
 
     @Override
     public void onStop() {
@@ -377,8 +361,6 @@ public class ShareFragment extends Fragment implements BarcodeGraphic.BoundingBo
     }
 
     public void onDestroy() {
-        getActivity().unregisterReceiver(ShareActivity.mReceiver);
-
         super.onDestroy();
     }
 
