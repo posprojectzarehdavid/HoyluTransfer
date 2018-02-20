@@ -51,52 +51,28 @@ namespace HoyluReceiver
 
         private void ConnectToServer()
         {
+            Console.WriteLine("****************** ConnectToServer ***************");
             Regex getFileExtension = new Regex(@"\w*\.(?<extension>.+)");
             int threadCounter = 1;
-            if (socket != null)
-            {
-                socket.Disconnect();
-                socket.Off();
-            }
+            DisconnectSocket();
             ProgressDialog connectionDialog = new ProgressDialog();
             connectionDialog.Show();
             socket = IO.Socket("http://40.114.246.211:4200");
             socket.On(Socket.EVENT_CONNECT, (fn) =>
             {
-                Console.WriteLine("Connected");
+                Console.WriteLine("----------------> Connected");
                 string hoyluDeviceAsJson = JsonConvert.SerializeObject(hoyluDevice);
                 socket.Emit("receiverClient", hoyluDeviceAsJson);
                 socket.On("device_registered", () =>
                 {
-                    Dispatcher.BeginInvoke(
-                       new Action(() =>
-                       {
-                           connectionDialog.Close();
-
-                           deviceRegistered = true;
-
-                           if (qrUsed && deviceRegistered && threadCounter == 1)
-                           {
-                               qrCodeView.Source = BitmapToImageSource(qrCodeImage);
-                               Canvas.SetTop(qrCodeView, 50);
-                               Canvas.SetLeft(qrCodeView, 280);
-                           }
-                           if (nfcUsed && deviceRegistered && threadCounter == 1)
-                           {
-                               Console.WriteLine("NFC Value:" + nfcValue);
-                               MessageBoxEditText msg = new MessageBoxEditText();
-                               msg.HoyluId.Text = nfcValue;
-                               msg.ShowDialog();
-                           }
-                           if (networkUsed && deviceRegistered && threadCounter == 1) ipaddress.Content = "Public IP: " + publicIp; default_gateway.Content = "Defaultgateway: " + defaultGateway;
-                           threadCounter++;
-                       })
-                    );
+                    Console.WriteLine("----------------> device_registered");
+                    threadCounter = OnDeviceRegisterd(threadCounter, connectionDialog);
                 });
 
 
                 socket.On("getFile", (data) =>
                 {
+                    Console.WriteLine("----------------> getFile");
                     System.Diagnostics.Debugger.NotifyOfCrossThreadDependency();
                     ServerFile file = JsonConvert.DeserializeObject<ServerFile>(data.ToString());
                     string url = @"http://40.114.246.211:4200/file_for_download/:" + file.Filename;
@@ -127,7 +103,7 @@ namespace HoyluReceiver
                         Dispatcher.BeginInvoke(
                            new Action(() =>
                            {
-                               
+
                                if (match.Groups["extension"].Value == "jpg" || match.Groups["extension"].Value == "bmp" || match.Groups["extension"].Value == "png") //Ist Bild
                                {
                                    bitmapImage = ToImage(lnByte);
@@ -170,6 +146,45 @@ namespace HoyluReceiver
             socket.Connect();
         }
 
+        private int OnDeviceRegisterd(int threadCounter, ProgressDialog connectionDialog)
+        {
+            Dispatcher.BeginInvoke(new Action(() =>
+                                  {
+                                      connectionDialog.Close();
+
+                                      deviceRegistered = true;
+
+                                      if (qrUsed && deviceRegistered && threadCounter == 1)
+                                      {
+                                          qrCodeView.Source = BitmapToImageSource(qrCodeImage);
+                                          Canvas.SetTop(qrCodeView, 50);
+                                          Canvas.SetLeft(qrCodeView, 280);
+                                      }
+                                      if (nfcUsed && deviceRegistered && threadCounter == 1)
+                                      {
+                                          Console.WriteLine("NFC Value:" + nfcValue);
+                                          MessageBoxEditText msg = new MessageBoxEditText();
+                                          msg.HoyluId.Text = nfcValue;
+                                          msg.ShowDialog();
+                                      }
+                                      if (networkUsed && deviceRegistered && threadCounter == 1) ipaddress.Content = "Public IP: " + publicIp; default_gateway.Content = "Defaultgateway: " + defaultGateway;
+                                      threadCounter++;
+                                  })
+                                );
+            return threadCounter;
+        }
+
+        private void DisconnectSocket()
+        {
+            Console.WriteLine("----------------> DisconnectSocket");
+            if (socket != null)
+            {
+                socket.Disconnect();
+                socket.Off();
+                socket = null;
+            }
+        }
+
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
             foreach (var hoyluDevice in hoyluDevices)
@@ -179,11 +194,7 @@ namespace HoyluReceiver
                     $"{hoyluDevice.TimestampLastUsed}", configDirectory);
             }
             WriteToFile($"saveFilePath;{config.SaveFileToPath}", configDirectory);
-            if (socket != null)
-            {
-                socket.Disconnect();
-                socket.Off();
-            }
+            DisconnectSocket();
         }
 
 
@@ -306,7 +317,7 @@ namespace HoyluReceiver
 
         private void InitConfiguration()
         {
-            configDirectory = System.Environment.GetEnvironmentVariable("USERPROFILE") + @"\Documents\config.csv"; 
+            configDirectory = System.Environment.GetEnvironmentVariable("USERPROFILE") + @"\Documents\config.csv";
             if (File.Exists(configDirectory))
             {
                 string[] lines = File.ReadAllLines(configDirectory);
@@ -331,7 +342,7 @@ namespace HoyluReceiver
 
                     }
                 }
-                
+
             }
             else
             {
@@ -347,7 +358,7 @@ namespace HoyluReceiver
         }
 
         private void WriteToFile(string text, string configDirectory)
-        {          
+        {
             csv.AppendLine(text);
             Console.WriteLine(configDirectory, csv.ToString());
             File.WriteAllText(configDirectory, csv.ToString());
