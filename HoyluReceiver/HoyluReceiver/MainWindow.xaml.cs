@@ -38,11 +38,14 @@ namespace HoyluReceiver
         private string configDirectory;
         private Bitmap qrCodeImage;
         private bool nfcUsed = false;
-        private bool deviceRegistered = false;
         private List<HoyluDevice> hoyluDevices;
         private StringBuilder csv = new StringBuilder();
         CultureInfo provider = CultureInfo.InvariantCulture;
         private static string datePattern = "dd.MM.yyyy HH:mm:ss";
+
+        private bool deviceRegistered = false;
+        private bool hasConnected = false;
+        private bool hasReceivedFile = false;
 
         public MainWindow()
         {
@@ -60,11 +63,15 @@ namespace HoyluReceiver
             socket = IO.Socket("http://40.114.246.211:4200");
             socket.On(Socket.EVENT_CONNECT, (fn) =>
             {
+                if (hasConnected) return;
+                hasConnected = true;
                 Console.WriteLine("----------------> Connected");
                 string hoyluDeviceAsJson = JsonConvert.SerializeObject(hoyluDevice);
                 socket.Emit("receiverClient", hoyluDeviceAsJson);
                 socket.On("device_registered", () =>
                 {
+                    if (deviceRegistered) return;
+                    deviceRegistered = true;
                     Console.WriteLine("----------------> device_registered");
                     threadCounter = OnDeviceRegisterd(threadCounter, connectionDialog);
                 });
@@ -72,6 +79,8 @@ namespace HoyluReceiver
 
                 socket.On("getFile", (data) =>
                 {
+                    if (hasReceivedFile) return;
+                    hasReceivedFile = true;
                     Console.WriteLine("----------------> getFile");
                     System.Diagnostics.Debugger.NotifyOfCrossThreadDependency();
                     ServerFile file = JsonConvert.DeserializeObject<ServerFile>(data.ToString());

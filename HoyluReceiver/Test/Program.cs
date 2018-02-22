@@ -13,7 +13,7 @@ namespace Test
         {
             Receiver seas = new Receiver("40.114.246.211", "4200");
             seas.SavePath = @"C:\Users\David\Desktop\";
-            seas.Register("TestUser");
+            seas.Register("TestUser", false, true, true, true);
             Console.ReadKey();
         }
     }
