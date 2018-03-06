@@ -18,6 +18,7 @@ public class HomeScreenActivity extends AppCompatActivity {
 
     TabLayout tabLayout;
     ViewPager viewPager;
+    static ViewPagerAdapter adapter;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -36,11 +37,11 @@ public class HomeScreenActivity extends AppCompatActivity {
     }
 
     private void setupViewPager(ViewPager viewPager) {
-        ViewPagerAdapter adapter = new ViewPagerAdapter(getSupportFragmentManager());
+        adapter = new ViewPagerAdapter(getSupportFragmentManager());
         try {
-            adapter.addFragment(new ReceiverFragment(), "Receiver");
-            adapter.addFragment(new ReceivedFilesFragment(), "Received Files");
-            adapter.addFragment(new GalleryFragment(), "Gallery");
+            adapter.addFragment(new ReceiverFragment(), getResources().getString(R.string.receiver));
+            adapter.addFragment(new ReceivedFilesFragment(), getResources().getString(R.string.receivedfiles));
+            adapter.addFragment(new GalleryFragment(), getResources().getString(R.string.gallery));
             viewPager.setAdapter(adapter);
         } catch (Exception e){
             e.printStackTrace();

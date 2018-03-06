@@ -12,7 +12,7 @@
     <string name="upload_successful">File uploaded successfully!</string>
     <string name="uploading_error">Error while uploading file!</string>
     <string name="uploading_message">File is being uploaded on server...</string>
-    <string name="dev_in_network">Devices in network</string>
+    <string name="dev_in_network">Registered devices on server</string>
     <string name="focus_on_qr">Bring QR-code into focus</string>
     <string name="invalid">No valid ID</string>
     <string name="no_devices">No devices in network</string>
@@ -28,4 +28,9 @@
     <string name="discard">Discard</string>
     <string name="receiving_data">Receiving data...</string>
     <string name="receive_message">Following file received: </string>
+    <string name="size">Size: </string>
+    <string name="received">Received: </string>
+    <string name="receivedfiles">Received files</string>
+    <string name="gallery">Gallery</string>
+    <string name="receiver">Receiver</string>
 </resources>

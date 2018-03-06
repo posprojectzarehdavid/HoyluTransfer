@@ -8,7 +8,7 @@
     <string name="share">Teilen</string>
     <string name="save">Speichern</string>
     <string name="discard">Verwerfen</string>
-    <string name="destroy_message">Leider benötigen Sie für diese App eine Internetverbindung!</string>
+    <string name="destroy_message">Leider benötigen Sie fÃ¼r diese App eine Internetverbindung!</string>
     <string name="attention">Achtung!</string>
     <string name="identify_message">Um Geräte in Ihrem Netzwerk zu identifizieren, schalten Sie WLAN ein!</string>
     <string name="no_camera_permission">Keine Erlaubnis für Kamera</string>
@@ -20,11 +20,16 @@
     <string name="turn_on_wifi">Schalten Sie Ihr WLAN ein</string>
     <string name="no_devices">Keine Geräte im Netzwerk</string>
     <string name="focus_on_qr">Auf einen QR-Code richten</string>
-    <string name="dev_in_network">Geräte im Netzwerk</string>
+    <string name="dev_in_network">Registrierte Geräte am Server</string>
     <string name="valid">Gültige ID</string>
-    <string name="invalid">Keine Gültige ID</string>
+    <string name="invalid">Keine GÃ¼ltige ID</string>
     <string name="server_off">Server ist offline</string>
     <string name="save_or_close">Was wollen Sie tun?</string>
     <string name="receiving_data">Empfange Daten...</string>
     <string name="receive_message">Folgende Datei erhalten: </string>
+    <string name="size">Größe: </string>
+    <string name="received">Empfangen: </string>
+    <string name="receivedfiles">Empfangene Daten</string>
+    <string name="gallery">Galerie</string>
+    <string name="receiver">Empfänger</string>
 </resources>

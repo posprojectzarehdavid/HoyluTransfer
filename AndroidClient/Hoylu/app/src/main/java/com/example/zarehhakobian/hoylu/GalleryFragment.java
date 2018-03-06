@@ -28,8 +28,18 @@ import java.util.ArrayList;
 public class GalleryFragment extends Fragment {
 
     ImageAdapter myImageAdapter;
+    GridView gridview;
 
     public GalleryFragment() {
+    }
+
+    @Override
+    public void onResume() {
+        if(gridview != null){
+            showImages(gridview);
+            myImageAdapter.notifyDataSetChanged();
+        }
+        super.onResume();
     }
 
     @Override
@@ -40,14 +50,8 @@ public class GalleryFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.hoylushare_gallery_view, container, false);
-        final GridView gridview = (GridView) v.findViewById(R.id.gridview);
-        myImageAdapter = new ImageAdapter(getActivity());
-        gridview.setAdapter(myImageAdapter);
-        ArrayList<String>imagePaths = getAllShownImagesPath(getActivity());
-        for (String path : imagePaths){
-            myImageAdapter.add(path);
-        }
-
+        gridview = (GridView) v.findViewById(R.id.gridview);
+        showImages(gridview);
         gridview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
@@ -56,6 +60,15 @@ public class GalleryFragment extends Fragment {
             }
         });
         return v;
+    }
+
+    public void showImages(GridView view){
+        myImageAdapter = new ImageAdapter(getActivity());
+        ArrayList<String>imagePaths = getAllShownImagesPath(getActivity());
+        for (String path : imagePaths){
+            myImageAdapter.add(path);
+        }
+        view.setAdapter(myImageAdapter);
     }
 
     private void showSelectedImage(final String imagePath) {
@@ -106,7 +119,6 @@ public class GalleryFragment extends Fragment {
                 .getColumnIndexOrThrow(MediaStore.Images.Media.BUCKET_DISPLAY_NAME);
         while (cursor.moveToNext()) {
             absolutePathOfImage = cursor.getString(column_index_data);
-
             listOfAllImages.add(absolutePathOfImage);
         }
         return listOfAllImages;
