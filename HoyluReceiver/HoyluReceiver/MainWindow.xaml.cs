@@ -459,7 +459,7 @@ namespace HoyluReceiver
 
         private void register_Click(object sender, RoutedEventArgs e)
         {
-            //hoyluId = "f67317b7-5823-474b-b8e2-aa36e5564942"; ////Für NFC testen
+            //hoyluId = "f67317b7-5823-474b-b8e2-aa36e5564942"; ////NFC Hoylu Test-ID
 
             hoyluId = Guid.NewGuid().ToString();
             if (registerBluetooth.IsChecked == true)
@@ -498,8 +498,8 @@ namespace HoyluReceiver
             hoyluDevices.Add(hoyluDevice);
             registeredDevices.Items.Add(hoyluDevice);
             ConnectToServer();
-            Button x = sender as Button;
-            x.IsEnabled = false;
+            Button register = sender as Button;
+            register.IsEnabled = false;
         }
 
         BitmapImage BitmapToImageSource(Bitmap bitmap)
