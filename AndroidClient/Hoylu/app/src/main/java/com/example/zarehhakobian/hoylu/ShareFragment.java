@@ -255,7 +255,7 @@ public class ShareFragment extends Fragment implements BarcodeGraphic.BoundingBo
                     Log.d("Before BT emit", "Emitting BTClient now");
                     networkSocket.emit("client", "BluetoothClient");
                     Log.d("Before BT address emit", "Emitting BTAddresses now");
-                    networkSocket.emit("bluetoothAddresses", "", new Ack() {
+                    networkSocket.emit("bluetoothAddresses", new JSONObject(), new Ack() {
 
                         @Override
                         public void call(Object... args) {

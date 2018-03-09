@@ -95,6 +95,7 @@ public class ReceiverFragment extends Fragment {
         if (isWifiConn || isMobileConn) {
             try {
                 doc = Jsoup.connect("http://icanhazip.com").get();
+                publicIP = doc.body().getAllElements().first().text();
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -102,7 +103,7 @@ public class ReceiverFragment extends Fragment {
             wifi = (WifiManager) getActivity().getSystemService(Context.WIFI_SERVICE);
             d = wifi.getDhcpInfo();
             defaultGateway = String.valueOf(Formatter.formatIpAddress(d.gateway));
-            publicIP = doc.body().getAllElements().first().text();
+
         }
         btAddres = getBluetoothMac();
         Log.i("addresses", "bluetoothaddress: " + btAddres);
@@ -284,6 +285,7 @@ public class ReceiverFragment extends Fragment {
                         e.printStackTrace();
                     }
                 }
+                HomeScreenActivity.adapter.getItem(1).onResume();
                 dialog.dismiss();
             }
         });

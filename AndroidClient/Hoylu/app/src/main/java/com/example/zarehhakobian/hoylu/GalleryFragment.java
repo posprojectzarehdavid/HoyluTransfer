@@ -28,8 +28,17 @@ import java.util.ArrayList;
 public class GalleryFragment extends Fragment {
 
     ImageAdapter myImageAdapter;
+    GridView gridview;
 
     public GalleryFragment() {
+    }
+
+    public void onResume() {
+        if(gridview != null){
+            showImages(gridview);
+            myImageAdapter.notifyDataSetChanged();
+        }
+        super.onResume();
     }
 
     @Override
@@ -40,13 +49,8 @@ public class GalleryFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.hoylushare_gallery_view, container, false);
-        final GridView gridview = (GridView) v.findViewById(R.id.gridview);
-        myImageAdapter = new ImageAdapter(getActivity());
-        gridview.setAdapter(myImageAdapter);
-        ArrayList<String>imagePaths = getAllShownImagesPath(getActivity());
-        for (String path : imagePaths){
-            myImageAdapter.add(path);
-        }
+        gridview = (GridView) v.findViewById(R.id.gridview);
+        showImages(gridview);
 
         gridview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -56,6 +60,16 @@ public class GalleryFragment extends Fragment {
             }
         });
         return v;
+    }
+
+    private void showImages(GridView gridview) {
+        myImageAdapter = new ImageAdapter(getActivity());
+        gridview.setAdapter(myImageAdapter);
+        ArrayList<String>imagePaths = getAllShownImagesPath(getActivity());
+        for (String path : imagePaths){
+            myImageAdapter.add(path);
+        }
+        gridview.setAdapter(myImageAdapter);
     }
 
     private void showSelectedImage(final String imagePath) {

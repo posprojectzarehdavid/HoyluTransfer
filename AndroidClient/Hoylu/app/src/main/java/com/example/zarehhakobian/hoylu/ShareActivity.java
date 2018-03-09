@@ -176,7 +176,7 @@ public class ShareActivity extends AppCompatActivity implements DeviceSelectedLi
         if (nfcAdapter != null) {
             nfcAdapter.disableForegroundDispatch(this);
         }
-        if(mReceiver!=null){
+        if(mReceiver!=null && mReceiver.isOrderedBroadcast()){
             unregisterReceiver(mReceiver);
         }
     }
@@ -188,14 +188,16 @@ public class ShareActivity extends AppCompatActivity implements DeviceSelectedLi
 
     private void getTagInfo(Intent intent) {
         Tag tag = intent.getParcelableExtra(NfcAdapter.EXTRA_TAG);
-        Ndef ndefTag = Ndef.get(tag);
-        NdefMessage ndefMesg = ndefTag.getCachedNdefMessage();
-        NdefRecord record = ndefMesg.getRecords()[0];
-        String value = new String(record.getPayload());
-        Log.i("NFC TAG SCANNED", value + " || Size: " + ndefTag.getMaxSize());
-        Log.i("NFC TAG SCANNED fixed", value.substring(3) + " || Size: " + ndefTag.getMaxSize());
+        if(tag != null){
+            Ndef ndefTag = Ndef.get(tag);
+            NdefMessage ndefMesg = ndefTag.getCachedNdefMessage();
+            NdefRecord record = ndefMesg.getRecords()[0];
+            String value = new String(record.getPayload());
+            Log.i("NFC TAG SCANNED", value + " || Size: " + ndefTag.getMaxSize());
+            Log.i("NFC TAG SCANNED fixed", value.substring(3) + " || Size: " + ndefTag.getMaxSize());
 
-        uploadImageToServer(value.substring(3), "NFCClient");
+            uploadImageToServer(value.substring(3), "NFCClient");
+        }
     }
 
     private void setLanguage() {
