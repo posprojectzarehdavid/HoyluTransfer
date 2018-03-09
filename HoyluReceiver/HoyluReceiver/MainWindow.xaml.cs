@@ -25,6 +25,7 @@ namespace HoyluReceiver
 {
     public partial class MainWindow : Window
     {
+        #region VariableDeclaration
         Socket socket;
         string name, hoyluId, bluetoothAddress, qrValue, nfcValue, publicIp, defaultGateway;
         private bool networkUsed = false;
@@ -42,11 +43,13 @@ namespace HoyluReceiver
         private StringBuilder csv = new StringBuilder();
         CultureInfo provider = CultureInfo.InvariantCulture;
         private static string datePattern = "dd.MM.yyyy HH:mm:ss";
+        #endregion VariableDeclaration
 
+        #region DebugVariables
         private bool deviceRegistered = false;
         private bool hasConnected = false;
         private bool hasReceivedFile = false;
-
+        #endregion DebugVariables
         public MainWindow()
         {
             InitializeComponent();
@@ -70,10 +73,7 @@ namespace HoyluReceiver
                 socket.Emit("receiverClient", hoyluDeviceAsJson);
                 socket.On("device_registered", () =>
                 {
-                    if (deviceRegistered) return;
-                    deviceRegistered = true;
-                    Console.WriteLine("----------------> device_registered");
-                    threadCounter = OnDeviceRegisterd(threadCounter, connectionDialog);
+                    DeviceRegistered(ref threadCounter, connectionDialog);
                 });
 
 
@@ -86,23 +86,7 @@ namespace HoyluReceiver
                     ServerFile file = JsonConvert.DeserializeObject<ServerFile>(data.ToString());
                     string url = @"http://40.114.246.211:4200/file_for_download/:" + file.Filename;
                     byte[] lnByte;
-
-                    HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
-                    string lsResponse = string.Empty;
-
-                    using (HttpWebResponse response = (HttpWebResponse)request.GetResponse())
-                    {
-                        using (BinaryReader reader = new BinaryReader(response.GetResponseStream()))
-                        {
-                            lnByte = reader.ReadBytes(1 * 1024 * 1024 * 10);
-                            using (FileStream stream = new FileStream(file.Filename, FileMode.Create))
-                            {
-                                stream.Write(lnByte, 0, lnByte.Length);
-                            }
-                        }
-                        response.Close();
-
-                    }
+                    lnByte = RequestFileFromServer(file, url);
 
                     Match match = getFileExtension.Match(file.Originalname);
                     if (match.Success)
@@ -112,37 +96,7 @@ namespace HoyluReceiver
                         Dispatcher.BeginInvoke(
                            new Action(() =>
                            {
-
-                               if (match.Groups["extension"].Value == "jpg" || match.Groups["extension"].Value == "bmp" || match.Groups["extension"].Value == "png") //Ist Bild
-                               {
-                                   bitmapImage = ToImage(lnByte);
-                                   if (bitmapImage != null)
-                                   {
-                                       if (qrUsed)
-                                       {
-                                           qrCodeView.Source = bitmapImage;
-                                       }
-                                       else
-                                       {
-                                           image.Source = bitmapImage;
-                                           Canvas.SetTop(image, 50);
-                                           Canvas.SetLeft(image, 280);
-                                       }
-
-                                   }
-                               }
-                               else
-                               {
-                                   MessageBox.Show("The received filetype couldn't be shown, you can find the file at: " + savePath);
-                                   if (qrUsed) qrCodeView.Source = new BitmapImage(new Uri(@"/HoyluReceiver; Resources\error-icon.png", UriKind.Relative));
-                                   else
-                                   {
-                                       image.Source = new BitmapImage(new Uri(@"/HoyluReceiver; Resources\error-icon.png", UriKind.Relative));
-                                       Canvas.SetTop(image, 50);
-                                       Canvas.SetLeft(image, 280);
-                                   }
-                                   File.WriteAllBytes(savePath, lnByte);
-                               }
+                               SaveFile(lnByte, match, savePath);
                            })
                          );
                         socket.Emit("fileReceived");
@@ -153,6 +107,71 @@ namespace HoyluReceiver
                 });
             });
             socket.Connect();
+        }
+
+        private static byte[] RequestFileFromServer(ServerFile file, string url)
+        {
+            byte[] lnByte;
+            HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
+            string lsResponse = string.Empty;
+
+            using (HttpWebResponse response = (HttpWebResponse)request.GetResponse())
+            {
+                using (BinaryReader reader = new BinaryReader(response.GetResponseStream()))
+                {
+                    lnByte = reader.ReadBytes(1 * 1024 * 1024 * 10);
+                    using (FileStream stream = new FileStream(file.Filename, FileMode.Create))
+                    {
+                        stream.Write(lnByte, 0, lnByte.Length);
+                    }
+                }
+                response.Close();
+
+            }
+
+            return lnByte;
+        }
+
+        private void SaveFile(byte[] lnByte, Match match, string savePath)
+        {
+            if (match.Groups["extension"].Value == "jpg" || match.Groups["extension"].Value == "bmp" || match.Groups["extension"].Value == "png") //Ist Bild
+            {
+                bitmapImage = ToImage(lnByte);
+                if (bitmapImage != null)
+                {
+                    if (qrUsed)
+                    {
+                        qrCodeView.Source = bitmapImage;
+                    }
+                    else
+                    {
+                        image.Source = bitmapImage;
+                        Canvas.SetTop(image, 50);
+                        Canvas.SetLeft(image, 280);
+                    }
+
+                }
+            }
+            else
+            {
+                MessageBox.Show("The received filetype couldn't be shown, you can find the file at: " + savePath);
+                if (qrUsed) qrCodeView.Source = new BitmapImage(new Uri(@"/HoyluReceiver; Resources\error-icon.png", UriKind.Relative));
+                else
+                {
+                    image.Source = new BitmapImage(new Uri(@"/HoyluReceiver; Resources\error-icon.png", UriKind.Relative));
+                    Canvas.SetTop(image, 50);
+                    Canvas.SetLeft(image, 280);
+                }
+                File.WriteAllBytes(savePath, lnByte);
+            }
+        }
+
+        private void DeviceRegistered(ref int threadCounter, ProgressDialog connectionDialog)
+        {
+            if (deviceRegistered) return;
+            deviceRegistered = true;
+            Console.WriteLine("----------------> device_registered");
+            threadCounter = OnDeviceRegisterd(threadCounter, connectionDialog);
         }
 
         private int OnDeviceRegisterd(int threadCounter, ProgressDialog connectionDialog)
@@ -176,7 +195,8 @@ namespace HoyluReceiver
                                           msg.HoyluId.Text = nfcValue;
                                           msg.ShowDialog();
                                       }
-                                      if (networkUsed && deviceRegistered && threadCounter == 1) ipaddress.Content = "Public IP: " + publicIp; default_gateway.Content = "Defaultgateway: " + defaultGateway;
+                                      if (networkUsed && deviceRegistered && threadCounter == 1) ipaddress.Content = "Public IP: "
+                                          + publicIp; default_gateway.Content = "Defaultgateway: " + defaultGateway;
                                       threadCounter++;
                                   })
                                 );
@@ -198,11 +218,11 @@ namespace HoyluReceiver
         {
             foreach (var hoyluDevice in hoyluDevices)
             {
-                WriteToFile($"{hoyluDevice.Name};{hoyluDevice.HoyluId};{hoyluDevice.BluetoothAddress};{hoyluDevice.QrValue};" +
+                WriteToSaveFile($"{hoyluDevice.Name};{hoyluDevice.HoyluId};{hoyluDevice.BluetoothAddress};{hoyluDevice.QrValue};" +
                     $"{hoyluDevice.NfcValue};{hoyluDevice.PublicIp};{hoyluDevice.DefaultGateway};" +
                     $"{hoyluDevice.TimestampLastUsed}", configDirectory);
             }
-            WriteToFile($"saveFilePath;{config.SaveFileToPath}", configDirectory);
+            WriteToSaveFile($"saveFilePath;{config.SaveFileToPath}", configDirectory);
             DisconnectSocket();
         }
 
@@ -356,17 +376,17 @@ namespace HoyluReceiver
             else
             {
                 CreateInitFile(configDirectory);
-                InitConfiguration(); //Erneuter Aufruf sodass Config Objekt befüllt wird
+                InitConfiguration(); //Repeated call so config object gets filled
             }
         }
 
         private void CreateInitFile(string configDirectory)
         {
-            var receivedFileDirectory = string.Format("{0};{1}", "saveFilePath", "C:\\USERS\\DAVID\\DESKTOP"); //Pfad wo Bild gespeichert wird
-            WriteToFile(receivedFileDirectory, configDirectory);
+            var receivedFileDirectory = string.Format("{0};{1}", "saveFilePath", "C:\\USERS\\DAVID\\DESKTOP"); //Path where file gets saved to
+            WriteToSaveFile(receivedFileDirectory, configDirectory);
         }
 
-        private void WriteToFile(string text, string configDirectory)
+        private void WriteToSaveFile(string text, string configDirectory)
         {
             csv.AppendLine(text);
             Console.WriteLine(configDirectory, csv.ToString());
@@ -429,16 +449,17 @@ namespace HoyluReceiver
             try
             {
                 MemoryStream strmImg = new MemoryStream(byteVal);
-                BitmapImage myBitmapImage = new BitmapImage();
-                myBitmapImage.BeginInit();
-                myBitmapImage.StreamSource = strmImg;
-                myBitmapImage.CacheOption = BitmapCacheOption.OnLoad;
-                myBitmapImage.EndInit();
-                myBitmapImage.Freeze();
-                return myBitmapImage;
+                BitmapImage image = new BitmapImage();
+                image.BeginInit();
+                image.StreamSource = strmImg;
+                image.CacheOption = BitmapCacheOption.OnLoad;
+                image.EndInit();
+                image.Freeze();
+                return image;
             }
-            catch (Exception)
+            catch (Exception exc)
             {
+                Console.WriteLine("Error: " + exc.Message);
                 return null;
             }
         }
@@ -498,8 +519,8 @@ namespace HoyluReceiver
             hoyluDevices.Add(hoyluDevice);
             registeredDevices.Items.Add(hoyluDevice);
             ConnectToServer();
-            Button x = sender as Button;
-            x.IsEnabled = false;
+            Button registerButton = sender as Button;
+            registerButton.IsEnabled = false;
         }
 
         BitmapImage BitmapToImageSource(Bitmap bitmap)

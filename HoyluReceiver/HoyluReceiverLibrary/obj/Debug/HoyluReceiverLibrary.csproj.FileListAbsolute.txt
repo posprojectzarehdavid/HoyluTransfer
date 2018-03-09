@@ -224,3 +224,4 @@ C:\Diplomarbeit\HoyluTransfer\HoyluReceiver\HoyluReceiverLibrary\obj\Debug\Hoylu
 C:\Diplomarbeit\HoyluTransfer\HoyluReceiver\HoyluReceiverLibrary\obj\Debug\HoyluReceiverLibrary.csproj.CoreCompileInputs.cache
 C:\Diplomarbeit\HoyluTransfer\HoyluReceiver\HoyluReceiverLibrary\obj\Debug\HoyluReceiverLibrary.dll
 C:\Diplomarbeit\HoyluTransfer\HoyluReceiver\HoyluReceiverLibrary\obj\Debug\HoyluReceiverLibrary.pdb
+C:\Diplomarbeit\HoyluTransfer\HoyluReceiver\HoyluReceiverLibrary\obj\Debug\HoyluReceiverLibrary.csproj.CopyComplete

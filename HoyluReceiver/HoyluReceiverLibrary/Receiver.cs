@@ -27,17 +27,21 @@ namespace HoyluReceiverLibrary
             this.port = port;
         }
 
+        #region VariableDeclaration
         Socket socket;
         private HoyluDevice hoyluDevice;
         private BitmapImage bitmapImage;
         private string ipAddress;
         private string port;
         private string savePath = System.Environment.GetEnvironmentVariable("USERPROFILE") + @"\Desktop\";
+        #endregion VariableDeclaration
 
+        #region DebugVariables
         private bool deviceRegistered = false;
         private bool hasConnected = false;
         private bool hasReceivedFile = false;
         private bool qrUsed = false;
+        #endregion DebugVariables
 
         private System.Drawing.Bitmap qrCodeImage;
         public string SavePath
@@ -61,74 +65,82 @@ namespace HoyluReceiverLibrary
                 socket.Emit("receiverClient", hoyluDeviceAsJson);
                 socket.On("device_registered", () =>
                 {
-                    if (deviceRegistered) return;
-                    deviceRegistered = true;
-                    Console.WriteLine("Device registered at server-ip "+ipAddress);
-                    if (qrUsed)
-                    {
-                        qrCodeImage.Save(Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "QRCode.jpg"), System.Drawing.Imaging.ImageFormat.Jpeg);
-                        Console.WriteLine("QRCode saved to " + Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "QRCode.jpg"));
-                        ShowQR();
-                    }                 
+                    DeviceRegistered();
                 });
-
 
                 socket.On("getFile", (data) =>
                 {
-                    if (hasReceivedFile) return;
-                    hasReceivedFile = true;
-                    Console.WriteLine("File received");
-                    System.Diagnostics.Debugger.NotifyOfCrossThreadDependency();
-                    ServerFile file = JsonConvert.DeserializeObject<ServerFile>(data.ToString());
-                    string url = @"http://"+ipAddress+":"+port+"/file_for_download/:" + file.Filename;
-                    byte[] lnByte;
-
-                    HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
-                    string lsResponse = string.Empty;
-
-                    using (HttpWebResponse response = (HttpWebResponse)request.GetResponse())
-                    {
-                        using (BinaryReader reader = new BinaryReader(response.GetResponseStream()))
-                        {
-                            lnByte = reader.ReadBytes(1 * 1024 * 1024 * 10);
-                            using (FileStream stream = new FileStream(file.Filename, FileMode.Create))
-                            {
-                                stream.Write(lnByte, 0, lnByte.Length);
-                            }
-                        }
-                        response.Close();
-
-                    }
-
-                    Match match = getFileExtension.Match(file.Originalname);
-                    if (match.Success)
-                    {
-                        string pathWithFilename = savePath + file.Originalname;
-
-                        if (match.Groups["extension"].Value == "jpg" || match.Groups["extension"].Value == "bmp" || match.Groups["extension"].Value == "png") //Ist Bild
-                        {
-                            bitmapImage = ToImage(lnByte);
-                        }
-                        Console.WriteLine("---------------Saving File---------------------");
-                        try
-                        {
-                            File.WriteAllBytes(pathWithFilename, lnByte);
-
-                        }
-                        catch (UnauthorizedAccessException ex)
-                        {
-                            Console.WriteLine(ex.Message);
-                        }
-                        if (File.Exists(pathWithFilename)) Console.WriteLine("File "+file.Originalname+" saved successfully");
-
-                        socket.Emit("fileReceived");
-                    }
-
-
-
+                    ReceiveFile(data, getFileExtension);
                 });
             });
             socket.Connect();
+        }
+
+        private void ReceiveFile(object data, Regex getFileExtension)
+        {
+            if (hasReceivedFile) return;
+            hasReceivedFile = true;
+            Console.WriteLine("File received");
+            System.Diagnostics.Debugger.NotifyOfCrossThreadDependency();
+            ServerFile file = JsonConvert.DeserializeObject<ServerFile>(data.ToString());
+            string url = @"http://" + ipAddress + ":" + port + "/file_for_download/:" + file.Filename;
+            byte[] lnByte;
+
+            HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
+            string lsResponse = string.Empty;
+
+            using (HttpWebResponse response = (HttpWebResponse)request.GetResponse())
+            {
+                using (BinaryReader reader = new BinaryReader(response.GetResponseStream()))
+                {
+                    lnByte = reader.ReadBytes(1 * 1024 * 1024 * 10);
+                    using (FileStream stream = new FileStream(file.Filename, FileMode.Create))
+                    {
+                        stream.Write(lnByte, 0, lnByte.Length);
+                    }
+                }
+                response.Close();
+
+            }
+
+            Match match = getFileExtension.Match(file.Originalname);
+            if (match.Success)
+            {
+                if (savePath == "" || savePath == null) savePath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+                string pathWithFilename = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), file.Originalname);
+
+                if (match.Groups["extension"].Value == "jpg" || match.Groups["extension"].Value == "bmp" || match.Groups["extension"].Value == "png") //Ist Bild
+                {
+                    bitmapImage = ToImage(lnByte);
+                }
+                Console.WriteLine("Saving File to "+pathWithFilename);
+                try
+                {
+                    File.WriteAllBytes(pathWithFilename, lnByte);
+
+                }
+                catch (UnauthorizedAccessException ex)
+                {
+                    Console.WriteLine(ex.Message);
+                }
+                if (File.Exists(pathWithFilename)) Console.WriteLine("File " + file.Originalname + " saved successfully");
+
+                socket.Emit("fileReceived");
+            }
+        }
+
+        private void DeviceRegistered()
+        {
+            if (deviceRegistered) return;
+            deviceRegistered = true;
+            Console.WriteLine("Device registered at server-ip " + ipAddress);
+            if (qrUsed)
+            {
+                string qrPath = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "QRCode.jpg");
+                qrCodeImage.Save(qrPath, System.Drawing.Imaging.ImageFormat.Jpeg);
+                Console.WriteLine("QRCode saved to " + qrPath, "QRCode.jpg");
+                ShowQR();
+            }
         }
 
         private void DisconnectSocket()
@@ -181,14 +193,16 @@ namespace HoyluReceiverLibrary
         }
         public void Register(string name, bool useBluetooth, bool useQR, bool useNetwork, bool useNFC)
         {
-            //string hoyluId = "f67317b7-5823-474b-b8e2-aa36e5564942"; ////Für NFC testen
+            //string hoyluId = "f67317b7-5823-474b-b8e2-aa36e5564942"; ////NFC testing
 
+            #region VariableDeclaration
             string hoyluId = Guid.NewGuid().ToString();
             string bluetoothAddress = "";
             string qrValue = "";
             string nfcValue = "";
             string publicIp = "";
             string defaultGateway = "";
+            #endregion VariableDeclaration
 
             if (useBluetooth) bluetoothAddress = GetBTMacAddress();
             if (useQR)
@@ -199,9 +213,9 @@ namespace HoyluReceiverLibrary
                 QRCodeData qrCodeData = qrGenerator.CreateQrCode(qrValue, QRCodeGenerator.ECCLevel.L);
                 QRCode qrCode = new QRCode(qrCodeData);
                 qrCodeImage = qrCode.GetGraphic(20);
-                
+
             }
-            if(useNFC)nfcValue = hoyluId;
+            if (useNFC) nfcValue = hoyluId;
             if (useNetwork)
             {
                 publicIp = new WebClient().DownloadString(@"http://icanhazip.com").Trim();

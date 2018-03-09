@@ -113,3 +113,4 @@ C:\MyFiles\Schule\Diplomarbeit\HoyluTransfer\HoyluReceiver\HoyluReceiver\obj\Deb
 C:\MyFiles\Schule\Diplomarbeit\HoyluTransfer\HoyluReceiver\HoyluReceiver\obj\Debug\MessageBoxEditText.baml
 C:\MyFiles\Schule\Diplomarbeit\HoyluTransfer\HoyluReceiver\HoyluReceiver\obj\Debug\DownloadDialog.baml
 C:\MyFiles\Schule\Diplomarbeit\HoyluTransfer\HoyluReceiver\HoyluReceiver\obj\Debug\HoyluReceiver.csproj.CoreCompileInputs.cache
+C:\Diplomarbeit\HoyluTransfer\HoyluReceiver\HoyluReceiver\obj\Debug\HoyluReceiver.csproj.CopyComplete

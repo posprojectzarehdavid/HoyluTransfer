@@ -38,3 +38,4 @@ C:\Diplomarbeit\HoyluTransfer\HoyluReceiver\Test\obj\Debug\Test.csprojResolveAss
 C:\Diplomarbeit\HoyluTransfer\HoyluReceiver\Test\obj\Debug\Test.csproj.CoreCompileInputs.cache
 C:\Diplomarbeit\HoyluTransfer\HoyluReceiver\Test\obj\Debug\Test.exe
 C:\Diplomarbeit\HoyluTransfer\HoyluReceiver\Test\obj\Debug\Test.pdb
+C:\Diplomarbeit\HoyluTransfer\HoyluReceiver\Test\obj\Debug\Test.csproj.CopyComplete
