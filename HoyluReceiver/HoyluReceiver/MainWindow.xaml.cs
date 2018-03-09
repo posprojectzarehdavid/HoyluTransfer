@@ -136,8 +136,8 @@ namespace HoyluReceiver
                     Canvas.SetTop(image, 50);
                     Canvas.SetLeft(image, 280);
                 }
-                File.WriteAllBytes(savePath, lnByte);
             }
+            File.WriteAllBytes(savePath, lnByte);
         }
 
         private static byte[] RequestFileFromServer(ServerFile file, string url)
