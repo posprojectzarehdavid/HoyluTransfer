@@ -358,8 +358,10 @@ namespace HoyluReceiver
                     {
                         HoyluDevice device = new HoyluDevice(splitted[0], splitted[1], splitted[2], splitted[3], splitted[4], splitted[5], splitted[6]);
                         device.TimestampLastUsed = DateTime.ParseExact(splitted[7], datePattern, provider);
+
                         var dateDifference = (DateTime.Today - device.TimestampLastUsed).TotalDays;
-                        if (dateDifference <= 7)
+                        var deviceAlreadyInList = hoyluDevices.Where(x => x.Name == device.Name).ToList();
+                        if (dateDifference <= 7 && deviceAlreadyInList.Count == 0)
                         {
                             hoyluDevices.Add(device);
                             registeredDevices.Items.Add(device);
@@ -421,18 +423,6 @@ namespace HoyluReceiver
             registerNFC.IsChecked = (device.NfcValue != null && device.NfcValue != "") ? true : false;
             registerQRCode.IsChecked = (device.QrValue != null && device.QrValue != "") ? true : false;
             registerNetwork.IsChecked = (device.PublicIp != null && device.PublicIp != "") ? true : false;
-        }
-
-        public static void SaveToDirectory(BitmapImage image, string filePath, Socket s)
-        {
-            BitmapEncoder encoder = new PngBitmapEncoder();
-            encoder.Frames.Add(BitmapFrame.Create(image));
-
-            using (var fileStream = new FileStream(filePath, FileMode.Create))
-            {
-                encoder.Save(fileStream);
-            }
-
         }
 
         public BitmapImage ToImage(byte[] byteVal)
