@@ -1,10 +1,14 @@
 package com.example.zarehhakobian.hoylu;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Environment;
 import android.support.v4.app.Fragment;
+import android.view.ContextMenu;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
@@ -44,9 +48,42 @@ public class ReceivedFilesFragment extends Fragment {
     }
 
     @Override
+    public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
+        int id = v.getId();
+        if(id==R.id.listview){
+            getActivity().getMenuInflater().inflate(R.menu.menu, menu);
+        }
+        super.onCreateContextMenu(menu, v, menuInfo);
+    }
+
+    @Override
+    public boolean onContextItemSelected(MenuItem item) {
+        AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo)item.getMenuInfo();
+        final File f = (File) fileAdapter.getItem(info.position);
+        int id = item.getItemId();
+
+        if(id == R.id.action_delete) {
+            AlertDialog.Builder ab = new AlertDialog.Builder(getActivity());
+            ab.setMessage(getResources().getString(R.string.delete));
+            ab.setPositiveButton(getResources().getString(R.string.yes), new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    f.delete();
+                    showFiles(listView);
+                }
+            });
+            ab.setNegativeButton(getResources().getString(R.string.no), null);
+            ab.create().show();
+            return true;
+        }
+        return super.onContextItemSelected(item);
+    }
+
+    @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.received_files_view, container, false);
         listView = (ListView) v.findViewById(R.id.listview);
+        registerForContextMenu(listView);
         showFiles(listView);
 
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -65,7 +102,7 @@ public class ReceivedFilesFragment extends Fragment {
 
     private void showFiles(ListView listView) {
         File files = new File(Environment.getExternalStorageDirectory() + File.separator + "Hoylu");
-        File[] filesToShow = files.listFiles();
+        filesToShow = files.listFiles();
         fileAdapter = new FileAdapter(getActivity());
         if(filesToShow != null) {
             ArrayList<File> list = new ArrayList<>();

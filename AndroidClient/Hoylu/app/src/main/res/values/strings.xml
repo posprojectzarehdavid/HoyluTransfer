@@ -32,4 +32,6 @@
     <string name="receivedfiles">Empfangene Daten</string>
     <string name="gallery">Galerie</string>
     <string name="receiver">Empfänger</string>
+    <string name="delete">Wollen Sie die Datei wirklich löschen?</string>
+    <string name="deleteItem">Löschen</string>
 </resources>

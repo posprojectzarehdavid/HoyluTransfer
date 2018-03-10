@@ -33,4 +33,6 @@
     <string name="receivedfiles">Received files</string>
     <string name="gallery">Gallery</string>
     <string name="receiver">Receiver</string>
+    <string name="delete">Do you really want to delete this file?</string>
+    <string name="deleteItem">Delete</string>
 </resources>
