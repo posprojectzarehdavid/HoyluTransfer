@@ -48,15 +48,18 @@
                     </Grid>
                 </Border>
                 <Grid>
-                    <Button Name="btnLeftMenuHide" Background="#ededef" FontWeight="Bold" Click="btnLeftMenuHide_Click" Content="Hide register options" Height="25" Visibility="Hidden" Margin="0,0,90,616"/>
-                    <Button Name="btnLeftMenuShow" Background="#ededef" FontWeight="Bold" Click="btnLeftMenuShow_Click" Content="Show register options" Height="25" Margin="0,0,90,616"/>
+                    <Button Name="btnLeftMenuHide" Background="#ededef" FontWeight="Bold" Click="btnLeftMenuHide_Click" 
+                            Content="Hide register options" Height="25" Visibility="Hidden" Margin="0,0,90,616"/>
+                    <Button Name="btnLeftMenuShow" Background="#ededef" FontWeight="Bold" Click="btnLeftMenuShow_Click" 
+                            Content="Show register options" Height="25" Margin="0,0,90,616"/>
                 </Grid>
             </StackPanel>
 
 
         </Grid>
-        <Canvas MouseRightButtonDown="Grid_MouseRightButtonDown" MouseRightButtonUp="MainViewGrid_MouseRightButtonUp" MouseMove="MainViewGrid_MouseMove" Name="MainViewGrid" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Grid.ColumnSpan="1">
-            <!--HorizontalAlignment="Left" Height="156" Margin="22,237,0,0"-->
+        <Canvas MouseRightButtonDown="Canvas_MouseRightButtonDown" 
+                MouseRightButtonUp="MainViewCanvas_MouseRightButtonUp" MouseMove="MainViewCanvas_MouseMove" 
+                Name="MainViewCanvas" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Grid.ColumnSpan="1">
             <Image x:Name="image" VerticalAlignment="Top" Width="165" />
             <Image x:Name="qrCodeView" VerticalAlignment="Top" Width="165"/>
 

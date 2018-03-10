@@ -224,11 +224,11 @@ namespace HoyluReceiver
 
 
 
-        private void Grid_MouseRightButtonDown(object sender, MouseButtonEventArgs e)
+        private void Canvas_MouseRightButtonDown(object sender, MouseButtonEventArgs e)
         {
             var image = e.Source as System.Windows.Controls.Image;
 
-            if (image != null && MainViewGrid.CaptureMouse() && (image.Name == "qrCodeView" || image.Name == "image"))
+            if (image != null && MainViewCanvas.CaptureMouse() && (image.Name == "qrCodeView" || image.Name == "image"))
             {
                 Console.WriteLine("Dragging");
 
@@ -242,7 +242,7 @@ namespace HoyluReceiver
             }
         }
 
-        private void MainViewGrid_MouseRightButtonUp(object sender, MouseButtonEventArgs e)
+        private void MainViewCanvas_MouseRightButtonUp(object sender, MouseButtonEventArgs e)
         {
             if (draggedImage != null)
             {
@@ -269,13 +269,13 @@ namespace HoyluReceiver
                 Console.WriteLine("ButtonU Position Image: X" + Canvas.GetLeft(draggedImage) + "| Y" + Canvas.GetTop(draggedImage));
 
                 //draggedImage.Margin = new Thickness(mousePosition.X, mousePosition.Y, draggedImage.Margin.Right, draggedImage.Margin.Bottom);
-                MainViewGrid.ReleaseMouseCapture();
+                MainViewCanvas.ReleaseMouseCapture();
                 draggedImage = null;
 
             }
         }
 
-        private void MainViewGrid_MouseMove(object sender, MouseEventArgs e)
+        private void MainViewCanvas_MouseMove(object sender, MouseEventArgs e)
         {
             if (draggedImage != null)
             {
