@@ -281,19 +281,9 @@ namespace HoyluReceiver
             {
 
                 var position = e.GetPosition(this);
-                //var xVal = position.X - mousePosition.X;
-                //var yVal = position.Y - mousePosition.Y;
-                //offset.X = xVal;
-                //offset.Y = yVal;
-
-                //var currX = mousePosition.X + offset.X;
-                //var currY = mousePosition.Y + offset.Y;
-                //Console.WriteLine("ButtonMove Position: X" + currX + "| Y" + currY);
+                
                 Canvas.SetTop(draggedImage, position.Y);
                 Canvas.SetLeft(draggedImage, position.X);
-
-                //draggedImage.Margin = new Thickness(currX, currY, 0, 0);
-                //Console.WriteLine("ButtonMove Position Image: X" + draggedImage.Margin.Left+ "| Y" + draggedImage.Margin.Top);
 
             }
         }

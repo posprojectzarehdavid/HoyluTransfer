@@ -11,9 +11,9 @@ namespace Test
     {
         static void Main(string[] args)
         {
-            Receiver seas = new Receiver("40.114.246.211", "4200");
-            seas.SavePath = @"C:\Users\David\Desktop\";
-            seas.Register("TestUser", false, true, true, true);
+            Receiver testreceiver = new Receiver("40.114.246.211", "4200");
+            testreceiver.SavePath = @"C:\Users\David\Desktop\";
+            testreceiver.Register("TestUser", false, true, true, true);
             Console.ReadKey();
         }
     }
