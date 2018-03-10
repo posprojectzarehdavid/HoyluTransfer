@@ -83,6 +83,4 @@ C:\MyFiles\Schule\Diplomarbeit\HoyluTransfer\HoyluReceiver\HoyluReceiver\obj\Rel
 C:\MyFiles\Schule\Diplomarbeit\HoyluTransfer\HoyluReceiver\HoyluReceiver\obj\Release\DownloadDialog.baml
 C:\MyFiles\Schule\Diplomarbeit\HoyluTransfer\HoyluReceiver\HoyluReceiver\obj\Release\HoyluReceiver.csproj.CoreCompileInputs.cache
 C:\Users\David\Desktop\HoyluTransfer\HoyluReceiver\HoyluReceiver\obj\Release\MessageBoxEditText.g.cs
-C:\Users\David\Desktop\HoyluTransfer\HoyluReceiver\HoyluReceiver\obj\Release\DownloadDialog.g.cs
 C:\Users\David\Desktop\HoyluTransfer\HoyluReceiver\HoyluReceiver\obj\Release\MessageBoxEditText.baml
-C:\Users\David\Desktop\HoyluTransfer\HoyluReceiver\HoyluReceiver\obj\Release\DownloadDialog.baml
