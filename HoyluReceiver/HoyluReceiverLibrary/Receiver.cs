@@ -124,10 +124,10 @@ namespace HoyluReceiverLibrary
                 using (BinaryReader reader = new BinaryReader(response.GetResponseStream()))
                 {
                     lnByte = reader.ReadBytes(1 * 1024 * 1024 * 10);
-                    using (FileStream stream = new FileStream(file.Filename, FileMode.Create))
-                    {
-                        stream.Write(lnByte, 0, lnByte.Length);
-                    }
+                    //using (FileStream stream = new FileStream(file.Filename, FileMode.Create))
+                    //{
+                    //    stream.Write(lnByte, 0, lnByte.Length);
+                    //}
                 }
                 response.Close();
 
