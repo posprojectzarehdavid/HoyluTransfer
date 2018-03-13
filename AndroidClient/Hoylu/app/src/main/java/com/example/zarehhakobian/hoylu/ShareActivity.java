@@ -69,6 +69,7 @@ public class ShareActivity extends AppCompatActivity implements DeviceSelectedLi
     private static final int RC_Handle_CAMERA_AND_INTERNET_PERM_AND_READ_PERM = 2;
     public static boolean permissionsGranted = false;
     Socket socket;
+    private Socket nfcSocket;
     public static long start;
     public static long end;
     ProgressDialog progressDialog;
@@ -196,7 +197,45 @@ public class ShareActivity extends AppCompatActivity implements DeviceSelectedLi
             Log.i("NFC TAG SCANNED", value + " || Size: " + ndefTag.getMaxSize());
             Log.i("NFC TAG SCANNED fixed", value.substring(3) + " || Size: " + ndefTag.getMaxSize());
 
-            uploadImageToServer(value.substring(3), "NFCClient");
+            try {
+                nfcSocket = IO.socket(ShareActivity.CONNECTION_STRING);
+                nfcSocket.on(Socket.EVENT_CONNECT, new Emitter.Listener() {
+                    @Override
+                    public void call(Object... args) {
+                        Log.i("hallo", "connected");
+                        nfcSocket.emit("client", "NFCClient");
+                        nfcSocket.emit("qr_code", value.substring(3), new Ack() {
+                            @Override
+                            public void call(Object... args) {
+                                isGueltigeID = (boolean) args[0];
+                                if(isGueltigeID) {
+                                    getActivity().runOnUiThread(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            uploadImageToServer(value.substring(3), "NFCClient");
+                                        }
+                                    });
+                                    mPreview.release();
+
+                                }else {
+                                    getActivity().runOnUiThread(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            Toast.makeText(getActivity(), R.string.invalid, Toast.LENGTH_SHORT).show();
+                                        }
+                                    });
+                                }
+                                nfcSocket.disconnect();
+                                nfcSocket.off();
+                            }
+                        });
+                    }
+                });
+                nfcSocket.connect();
+            } catch (Exception e) {
+                e.printStackTrace();
+                Toast.makeText(getActivity(), R.string.server_off, Toast.LENGTH_SHORT).show();
+            }
         }
     }
 
