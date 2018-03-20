@@ -196,47 +196,7 @@ public class ShareActivity extends AppCompatActivity implements DeviceSelectedLi
             String value = new String(record.getPayload());
             Log.i("NFC TAG SCANNED", value + " || Size: " + ndefTag.getMaxSize());
             Log.i("NFC TAG SCANNED fixed", value.substring(3) + " || Size: " + ndefTag.getMaxSize());
-
-            try {
-                nfcSocket = IO.socket(ShareActivity.CONNECTION_STRING);
-                nfcSocket.on(Socket.EVENT_CONNECT, new Emitter.Listener() {
-                    @Override
-                    public void call(Object... args) {
-                        Log.i("hallo", "connected");
-                        nfcSocket.emit("client", "NFCClient");
-                        nfcSocket.emit("qr_code", value.substring(3), new Ack() {
-                            @Override
-                            public void call(Object... args) {
-                                isGueltigeID = (boolean) args[0];
-                                if(isGueltigeID) {
-                                    getActivity().runOnUiThread(new Runnable() {
-                                        @Override
-                                        public void run() {
-                                            uploadImageToServer(value.substring(3), "NFCClient");
-                                        }
-                                    });
-                                    mPreview.release();
-
-                                }else {
-                                    getActivity().runOnUiThread(new Runnable() {
-                                        @Override
-                                        public void run() {
-                                            Toast.makeText(getActivity(), R.string.invalid, Toast.LENGTH_SHORT).show();
-                                        }
-                                    });
-                                }
-                                nfcSocket.disconnect();
-                                nfcSocket.off();
-                            }
-                        });
-                    }
-                });
-                nfcSocket.connect();
-            } catch (Exception e) {
-                e.printStackTrace();
-                Toast.makeText(getActivity(), R.string.server_off, Toast.LENGTH_SHORT).show();
-            }
-        }
+            uploadImageToServer(value.substring(3), "NFCClient");
     }
 
     private void setLanguage() {
