@@ -13,7 +13,7 @@
     <string name="uploading_error">Error while uploading file!</string>
     <string name="uploading_message">File is being uploaded on server...</string>
     <string name="dev_in_network">Registered devices on server</string>
-    <string name="focus_on_qr">Bring QR-code into focus</string>
+    <string name="focus_on_qr">Scan QR-code or NFC-tag</string>
     <string name="invalid">No valid ID</string>
     <string name="no_devices">No devices in network</string>
     <string name="turn_on_wifi">Turn on Wi-Fi</string>

@@ -19,7 +19,7 @@
     <string name="notify_server_false">Server nicht benachrichtigt</string>
     <string name="turn_on_wifi">Schalten Sie Ihr WLAN ein</string>
     <string name="no_devices">Keine Geräte im Netzwerk</string>
-    <string name="focus_on_qr">Auf einen QR-Code richten</string>
+    <string name="focus_on_qr">QR-Code oder NFC-Tag einscannen</string>
     <string name="dev_in_network">Registrierte Geräte am Server</string>
     <string name="valid">Gültige ID</string>
     <string name="invalid">Keine Gültige ID</string>

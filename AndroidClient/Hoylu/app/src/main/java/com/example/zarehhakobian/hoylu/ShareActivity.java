@@ -189,7 +189,7 @@ public class ShareActivity extends AppCompatActivity implements DeviceSelectedLi
 
     private void getTagInfo(Intent intent) {
         Tag tag = intent.getParcelableExtra(NfcAdapter.EXTRA_TAG);
-        if(tag != null){
+        if (tag != null) {
             Ndef ndefTag = Ndef.get(tag);
             NdefMessage ndefMesg = ndefTag.getCachedNdefMessage();
             NdefRecord record = ndefMesg.getRecords()[0];
@@ -197,6 +197,7 @@ public class ShareActivity extends AppCompatActivity implements DeviceSelectedLi
             Log.i("NFC TAG SCANNED", value + " || Size: " + ndefTag.getMaxSize());
             Log.i("NFC TAG SCANNED fixed", value.substring(3) + " || Size: " + ndefTag.getMaxSize());
             uploadImageToServer(value.substring(3), "NFCClient");
+        }
     }
 
     private void setLanguage() {
